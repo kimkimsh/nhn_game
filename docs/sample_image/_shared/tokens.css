@@ -1,0 +1,63 @@
+/* 「환도(還刀)」 mockup design tokens.
+   Every colour below carries exactly one game rule (spec §17 requires enemy
+   bullets, reflected bullets and unparryable hazards to be told apart on sight).
+   Names follow the dancheong five-colour set the stage art is derived from. */
+
+:root {
+  /* 흑 — ground the whole thing sits on */
+  --ink-900: #06070a;
+  --ink-850: #090b11;
+  --ink-800: #0b0d13;
+  --ink-700: #12161f;
+  --ink-600: #1a202c;
+  --ink-500: #262e3d;
+
+  /* 적 (jeoksa vermilion) — enemy bodies and enemy bullets */
+  --jeok: #e23c2e;
+  --jeok-hot: #ffd9d2;
+  --jeok-dim: #8e241a;
+
+  /* 황 (jahwang) — reflected bullets: player damage, still lethal to the player */
+  --hwang: #f5b324;
+  --hwang-hot: #fff3d0;
+
+  /* 청 (byeokcheong) — the player, the parry ring, anything the player owns */
+  --cheong: #35b7e0;
+  --cheong-dim: #17607a;
+
+  /* 백 (hobun) — text, HUD, and the three telegraph shapes */
+  --baek: #ede6d8;
+  --baek-mute: #9aa3b2;
+  --baek-faint: #5d6675;
+
+  /* 탁적 — unparryable. Always paired with an angular hatched form. */
+  --takjeok: #7a2b1e;
+
+  /* card rarity, fixed by spec §11.2 — do not restyle */
+  --rarity-normal: #d8d2c4;
+  --rarity-rare: #3b82f6;
+  --rarity-epic: #a855f7;
+
+  --line: #1e2635;
+  --line-strong: #2c3648;
+
+  --font-display: "Gowun Batang", "Nanum Myeongjo", "Apple SD Gothic Neo", serif;
+  --font-body: "IBM Plex Sans KR", "Pretendard", -apple-system, "Segoe UI", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --step--1: clamp(0.72rem, 0.70rem + 0.1vw, 0.78rem);
+  --step-0: clamp(0.85rem, 0.82rem + 0.15vw, 0.94rem);
+  --step-1: clamp(1.02rem, 0.96rem + 0.3vw, 1.18rem);
+  --step-2: clamp(1.35rem, 1.2rem + 0.7vw, 1.75rem);
+  --step-3: clamp(1.9rem, 1.5rem + 1.9vw, 3.1rem);
+  --step-4: clamp(2.6rem, 1.8rem + 3.6vw, 5rem);
+
+  --gap: 22px;
+  --rail: 400px;
+  --pf-w: 540px;
+  --pf-h: 960px;
+}
+
+@media (max-width: 1080px) {
+  :root { --pf-w: 430px; --pf-h: 764px; --rail: 340px; }
+}

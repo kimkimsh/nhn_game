@@ -1,0 +1,39 @@
+/* One in-game frame, nothing else on the page. */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: #000;
+  color: var(--baek);
+  font-family: var(--font-body);
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.screen {
+  height: min(94vh, 1400px);
+  aspect-ratio: 9 / 16;
+  max-width: 100%;
+  display: block;
+  background: var(--ink-900);
+  image-rendering: auto;
+}
+
+.back {
+  position: fixed;
+  top: 14px;
+  left: 16px;
+  font-family: var(--font-data);
+  font-size: 12px;
+  letter-spacing: .12em;
+  color: #4a5361;
+  text-decoration: none;
+}
+.back:hover { color: var(--hwang); }
+
+@media (max-width: 760px) {
+  .screen { height: auto; width: 100%; }
+}

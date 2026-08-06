@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>환도(還刀) — 인게임 화면 15장</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="_shared/tokens.css">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ink-900); color: var(--baek);
+    font-family: var(--font-body); line-height: 1.6;
+  }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 72px 28px 100px; }
+  h1 { font-family: var(--font-display); font-size: var(--step-4); margin: 0; line-height: 1; letter-spacing: -.03em; }
+  h1 span { color: var(--hwang); font-size: .38em; letter-spacing: .1em; margin-left: 18px; vertical-align: .5em; }
+  .lede { color: var(--baek-mute); max-width: 60ch; margin: 16px 0 0; font-size: var(--step-1); }
+  .kicker { font-family: var(--font-data); font-size: var(--step--1); letter-spacing: .24em; color: var(--cheong); }
+  h2 { font-family: var(--font-display); font-size: var(--step-2); margin: 56px 0 14px; border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  a.card { background: var(--ink-850); padding: 18px 18px 22px; text-decoration: none; color: inherit; display: grid; align-content: start; gap: 3px; }
+  a.card:hover { background: var(--ink-700); }
+  a.card:focus-visible { outline: 2px solid var(--hwang); outline-offset: -2px; }
+  .no { font-family: var(--font-data); font-size: 12px; letter-spacing: .2em; color: var(--cheong); }
+  .t { font-family: var(--font-display); font-size: var(--step-2); font-weight: 700; line-height: 1.15; }
+  .d { color: var(--baek-mute); font-size: var(--step--1); margin-top: 4px; }
+  ul.rules { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+  ul.rules li { display: grid; grid-template-columns: 18px 1fr; gap: 12px; align-items: start; font-size: var(--step-0); }
+  .sw { width: 14px; height: 14px; margin-top: 6px; border-radius: 2px; }
+  ul.rules b { display: block; }
+  ul.rules span { color: var(--baek-mute); font-size: var(--step--1); }
+  code { font-family: var(--font-data); background: var(--ink-700); padding: 0 5px; font-size: .92em; }
+  footer { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 16px; color: var(--baek-faint); font-size: var(--step--1); font-family: var(--font-data); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="kicker">NAN 2026 · 사전 과제 · 인게임 화면 설계</p>
+  <h1>환도<span>還刀</span></h1>
+  <p class="lede">패리 반사만으로 싸우는 종스크롤 슈팅. 아래 15장은 각각 인게임 한 프레임이며,
+  <code>docs/spec/기능_명세서.md</code>의 수치·판정 규칙을 그대로 실행해 그린 것이다.</p>
+
+  <h2>스테이지와 보스</h2>
+  <div class="grid">
+    <a class="card" href="00_title/index.html"><span class="no">00</span><span class="t">타이틀</span><span class="d">규칙 한 줄과 등급 밴드 로고</span></a>
+    <a class="card" href="01_stage1_busanjin/index.html"><span class="no">01</span><span class="t">부산진 새벽</span><span class="d">S1 W2 · 조총병 + 궁병</span></a>
+    <a class="card" href="02_boss1_johongbangjin/index.html"><span class="no">02</span><span class="t">조총 방진 대장</span><span class="d">B1 · 일제사격 5발</span></a>
+    <a class="card" href="03_stage2_dongnaeseong/index.html"><span class="no">03</span><span class="t">동래성 성곽</span><span class="d">S2 W4 · 방패병 정면 무효</span></a>
+    <a class="card" href="04_boss2_samurai/index.html"><span class="no">04</span><span class="t">왜장 사무라이 대장</span><span class="d">B2 · 참격파 + 돌진 방향선</span></a>
+    <a class="card" href="05_stage3_hansando/index.html"><span class="no">05</span><span class="t">한산도 앞바다</span><span class="d">S3 W4 · 함포탄 + 링 탄막</span></a>
+    <a class="card" href="06_boss3_atakebune/index.html"><span class="no">06</span><span class="t">아타케부네 기함</span><span class="d">B3 · 포문 4기 부위 파괴</span></a>
+    <a class="card" href="07_stage4_haengju/index.html"><span class="no">07</span><span class="t">행주산성 야전</span><span class="d">S4 W4 · 화염 장판</span></a>
+    <a class="card" href="08_boss4_daetong/index.html"><span class="no">08</span><span class="t">대통 포병 대장</span><span class="d">B4 · 착탄 예고 원</span></a>
+    <a class="card" href="09_stage5_noryang/index.html"><span class="no">09</span><span class="t">노량 밤바다</span><span class="d">S5 W5 · 잡몹 20기 + 관통 대창</span></a>
+    <a class="card" href="10_boss5_flagship/index.html"><span class="no">10</span><span class="t">총대장 기함</span><span class="d">B5 페이즈 4 · 전탄 발사</span></a>
+  </div>
+
+  <h2>시스템 화면</h2>
+  <div class="grid">
+    <a class="card" href="11_card_select/index.html"><span class="no">11</span><span class="t">카드 선택</span><span class="d">3장 중 1장 · 중첩 전후 표시</span></a>
+    <a class="card" href="12_parry_moment/index.html"><span class="no">12</span><span class="t">패리 성립 순간</span><span class="d">GREAT · 반사탄 부채꼴</span></a>
+    <a class="card" href="13_result/index.html"><span class="no">13</span><span class="t">결과 화면</span><span class="d">총점 · 등급 분포 · 자해 라이프</span></a>
+    <a class="card" href="14_pause/index.html"><span class="no">14</span><span class="t">일시정지</span><span class="d">보유 카드 · 런 포기</span></a>
+  </div>
+
+  <h2>색 규칙</h2>
+  <ul class="rules">
+    <li><span class="sw" style="background:#e23c2e"></span><div><b>적 탄환 · 적</b><span>진사 적(赤). 닿으면 라이프 −1.</span></div></li>
+    <li><span class="sw" style="background:#f5b324"></span><div><b>반사탄</b><span>자황(黃) 코어 + 적색 링. 내 데미지지만 나에게도 유효하다(HR-07).</span></div></li>
+    <li><span class="sw" style="background:#35b7e0"></span><div><b>플레이어 · 패리</b><span>벽청(靑). 피격 판정 10u 코어는 항상 보인다.</span></div></li>
+    <li><span class="sw" style="background:#ede6d8"></span><div><b>예고 표시</b><span>호분 백(白) 점선. 착탄 예고 원 · 관통 예고선 · 돌진 방향선 3종뿐(HR-05).</span></div></li>
+    <li><span class="sw" style="background:#7a2b1e"></span><div><b>패리 불가</b><span>탁적 + 대각 해칭. 색이 아니라 <b>형태</b>로 구분한다(§17).</span></div></li>
+  </ul>
+
+  <footer>1080u × 1920u · 9:16 · 각 폴더에 <code>index.html</code> · <code>scene.js</code> · <code>README.md</code></footer>
+</div>
+</body>
+</html>
