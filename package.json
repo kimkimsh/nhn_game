@@ -1,0 +1,24 @@
+{
+  "name": "hwando",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "환도(還刀) — 종스크롤 탄막 패리 액션",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "verify": "npm run typecheck && npm run test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.3.0",
+    "eslint": "^9.34.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
+    "vite": "^7.1.3",
+    "vitest": "^3.2.4"
+  }
+}

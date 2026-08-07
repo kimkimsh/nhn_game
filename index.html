@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>환도 還刀</title>
+<style>
+  /*
+   * 페이지 셸만 여기 있다. 게임의 색은 전부 config/palette.ts가 갖는다 (12 §3.2).
+   * 레터박스 띠는 그려지는 픽셀이 아니라 이 body 배경이다 — 캔버스를 화면에 맞춘
+   * 크기로만 만들고 남는 자리를 배경이 채우므로, 06 §3.5의 fill-rate 예산이 띠에 안 쓰인다.
+   */
+  html, body {
+    height: 100%;
+    margin: 0;
+  }
+  body {
+    background: #0b0d13;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    /* 이동 중 드래그가 선택으로 잡히면 커서가 게임 밖으로 새어 나간다 */
+    user-select: none;
+  }
+  #stage {
+    display: block;
+  }
+</style>
+</head>
+<body>
+<canvas id="stage"></canvas>
+<script type="module" src="/src/main.ts"></script>
+</body>
+</html>
