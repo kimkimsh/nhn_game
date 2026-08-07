@@ -53,8 +53,9 @@ export function reflectProjectile(
   const projectile = source.owner === 'enemy' ? convertToReflect(world, source) : source;
   const previousGrade = projectile.lastGrade;
 
+  // N06은 등급 배수 위에 다시 곱한다. 자르는 자리는 여기 하나이고 REFLECT-SPEED 가드가 그 뒤를 본다
   const speedUPerSec = clamp(
-    lengthOf(reflectedVelocity.x, reflectedVelocity.y) * band.speedMul,
+    lengthOf(reflectedVelocity.x, reflectedVelocity.y) * band.speedMul * world.stats.reflectSpeedMul,
     0,
     world.stats.reflectSpeedMaxUPerSec,
   );
@@ -63,14 +64,24 @@ export function reflectProjectile(
   projectile.vyUPerSec = reflectedVelocity.y;
 
   projectile.owner = 'player';
-  projectile.homingRemainingSec = 0;
+  // ③ 원래 탄의 유도는 소유권과 함께 사라진다. 다시 붙는 경로는 R03 하나뿐이고, 그때의 대상은
+  // 플레이어가 아니라 가장 가까운 적이다(sim/bullets.ts의 steerHoming)
+  const homingDegPerSec = world.stats.reflectHomingDegPerSec;
+  projectile.homingRemainingSec = homingDegPerSec > 0 ? world.stats.reflectLifetimeSec : 0;
+  projectile.homingTurnRateDegPerSec = homingDegPerSec;
+  projectile.homingExitSpeedUPerSec = speedUPerSec;
   projectile.lifeRemainingSec = world.stats.reflectLifetimeSec;
   projectile.graceRemainingSec = world.stats.reflectGraceSec;
   projectile.pierceRemaining = world.stats.reflectPierceCount;
   projectile.parriedSessionId = world.parry.sessionId;
   projectile.lastGrade = band.id;
+  // §11.6 2 → 3 → 4단계. 조건부 배수(R09)는 곱연산 뒤에, 분열 감쇠(R01·E01)는 맨 뒤에 붙는다
   projectile.damage = Math.floor(
-    projectile.brp * band.damageMul * world.stats.reflectDamageMulFor(world.run.combo),
+    projectile.brp *
+      band.damageMul *
+      world.stats.reflectDamageMulFor(world.run.combo) *
+      world.stats.conditionalDamageMulFor(band.id) *
+      world.stats.reflectSplitDamageRatio,
   );
 
   return { projectile, previousGrade };

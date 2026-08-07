@@ -19,13 +19,15 @@
  * 이고 그때의 최고 등급을 쓴다. 콤보만 처리한 발사체 개수만큼 오른다. 무적은 성립할 때마다
  * 다시 설정되지만 등급에 따라 길이가 달라지지 않는다.
  */
-import { REFLECT } from '../config/reflect';
 import type { Input } from '../core/input';
 import { distanceSq, dot } from '../core/vec';
 import type { Projectile } from './bullets';
 import { grantParryInvuln } from './player';
+import { GUARDS_ENABLED, checkReflect } from './guards';
 import { assertMovingAway, reflectProjectile } from './reflect';
-import { addCombo, addScore, type EffectiveParryBand, type World } from './world';
+import { applyReflectLaunchEffects } from './reflect-effects';
+import { addCombo, awardParry } from './score';
+import type { EffectiveParryBand, World } from './world';
 
 /** 활성 구간 ID의 시작값. 발사체의 초기값과 같으면 첫 패리가 C4에 걸린다 */
 const FIRST_SESSION_ID = 1;
@@ -185,7 +187,7 @@ function rewardSession(world: World, best: EffectiveParryBand, bestWasReparry: b
   world.parrySeq += 1;
   world.chainIndex = 0;
   world.clock.requestHitstop(best.hitstopSec, world.simTimeSec);
-  addScore(world, best.score * (bestWasReparry ? REFLECT.scoreRatio : 1));
+  awardParry(world, best, bestWasReparry);
   world.bus.emit({
     kind: 'parry',
     parrySeq: world.parrySeq,
@@ -240,7 +242,11 @@ function judgeStep(world: World): void {
     }
     const wasReparry = projectile.owner === 'player';
     const result = reflectProjectile(world, projectile, band);
-    assertMovingAway(world, result.projectile);
+    if (GUARDS_ENABLED) {
+      checkReflect(world, result.projectile, world.stats.reflectHomingDegPerSec > 0);
+    } else {
+      assertMovingAway(world, result.projectile);
+    }
 
     world.bus.emit({
       kind: 'reflectLaunched',
@@ -257,6 +263,10 @@ function judgeStep(world: World): void {
         yU: result.projectile.yU,
       });
     }
+    // 카드 효과는 사건을 낸 뒤에 건다. 교체(E02)가 result.projectile을 반납하므로 그 뒤에는
+    // 그 슬롯을 읽을 수 없다
+    applyReflectLaunchEffects(world, result.projectile, band.id === 'GREAT');
+
     if (best === null || band.damageMul > best.damageMul) {
       best = band;
       bestWasReparry = wasReparry;

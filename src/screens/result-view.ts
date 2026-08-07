@@ -211,17 +211,22 @@ function drawGradeBar(ctx: CanvasRenderingContext2D, tally: RunTally): void {
     barXU += widthU;
   }
 
+  // 라벨은 자기 구간의 왼쪽 끝에 붙지만, 구간이 이름보다 좁으면 다음 라벨이 그만큼 밀린다.
+  // 오른쪽 한계가 없으면 GREAT이 전체 패리의 89%를 넘는 순간 셋째 라벨이 플레이필드 밖으로
+  // 나가 이름과 횟수가 통째로 잘린다 — 폰트 폭이 아니라 clamp 부재가 원인이라 여기서 막는다
+  const labelRightLimitU = RESULT.gradeBarXU + RESULT.gradeBarWidthU;
   let labelXU = RESULT.gradeBarXU;
   for (const grade of GRADE_VIEWS) {
     const count = tally.gradeCounts[grade.id];
-    ctx.fillStyle = grade.color;
     ctx.font = `600 ${GRADE_NAME_PX}px ${FONTS.data}`;
-    ctx.fillText(grade.label, labelXU, RESULT.gradeNameBaselineYU);
     const nameWidthU = ctx.measureText(grade.label).width;
+    const drawXU = Math.min(labelXU, labelRightLimitU - nameWidthU);
+    ctx.fillStyle = grade.color;
+    ctx.fillText(grade.label, drawXU, RESULT.gradeNameBaselineYU);
     ctx.fillStyle = PALETTE.baekMute;
     ctx.font = `400 ${GRADE_COUNT_PX}px ${FONTS.data}`;
-    ctx.fillText(formatCount(count), labelXU, RESULT.gradeCountBaselineYU);
-    labelXU += Math.max(segmentU(count), nameWidthU + GRADE_LABEL_GAP_U);
+    ctx.fillText(formatCount(count), drawXU, RESULT.gradeCountBaselineYU);
+    labelXU = drawXU + Math.max(segmentU(count), nameWidthU + GRADE_LABEL_GAP_U);
   }
 }
 

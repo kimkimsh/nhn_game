@@ -134,8 +134,8 @@ export interface BalanceReport {
       readonly stageId: StageId;
       readonly at: StageEntry;
       readonly cards: CardInventory;
-      /** sim이 실제로 적용한 것. `Run.entry`를 읽는 코드가 없어 지금은 언제나 stageStart다 */
-      readonly applied: 'stageStart';
+      /** sim이 실제로 적용한 진입 종류. `at.kind`와 다르면 그 값은 §14.4와 같은 축이 아니다 */
+      readonly applied: StageEntry['kind'];
     };
     readonly simSec: number;
     readonly wallSec: number;

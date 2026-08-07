@@ -113,6 +113,20 @@ export interface GuardState {
   liveFireSources: number;
   suppressedFireSources: number;
   lastExemption: Hr03Exemption | null;
+  /**
+   * 이 스테이지가 적 탄환을 한 번이라도 낸 뒤인가. **HR-03 하나에만 걸린다.**
+   *
+   * HR-03을 스테이지 시작 시각부터 재면 다섯 스테이지가 전부 시작 즉시 던진다. §9의 웨이브가
+   * 0:00에 시작하는데 §8.2의 진입 궤적은 활동 영역 밖에서 출발하므로, 첫 탄까지의 공백은
+   * 편성이 아니라 진입에 걸리는 시간 자체다 — 웨이브 표로는 없앨 수 없다.
+   *
+   * **면제가 아니라 시작점이다.** 첫 탄이 나온 뒤의 공백은 09 §2.4의 면제 말고는 그대로
+   * 던진다. 진짜 해결은 §9.1의 웨이브 시작 시각이나 HR-03 조문의 개정이고 구현이 못 한다.
+   *
+   * 이 값이 GuardState에 있는 것이 계약이다 — 부르는 쪽에서 검사 전체를 건너뛰는 형태로 두면
+   * HR-07·HR-08·상한·히트스톱 예산까지 첫 탄 전 구간 내내 함께 꺼진다.
+   */
+  hr03Armed: boolean;
   readonly report: GuardReport;
 }
 
@@ -124,8 +138,25 @@ export function createGuardState(): GuardState {
   const hr03 = { lull: createTally(), bossDefeat: createTally(), allSourcesSuppressed: createTally() };
   return {
     emptyBulletSec: 0, maskedEmptySec: 0, liveFireSources: 0, suppressedFireSources: 0,
-    lastExemption: null, report: { hr03, worstMaskedEmptySec: 0 },
+    lastExemption: null, hr03Armed: false, report: { hr03, worstMaskedEmptySec: 0 },
   };
+}
+
+/**
+ * 월드 하나에 가드 상태 하나. World의 필드가 아니라 여기 있는 것은 릴리스에서
+ * `GUARDS_ENABLED`가 상수 false가 되면 이 모듈로 가는 호출이 전부 사라져 통째로 트리
+ * 셰이킹되어야 하기 때문이다 — World의 필드로 두면 createWorld가 무조건 만들어야 해서
+ * 그 길이 막힌다. 부르는 쪽은 언제나 `if (GUARDS_ENABLED)` 안에서만 부른다.
+ */
+const GUARD_STATES = new WeakMap<World, GuardState>();
+
+export function guardStateOf(world: World): GuardState {
+  let state = GUARD_STATES.get(world);
+  if (state === undefined) {
+    state = createGuardState();
+    GUARD_STATES.set(world, state);
+  }
+  return state;
 }
 
 /**
@@ -158,6 +189,12 @@ type Hr03Request = 'lull' | 'bossDefeat' | null;
  * 소강은 지우지 않으므로 쌓인 값이 남고 끝나면 그 자리에서 이어 센다.
  */
 function updateHr03(world: World, state: GuardState, dtSec: number, requested: Hr03Request): void {
+  if (!state.hr03Armed) {
+    if (world.enemyBullets.activeCount === 0) {
+      return;
+    }
+    state.hr03Armed = true;
+  }
   const allSuppressed =
     state.liveFireSources > 0 && state.suppressedFireSources === state.liveFireSources;
   const exemption = requested ?? (allSuppressed ? 'allSourcesSuppressed' : null);
@@ -177,7 +214,11 @@ function updateHr03(world: World, state: GuardState, dtSec: number, requested: H
     tallyExemption(state, exemption, dtSec);
   }
   state.lastExemption = exemption;
-  checkHR03(state);
+  // 면제 구간에서는 타이머가 멈춰 있다. 그래도 검사하면 이미 상한을 넘긴 채로 소강에 들어간
+  // 런이 소강 내내 매 스텝 같은 위반을 다시 던져, 리포트에 한 사건이 수천 건으로 실린다
+  if (exemption === null) {
+    checkHR03(state);
+  }
 }
 
 /** 09 §3.5가 이 하나만 따로 부른다 — 타이머 값을 손으로 세워 경계를 재는 형태다 */
@@ -265,25 +306,32 @@ export function checkHR01(world: World, source: Projectile): void {
   ensure(isReflect, 'HR-01', `${source.bulletId}(owner=${source.owner})이 적 HP를 깎는다`);
 }
 
-/** HR-05가 허용한 예고 3종과 그것을 붙일 수 있는 원인. 짝이 고정이라 이 표가 곧 판정이다 */
+/**
+ * HR-05가 허용한 예고 3종과 그것을 붙일 수 있는 원인. 짝이 고정이라 이 표가 곧 판정이다.
+ *
+ * 방향선의 원인이 둘인 것은 스펙 §6.2가 「본체 돌진」을 보스로 한정하지 않았기 때문이다 —
+ * §8.1 E-D 돌격형의 돌진에도 방향선이 붙고(sim/enemies.ts), 그쪽을 표에서 빼면 잡몹 돌진마다
+ * 오탐이 난다.
+ */
 const TELEGRAPH_CAUSE = {
-  impactCircle: 'P7',
-  pierceLine: 'P12',
-  dash: 'bossCharge',
-} as const satisfies Record<TelegraphId, string>;
+  impactCircle: ['P7'],
+  pierceLine: ['P12'],
+  dash: ['bossCharge', 'enemyCharge'],
+} as const satisfies Record<TelegraphId, readonly string[]>;
 
-export type TelegraphCause = (typeof TELEGRAPH_CAUSE)[TelegraphId];
+export type TelegraphCause = (typeof TELEGRAPH_CAUSE)[TelegraphId][number];
 
 /**
  * HR-05. 예고 객체를 만들 때 부른다. kind를 넓은 string으로 받는 것은 의도다 — TelegraphId로 좁히면
  * 컴파일러가 이미 잡는 경로만 다시 보게 되고, 노리는 것은 데이터에서 흘러든 넷째 도형이다.
  */
 export function checkHR05(kind: string, cause: TelegraphCause): void {
-  const expected = (TELEGRAPH_CAUSE as Record<string, TelegraphCause | undefined>)[kind];
-  if (expected === undefined) {
+  const allowed = (TELEGRAPH_CAUSE as Record<string, readonly string[] | undefined>)[kind];
+  if (allowed === undefined) {
     fail('HR-05', `허용되지 않은 예고 도형 '${kind}'`);
   }
-  ensure(expected === cause, 'HR-05', `예고 '${kind}'는 ${expected} 전용인데 원인이 ${cause}다`);
+  const detail = `예고 '${kind}'는 ${allowed.join('·')} 전용인데 원인이 ${cause}다`;
+  ensure(allowed.includes(cause), 'HR-05', detail);
 }
 
 /** HR-04의 자동화되는 몫. 중첩 패턴으로 내려가지 않는다 — 실행기가 그것을 시작할 때 다시 부른다 */

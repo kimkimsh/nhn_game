@@ -24,8 +24,11 @@ import type { PlayerHitCause } from '../core/bus';
 import { distanceSq, lengthOf } from '../core/vec';
 import { NO_HIT, sweepRelativeCircle } from '../core/sweep';
 import type { Projectile } from './bullets';
-import { grantHitInvuln, isPlayerInvulnerable } from './player';
-import { addScore, resetCombo, type Enemy, type World } from './world';
+import { GUARDS_ENABLED, checkHR01 } from './guards';
+import { grantHitInvuln, grantInvulnFor, isPlayerInvulnerable } from './player';
+import { noteReflectHit } from './reflect-effects';
+import { addScore, resetCombo } from './score';
+import type { Enemy, World } from './world';
 
 interface HitCandidate {
   cause: PlayerHitCause;
@@ -145,7 +148,9 @@ export function applyPlayerHit(
   const player = world.player;
   if (world.run.shieldCharges > 0) {
     world.run.shieldCharges -= 1;
-    grantHitInvuln(world);
+    // §11.5 E03은 피격 무적(§4.2)이 아니라 자기 길이를 준다. grantHitInvuln을 쓰면 카드가
+    // 약속한 1.5초가 스냅샷의 피격 무적으로 조용히 바뀐다
+    grantInvulnFor(world, world.stats.shieldInvulnSec);
     world.clock.requestHitstop(HITSTOP_SEC.playerHit, world.simTimeSec);
     world.bus.emit({ kind: 'shieldBlocked', xU: player.xU, yU: player.yU });
     return;
@@ -200,7 +205,8 @@ function killEnemy(world: World, enemy: Enemy): void {
  * 자해 유예는 여기에 걸리지 않는다: 유예가 막는 것은 플레이어 피격과 패리뿐이다(§7.1).
  */
 export function resolveReflectHits(world: World): void {
-  const bonusU = world.stats.reflectHitRadiusBonusU;
+  // N12. 반사탄 반경에 곱한다 — 적 반경까지 함께 키우면 카드 문구의 "반사탄 판정 크기"가 아니다
+  const reflectRadiusMul = world.stats.reflectHitRadiusMul;
   const enemies = world.enemies.active;
   world.reflectBullets.releaseWhere((projectile) => {
     // 처치가 활성 목록에서 원소를 빼므로 for...of로 돌 수 없다 — 빠진 자리로 다음 원소가
@@ -210,7 +216,7 @@ export function resolveReflectHits(world: World): void {
       if (enemy === undefined) {
         continue;
       }
-      const reachU = enemy.hitRadiusU + projectile.radiusU + bonusU;
+      const reachU = enemy.hitRadiusU + projectile.radiusU * reflectRadiusMul;
       if (distanceSq(enemy.xU, enemy.yU, projectile.xU, projectile.yU) > reachU * reachU) {
         continue;
       }
@@ -219,7 +225,11 @@ export function resolveReflectHits(world: World): void {
         world.bus.emit({ kind: 'shieldBlocked', xU: enemy.xU, yU: enemy.yU });
         return true;
       }
+      if (GUARDS_ENABLED) {
+        checkHR01(world, projectile);
+      }
       enemy.hp -= projectile.damage;
+      noteReflectHit(world, projectile, projectile.xU, projectile.yU);
       world.bus.emit({ kind: 'reflectHit', xU: enemy.xU, yU: enemy.yU });
       if (enemy.hp <= 0) {
         killEnemy(world, enemy);

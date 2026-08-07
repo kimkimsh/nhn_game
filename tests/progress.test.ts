@@ -30,7 +30,7 @@ import { createInput, type Input } from '../src/core/input';
 import { clearStage, createRun, disposeRun, pickCard, stepRun, type Run } from '../src/sim/run';
 import { comboMul } from '../src/sim/score';
 import { pendingSpawnCount, stepWaves, wavePhase } from '../src/sim/waves';
-import { comboMultiplier, createWorld, type World } from '../src/sim/world';
+import { createWorld, type World } from '../src/sim/world';
 import { createZonePool, type ZoneWorld } from '../src/sim/zones';
 
 /**
@@ -232,9 +232,8 @@ describe('§12.2 콤보 배수 상한 3.0', () => {
     [210, 3.0],
     [10_000, 3.0],
   ])('콤보 %i → ×%f', (combo, expected) => {
+    // 목업 HUD에는 클램프가 없었다(10 A10). 자르는 자리는 sim/score.ts 하나뿐이다
     expect(comboMul(combo)).toBeCloseTo(expected, 6);
-    // 목업 HUD에는 클램프가 없었다(10 A10). 클램프의 소유자가 둘이면 한쪽만 고쳐진다
-    expect(comboMultiplier(combo)).toBeCloseTo(expected, 6);
   });
 });
 

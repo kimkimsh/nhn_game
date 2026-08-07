@@ -33,6 +33,7 @@ import type { CardInventory, CardStack } from './cards';
 import { awardStageClearBonus } from './score';
 import { computeStats, type EffectiveStats } from './stats';
 import { stepWorld, type StepFrame } from './step';
+import { applyStageEntry, type StageEntry } from './waves';
 import { createWorld, type World } from './world';
 
 /** createWorld가 Rng가 아니라 시드 숫자를 받으므로 스테이지 스트림을 한 번 접어 넘긴다 */
@@ -44,12 +45,8 @@ export type RunPhase = 'combat' | 'cardSelect' | 'result';
 /** §12.3 결과 화면의 머리말이 이 값으로 갈린다 */
 export type RunResult = 'clear' | 'gameOver';
 
-/** §18.3 진입 지점. waves·boss가 스테이지 시작 때 Run.entry를 읽는다. 정상 진행은 stageStart다 */
-export type StageEntry =
-  | { readonly kind: 'stageStart' }
-  | { readonly kind: 'wave'; readonly waveIndex: number }
-  | { readonly kind: 'lull' }
-  | { readonly kind: 'bossPhase'; readonly phaseIndex: number };
+/** §18.3 진입 지점. 소유자는 sim/waves.ts다 — 값이 곧 웨이브 표의 어느 시각인가이기 때문이다 */
+export type { StageEntry } from './waves';
 
 const STAGE_START: StageEntry = { kind: 'stageStart' };
 
@@ -86,7 +83,7 @@ export interface Run {
   phase: RunPhase;
   result: RunResult | null;
   stageId: StageId;
-  /** 이 스테이지를 어디서 시작했는가. waves·boss가 스테이지 시작 시 읽는다 */
+  /** 이 스테이지를 어디서 시작했는가. 반영은 enterStage가 applyStageEntry로 한 번 끝낸다 */
   entry: StageEntry;
   /** §11.2 등급 가중치가 이 값으로 정해진다. 화면을 열기 전에 오른다(08 §1.4 T-04) */
   cardScreenNo: number;
@@ -176,6 +173,10 @@ function enterStage(
     bus: run.bus,
   });
   world.stats = stats;
+  if (entry.kind === 'bossPhase') {
+    world.entryBossPhaseIndex = entry.phaseIndex;
+  }
+  applyStageEntry(world, entry);
   if (previous !== null) {
     world.run.score = previous.run.score;
     world.player.lives = previous.player.lives;
@@ -199,15 +200,21 @@ export function createRun(spec: RunSpec): Run {
   const clock = spec.clock ?? createClock(HITSTOP_BUDGET_PER_SEC);
   const bus = spec.bus ?? globalBus;
   const stageId = spec.stageId ?? PROGRESSION.restartStageId;
-  // 카드가 0장이라 enterStage가 할 나머지가 전부 항등이고, 부르면 월드를 두 번 만들게 된다
+  // 카드가 0장이라 enterStage가 할 나머지가 전부 항등이고, 부르면 월드를 두 번 만들게 된다.
+  // 진입 지점만은 항등이 아니라 여기서도 적용한다 — §18.3의 치트는 첫 스테이지에도 걸린다
   const world = createWorld({ stageId, seed: stageSeed(spec.seed, stageId), clock, bus });
   world.stats = computeStats([]);
+  const entry = spec.at ?? STAGE_START;
+  if (entry.kind === 'bossPhase') {
+    world.entryBossPhaseIndex = entry.phaseIndex;
+  }
+  applyStageEntry(world, entry);
   const run: Run = {
     world,
     phase: 'combat',
     result: null,
     stageId,
-    entry: spec.at ?? STAGE_START,
+    entry,
     // §18.3 건너뛴 회차는 소비한 것으로 처리한다 — 다음 카드 화면의 가중치가 정상과 같아야 한다
     cardScreenNo: stageId - 1,
     cards: [],

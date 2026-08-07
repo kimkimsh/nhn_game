@@ -36,7 +36,8 @@ import { createPool, type Pool } from '../core/pool';
 import { lengthOf } from '../core/vec';
 import { applyPlayerHit } from './collision';
 import { isPlayerInvulnerable } from './player';
-import { addScore, type Enemy, type World } from './world';
+import { addScore } from './score';
+import type { Enemy, World } from './world';
 
 /** §11.5 E06 카드 효과. 반경·지속·초당 데미지 비율의 소스가 config/cards/epic.ts 하나가 된다 */
 export type SpawnZoneEffect = Extract<CardEffect, { kind: 'spawnZone' }>;

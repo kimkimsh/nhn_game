@@ -23,8 +23,9 @@
  *
  * ── HR-03 면제 표는 관측으로 만든다 ────────────────────────────────────────────
  *
- * 가드가 세는 면제 집계(`GuardState.report`)는 `sim/step.ts`의 모듈 사설 WeakMap 안에 있어
- * 밖에서 못 읽는다. 그래서 여기서는 적 탄환 0인 구간을 직접 재고 관측 가능한 원인으로 가른다 —
+ * 가드가 세는 면제 집계(`GuardState.report`)는 가드가 자기 규칙으로 매긴 판정이라, 여기가 그것을
+ * 옮겨 적으면 가드의 오탐이 곧 리포트의 사실이 된다. 그래서 적 탄환 0인 구간을 세계에서 직접
+ * 재고 관측 가능한 원인으로만 가른다 —
  * 소강(`wavePhase`)과 보스 격파 연출(`boss.mode`) 둘은 확정이고, 나머지는 가드가 ③
  * `allSourcesSuppressed`로 잡는 그 구간이라 `unattributed`로 적는다. 추정을 확정처럼 적지 않는다.
  */
@@ -123,6 +124,8 @@ interface ReflectSnapshot {
   readonly vxUPerSec: number;
   readonly vyUPerSec: number;
   readonly lifeRemainingSec: number;
+  /** 슬롯 재사용과 재패리를 가르는 값. 재패리는 나이가 이어지고 재사용은 0부터 다시 센다 */
+  readonly ageSec: number;
 }
 
 function zeroGrades(): Record<ParryGradeId, number> {
@@ -186,7 +189,7 @@ function bossTotalHp(world: World): number | null {
 export function createMetrics(bus: FeedbackBus): Metrics {
   const data = createData();
   const before = new Map<Projectile, ReflectSnapshot>();
-  const current = new Map<Projectile, number>();
+  const current = new Map<Projectile, Projectile>();
   let previousBossHp: number | null = null;
   let spanCause: EmptySpanCause | null = null;
   let spanSec = 0;
@@ -209,10 +212,9 @@ export function createMetrics(bus: FeedbackBus): Metrics {
       data.parry.attempts += 1;
       data.parry.empty += 1;
     }),
-    bus.on('reflectLaunched', (event) => {
-      data.parry.grades[event.grade] += 1;
-      data.reflect.spawned += 1;
-    }),
+    // 발사 수는 사건이 아니라 풀에서 센다. 분열(R01·E01)·파편(R08)·교체(E02)가 만드는 반사탄은
+    // 사건을 내지 않으므로, 사건으로 세면 그 카드를 든 판에서 분모만 작아져 명중률이 1을 넘는다
+    bus.on('reflectLaunched', (event) => void (data.parry.grades[event.grade] += 1)),
     bus.on('reparry', (event) => {
       data.parry.reparries += 1;
       data.parry.reparryGrades[event.grade] += 1;
@@ -250,15 +252,22 @@ export function createMetrics(bus: FeedbackBus): Metrics {
   function trackReflectFates(world: World, dtSec: number): void {
     current.clear();
     for (const shot of world.reflectBullets.active) {
-      current.set(shot, shot.parriedSessionId);
+      current.set(shot, shot);
+      const snapshot = before.get(shot);
+      // 나이가 스텝 전보다 어리면 그 슬롯은 재사용된 것이고, 지금 들어 있는 것은 새 반사탄이다
+      if (snapshot === undefined || shot.ageSec < snapshot.ageSec) {
+        data.reflect.spawned += 1;
+      }
     }
     for (const [shot, snapshot] of before) {
-      const sessionId = current.get(shot);
-      if (sessionId === snapshot.sessionId) {
+      const now = current.get(shot);
+      if (now !== undefined && now.parriedSessionId === snapshot.sessionId) {
         continue;
       }
-      if (sessionId !== undefined) {
-        // 슬롯에 그대로 있는데 활성 구간 ID만 바뀌었다 — 그 자리에서 다시 쳐낸 것이다
+      // **같은 객체가 곧 같은 발사체는 아니다.** 반사탄 풀은 상한에 닿으면 가장 오래된 슬롯을
+      // 회수해 새 반사탄에 내주므로, ID만 보면 그 교체가 재패리로 계수되고 원래 탄의 최후는
+      // 아무 통에도 안 들어간다 — hitRate가 그 위에 서 있다. 나이가 이어졌는지가 유일한 증거다
+      if (now !== undefined && now.ageSec >= snapshot.ageSec) {
         data.reflect.reparried += 1;
         continue;
       }
@@ -343,6 +352,7 @@ export function createMetrics(bus: FeedbackBus): Metrics {
           vxUPerSec: shot.vxUPerSec,
           vyUPerSec: shot.vyUPerSec,
           lifeRemainingSec: shot.lifeRemainingSec,
+          ageSec: shot.ageSec,
         });
       }
       previousBossHp = bossTotalHp(world);

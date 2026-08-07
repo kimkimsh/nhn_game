@@ -8,6 +8,7 @@
  * **이 파일은 sim 상태를 한 줄도 바꾸지 않는다** (HR-06). 읽어서 새 객체를 만들 뿐이다.
  */
 
+import { BULLETS } from '../config/bullets';
 import { ENEMIES } from '../config/enemies';
 import type { BossDef, EnemyDef, StageDef } from '../config/types';
 import type { EnemyId, ParryableBulletId } from '../config/ids';
@@ -102,6 +103,14 @@ export interface MutableBatch {
   reparryCount: Int32Array;
 }
 
+/**
+ * 06 §1.4 P4 수리검의 자체 회전 속도 (rad/s). 목업 `engine.js:1855`의 `spin += dt * 9`가 유일 소스다.
+ *
+ * sim이 아니라 여기서 유도한다 — 회전은 판정에 쓰이지 않는 순수 표시값이고, `ageSec` 하나만
+ * 있으면 상태 없이 같은 값이 나온다. 발사체마다 자기 나이를 쓰므로 여러 발이 한 몸처럼 돌지 않는다.
+ */
+const SPIN_RATE_RAD_PER_SEC = 9;
+
 export function createBatch(capacity: number): MutableBatch {
   return {
     count: 0,
@@ -134,7 +143,7 @@ function fillBatch(batch: MutableBatch, world: World): BulletLayerBatch {
       batch.xU[n] = shot.xU;
       batch.yU[n] = shot.yU;
       batch.angleRad[n] = Math.atan2(shot.vyUPerSec, shot.vxUPerSec);
-      batch.spinRad[n] = 0;
+      batch.spinRad[n] = BULLETS[shot.bulletId].shape === 'star' ? shot.ageSec * SPIN_RATE_RAD_PER_SEC : 0;
       batch.graceRemainingSec[n] = shot.graceRemainingSec;
       batch.reparryCount[n] = 0;
       n += 1;

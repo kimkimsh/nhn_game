@@ -359,6 +359,7 @@ export async function startScreens(view: CanvasView): Promise<void> {
       clearCanvas(ctx);
       paint?.(ctx, realDtSec);
     } else {
+      play.setReading(!simRunning());
       play.render(ctx, realDtSec, paint);
     }
     // sim 밖에서 난 §16.2의 조작음도 같은 큐를 지난다. 스텝이 없는 프레임에서는 여기가 그 배출구다

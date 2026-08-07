@@ -33,6 +33,18 @@ import type { World } from './world';
 export type WavePhase = 'waves' | 'lull' | 'boss';
 
 /**
+ * §18.3 스테이지를 어디서 시작하는가. 정상 진행은 언제나 stageStart다.
+ *
+ * 이 타입이 run.ts가 아니라 여기 있는 것은 진입 지점이 곧 「웨이브 표의 어느 시각인가」이기
+ * 때문이다 — 소유자를 런에 두면 시각을 유도하는 식이 표에서 멀어진다.
+ */
+export type StageEntry =
+  | { readonly kind: 'stageStart' }
+  | { readonly kind: 'wave'; readonly waveIndex: number }
+  | { readonly kind: 'lull' }
+  | { readonly kind: 'bossPhase'; readonly phaseIndex: number };
+
+/**
  * 05 §1의 5번이 소비하는 예약 한 건. 한 건이 잡몹 한 기다.
  *
  * slotIndex·slotCount는 같은 웨이브에서 **같은 진입 형태로** 들어오는 무리 안의 순번과 크기다.
@@ -249,6 +261,52 @@ export function stepWaves(world: World, dtSec: number): void {
   if (!runtime.straggleCleared && timeSec >= endSec + stage.stragglerGraceSec) {
     runtime.straggleCleared = true;
     world.enemies.releaseAll();
+  }
+}
+
+/**
+ * §18.3 진입 지점이 가리키는 누적 sim 초.
+ *
+ * 구간 판정이 전부 `simTimeSec`의 함수라 진입은 시계를 옮기는 것 하나로 끝난다. 웨이브 상태를
+ * 따로 조작하면 「지금 몇 번째 웨이브인가」의 소유자가 둘이 된다.
+ */
+export function entryStartSec(stage: StageDef, entry: StageEntry): number {
+  const endSec = lastWaveEndSec(stage);
+  switch (entry.kind) {
+    case 'stageStart':
+      return 0;
+    case 'wave':
+      return stage.waves[entry.waveIndex]?.startSec ?? 0;
+    case 'lull':
+      return endSec;
+    case 'bossPhase':
+      return endSec + stage.lullSec;
+    default: {
+      const unreachable: never = entry;
+      throw new Error(`알 수 없는 진입 지점: ${JSON.stringify(unreachable)}`);
+    }
+  }
+}
+
+/**
+ * 스테이지를 세운 직후에 한 번. 시계를 옮기고, 지나친 편성을 큐에서 건너뛴다.
+ *
+ * 건너뛰지 않으면 이미 시각이 지난 예약이 한 스텝에 하나씩 쏟아져 나와 §9의 편성과 전혀 다른
+ * 밀도가 만들어진다 — 「W3부터 시작」이 「W1~W3 전부가 동시에 나온다」가 된다.
+ */
+export function applyStageEntry(world: World, entry: StageEntry): void {
+  const runtime = runtimeOf(world);
+  const startSec = entryStartSec(runtime.stage, entry);
+  if (startSec <= 0) {
+    return;
+  }
+  world.simTimeSec = startSec;
+  while (runtime.head < runtime.queue.length) {
+    const next = runtime.queue[runtime.head];
+    if (next === undefined || next.dueSec >= startSec) {
+      break;
+    }
+    runtime.head += 1;
   }
 }
 

@@ -26,7 +26,8 @@ import { lengthOf } from '../src/core/vec';
 import { bulletSpeedUPerSec, decayReflectGrace, type Projectile } from '../src/sim/bullets';
 import { consumeParryInput, resolveParry } from '../src/sim/parry';
 import { stepWorld } from '../src/sim/step';
-import { addCombo, createWorld, type World } from '../src/sim/world';
+import { addCombo } from '../src/sim/score';
+import { createWorld, type World } from '../src/sim/world';
 
 /** 눌림 큐의 소비 상한. 실시간에 기대지 않도록 모든 눌림을 언제나 접수 가능하게 둔다 */
 const HORIZON_MS = 1e9;

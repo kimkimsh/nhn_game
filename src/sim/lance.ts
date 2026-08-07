@@ -29,6 +29,7 @@ import { PLAYFIELD } from '../config/playfield';
 import { createPool, type Pool } from '../core/pool';
 import { applyPlayerHit } from './collision';
 import { isPlayerInvulnerable } from './player';
+import { GUARDS_ENABLED, checkHR05 } from './guards';
 import type { World } from './world';
 
 /** §6.1 폭 40u 직선의 절반. 예고선과 관통 본체가 같은 폭이다(06 §5.4) */
@@ -164,6 +165,9 @@ export function fireLance(world: World, spec: LanceSpec): void {
   lance.activeRemainingSec = spec.activeSec;
 
   for (const columnU of spec.columnsU) {
+    if (GUARDS_ENABLED) {
+      checkHR05('pierceLine', 'P12');
+    }
     world.bus.emit({
       kind: 'telegraph',
       shape: 'pierceLine',

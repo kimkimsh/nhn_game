@@ -98,7 +98,19 @@ export function grantParryInvuln(world: World): void {
 }
 
 export function grantHitInvuln(world: World): void {
-  world.player.hitInvulnUntilSec = world.simTimeSec + world.stats.hitInvulnSec;
+  grantInvulnFor(world, world.stats.hitInvulnSec);
+}
+
+/**
+ * §11.5 E03. 보호막이 막은 피격은 §4.2의 피격 무적이 아니라 카드가 정한 길이를 받는다.
+ * 이미 더 긴 무적이 걸려 있으면 줄이지 않는다 — 격파 연출의 무적이 여기서 잘리면 안 된다.
+ */
+export function grantInvulnFor(world: World, durationSec: number): void {
+  const untilSec = world.simTimeSec + durationSec;
+  const player = world.player;
+  if (player.hitInvulnUntilSec < untilSec) {
+    player.hitInvulnUntilSec = untilSec;
+  }
 }
 
 /**

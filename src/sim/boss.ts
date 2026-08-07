@@ -23,11 +23,12 @@ import { B1_GUNNER_LINE_SPAN_U } from '../config/bosses/boss-1-johong';
 import { ENEMIES } from '../config/enemies';
 import type { BossId, TelegraphId } from '../config/ids';
 import { PLAYFIELD } from '../config/playfield';
-import { SCORING } from '../config/scoring';
 import type { BossDef, BossPartDef } from '../config/types';
 import { clamp } from '../core/math';
 import { createRunnerState, resetRunner, stepRunner, type RunnerState } from './boss-runner';
-import { addScore, type World } from './world';
+import { GUARDS_ENABLED, guardStateOf, noteFireSource } from './guards';
+import { awardBossKill, awardBossPhaseChange } from './score';
+import type { World } from './world';
 // 곡사가 장판을 만드는 이상 보스 스텝은 장판이 있는 World를 요구한다(§10.5)
 import type { ZoneWorld } from './zones';
 
@@ -109,10 +110,21 @@ export interface BossState {
   /** 전환·격파 연출의 남은 시간 (s). fighting에서는 0이다 */
   modeRemainingSec: number;
   /**
-   * 돌진이 본체 좌표를 쥐고 있는 동안 참. 참이면 좌우 왕복도 HR-08 클램프도 걸지 않는다 —
-   * 돌진은 §10.1이 이름 붙인 상단 고정의 유일한 예외다.
+   * 돌진과 **그 복귀**가 본체 좌표를 쥐고 있는 동안 참. 참이면 좌우 왕복도 HR-08 클램프도
+   * 걸지 않는다 — 돌진은 §10.1이 이름 붙인 상단 고정의 유일한 예외다.
+   *
+   * 복귀까지 포함하는 것이 요점이다. 내려간 자리에서 곧바로 거짓으로 내리면 그 스텝의 보스는
+   * 「예외 구간이 아닌데 정위치 밖」이 되어 HR-08이 던진다.
    */
   positionOwnedByPattern: boolean;
+  /**
+   * 정위치로 되돌아가는 데 남은 시간 (s). 0이면 복귀 중이 아니다.
+   *
+   * 복귀가 필요한 자리는 둘이고 성격이 다르다 — `returnToStart`가 없는 돌진이 끝나는 순간과,
+   * 페이즈 전환·격파가 돌진을 도중에 끊는 순간(stopFiring)이다. 둘 다 좌표를 놓아 버리면
+   * 다음 스텝의 왕복이 보스를 화면 절반만큼 순간이동시킨다.
+   */
+  returnHomeRemainingSec: number;
   /** §6.2 발사 예비동작 중. render/boss.ts의 `BossSilhouette.charging`이 이 값이다 */
   charging: boolean;
   readonly parts: BossPart[];
@@ -172,6 +184,7 @@ export function createBossState(bossId: BossId): BossState {
     mode: 'fighting',
     modeRemainingSec: 0,
     positionOwnedByPattern: false,
+    returnHomeRemainingSec: 0,
     charging: false,
     parts: attachments.parts,
     satellites: attachments.satellites,
@@ -182,6 +195,22 @@ export function createBossState(bossId: BossId): BossState {
   syncAttachments(boss);
   snapshotPrevious(boss);
   return boss;
+}
+
+/**
+ * §18.3 치트의 「B5 P4」 진입. 점수도 전환 연출도 없이 그 페이즈의 시작 상태를 만든다 —
+ * 정상 진행으로 도달한 것이 아니므로 §12.1의 전환 점수를 주면 치트가 점수를 만든다.
+ *
+ * HP를 임계값으로 내리는 것이 페이즈 진입의 정의다. 그러지 않으면 첫 피해 한 번에
+ * checkPhaseAdvance가 같은 페이즈로 다시 들어간다.
+ */
+export function enterPhaseDirectly(boss: BossState, phaseIndex: number): void {
+  const phase = boss.def.phases[phaseIndex];
+  if (phase === undefined || phaseIndex <= 0) {
+    return;
+  }
+  boss.phaseIndex = phaseIndex;
+  boss.hp = Math.max(1, Math.floor(boss.maxHp * phase.hpThreshold));
 }
 
 export function bossHpRatio(boss: BossState): number {
@@ -266,6 +295,46 @@ function clampToHome(boss: BossState): void {
   boss.yU = clamp(boss.yU, home.minYU, home.maxYU);
 }
 
+function isAtHome(boss: BossState): boolean {
+  const home = PLAYFIELD.bossHomeBounds;
+  return (
+    boss.xU >= home.minXU && boss.xU <= home.maxXU &&
+    boss.yU >= home.minYU && boss.yU <= home.maxYU
+  );
+}
+
+/**
+ * 좌표를 쥐고 있던 패턴이 끝났다. 정위치 밖이면 놓는 대신 복귀를 시작한다.
+ *
+ * 복귀 시간을 페이즈 전환 연출과 같은 값으로 두는 것은 전환이 끝나는 순간 이미 정위치에
+ * 있어야 하기 때문이다 — 자기 숫자를 새로 만들면 스펙에 없는 값이 하나 더 생긴다.
+ */
+export function releasePatternPosition(boss: BossState): void {
+  if (isAtHome(boss)) {
+    boss.positionOwnedByPattern = false;
+    boss.returnHomeRemainingSec = 0;
+    return;
+  }
+  boss.positionOwnedByPattern = true;
+  boss.returnHomeRemainingSec = BOSS_COMMON.phaseTransitionSec;
+}
+
+/** 복귀 한 스텝. 도착하면 좌표를 왕복에 돌려준다 */
+function advanceReturnHome(world: World, boss: BossState, dtSec: number): void {
+  if (boss.returnHomeRemainingSec <= 0) {
+    return;
+  }
+  const t = Math.min(1, dtSec / boss.returnHomeRemainingSec);
+  boss.xU += (bossStrafeXU(world, boss) - boss.xU) * t;
+  boss.yU += (boss.homeYU - boss.yU) * t;
+  boss.returnHomeRemainingSec -= dtSec;
+  if (boss.returnHomeRemainingSec <= 0) {
+    boss.returnHomeRemainingSec = 0;
+    boss.positionOwnedByPattern = false;
+    clampToHome(boss);
+  }
+}
+
 /**
  * 전환·격파 공통. 진행 중이던 패턴과 예고 도형을 함께 버린다 — 예고만 남으면 신규 발사가
  * 멈춘 구간에서 그것만 터지고, 플레이어는 무엇을 피하고 있었는지 모르는 채로 맞는다.
@@ -274,7 +343,7 @@ function stopFiring(boss: BossState): void {
   boss.charging = false;
   resetRunner(boss.runner);
   boss.telegraphs.length = 0;
-  boss.positionOwnedByPattern = false;
+  releasePatternPosition(boss);
 }
 
 function enterPhase(world: World, boss: BossState, phaseIndex: number): void {
@@ -282,7 +351,7 @@ function enterPhase(world: World, boss: BossState, phaseIndex: number): void {
   boss.mode = 'phaseTransition';
   boss.modeRemainingSec = BOSS_COMMON.phaseTransitionSec;
   stopFiring(boss);
-  addScore(world, SCORING.bossPhaseChange);
+  awardBossPhaseChange(world);
   world.bus.emit({ kind: 'bossPhase', phase: phaseIndex + 1, xU: boss.xU, yU: boss.yU });
 }
 
@@ -305,7 +374,7 @@ function beginDefeat(world: World, boss: BossState): void {
   boss.modeRemainingSec = BOSS_COMMON.deathSec;
   boss.hp = 0;
   stopFiring(boss);
-  addScore(world, SCORING.bossKill);
+  awardBossKill(world);
   world.bus.emit({ kind: 'bossDefeated', xU: boss.xU, yU: boss.yU });
 }
 
@@ -335,6 +404,10 @@ export function stepBoss(world: ZoneWorld, boss: BossState, dtSec: number): void
   }
   snapshotPrevious(boss);
 
+  // 복귀는 세 모드에 공통이다 — 돌진을 끊는 것이 전환과 격파이고, 끊긴 자리에서 정위치까지는
+  // 그 연출이 도는 동안 좁혀진다. 패턴보다 앞에 두어 새 돌진이 같은 스텝에 좌표를 뺏을 수 있다
+  advanceReturnHome(world, boss, dtSec);
+
   if (boss.mode === 'defeated') {
     boss.modeRemainingSec -= dtSec;
     holdDefeatCurtain(world, boss);
@@ -347,7 +420,9 @@ export function stepBoss(world: ZoneWorld, boss: BossState, dtSec: number): void
 
   if (boss.mode === 'phaseTransition') {
     boss.modeRemainingSec -= dtSec;
-    strafe(world, boss);
+    if (!boss.positionOwnedByPattern) {
+      strafe(world, boss);
+    }
     if (boss.modeRemainingSec <= 0) {
       boss.mode = 'fighting';
       boss.modeRemainingSec = 0;
@@ -358,6 +433,11 @@ export function stepBoss(world: ZoneWorld, boss: BossState, dtSec: number): void
 
   if (!boss.positionOwnedByPattern) {
     strafe(world, boss);
+  }
+  if (GUARDS_ENABLED) {
+    // 보스는 상단에 고정되므로 HR-09에 막히는 거리가 나오지 않는다. 억제된 발사원으로 세면
+    // 면제 ③이 보스전에서 상시로 걸려 HR-03이 통째로 잠든다
+    noteFireSource(guardStateOf(world), false);
   }
   stepRunner(world, boss, dtSec);
   if (!boss.positionOwnedByPattern) {

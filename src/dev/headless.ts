@@ -20,13 +20,12 @@
  * 억제되어 측정이 숫자 대신 guard-violation으로 끝난다. 대가는 **플레이어 영역의 약 30%를 한 번도
  * 안 밟는다**는 것이고, 그 사실이 값과 같이 다녀야 한다. `constraints`가 그 자리다.
  *
- * ── 지금 이 시뮬이 못 하는 것 ───────────────────────────────────────────────────
+ * ── 진입 지점이 값의 조건이다 ───────────────────────────────────────────────────
  *
- * `sim/run.ts`의 `Run.entry`(§18.3의 웨이브·소강·보스 페이즈 지정)를 읽는 코드가 sim 어디에도
- * 아직 없다. `jumpTo`는 스테이지 교체까지만 실제로 하고 진입 지점은 상태로만 남는다. 그래서 보스
- * 시나리오도 웨이브를 실제로 지나 보스를 만나고, 격파 시간은 **보스 등장 시점부터** 잰다 —
- * 값은 §14.4와 같은 축 위에 있지만 「페이즈 1부터 진입」이라는 조건은 아직 아니다.
- * `run.entry.applied`가 그 사실을 매 리포트에 적는다.
+ * §18.3의 웨이브·소강·보스 페이즈 지정은 `sim/waves.ts`의 `applyStageEntry`가 반영한다 —
+ * 시계를 그 시각으로 옮기고 지나친 편성을 큐에서 건너뛴다. 보스 시나리오는 소강이 끝난 시각에서
+ * 시작하므로 격파 시간이 웨이브 구간의 소모를 안고 있지 않다. `run.entry.applied`가 실제로
+ * 적용된 종류를 매 리포트에 적는다 — 요청과 다르면 그 값은 §14.4와 같은 축 위에 있지 않다.
  *
  * ── npm run verify에 어떻게 붙는가 ──────────────────────────────────────────────
  *
@@ -220,7 +219,7 @@ export function runScenario(spec: ScenarioSpec): BalanceReport {
           : `y ${playerYU.minU.toFixed(0)}~${playerYU.maxU.toFixed(0)}u, ` +
             `§3.1 플레이어 이동 영역(620~1830u)의 ${playerYU.boundsPct.toFixed(1)}%다`),
       '봇은 x축으로만 정렬하고 반사탄을 쫓지 않는다 — T-02의 재패리 0회 전제를 지키기 위해서다',
-      'Run.entry를 읽는 sim 코드가 아직 없다. 보스 시나리오도 웨이브를 실제로 지나 보스를 만난다',
+      '§18.3 진입 지점은 sim이 반영한다 — 보스 시나리오는 소강이 끝난 시각에서 시작한다',
       'HR-03 면제의 셋째 칸(unattributed)은 관측이 아니라 추정이다 — 가드의 집계는 밖에서 못 읽는다',
     ],
     run: {
@@ -232,7 +231,7 @@ export function runScenario(spec: ScenarioSpec): BalanceReport {
         stageId: spec.stageId,
         at: spec.at,
         cards: spec.cards,
-        applied: 'stageStart',
+        applied: spec.at.kind,
       },
       simSec: driven.simSec,
       wallSec,

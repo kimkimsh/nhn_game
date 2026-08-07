@@ -9,16 +9,16 @@
  *
  * 이 파일이 내보내는 것은 전부 예고 도형이 없는 탄이다. 예고가 붙는 셋(곡사 착탄 원 ·
  * 돌진 방향선 · 관통 예고선)은 여기를 지나지 않는다 — 곡사와 돌진은 runner가, 관통 대창은
- * `sim/lance.ts`가 갖는다. 그래서 `fireBossShot` 하나에 억제 검사를 두면 「예고 없는 발사만
- * 억제받는다」가 구조로 지켜진다.
+ * `sim/lance.ts`가 갖는다. 그래서 `fireBossShot` 하나가 `hasTelegraph: false`로 내려보내면
+ * 「예고 없는 발사만 억제받는다」가 구조로 지켜진다. 억제 자체는 `sim/bullets.ts`가 판정하고,
+ * 여기는 그 판정이 쓸 실효 탄속을 함께 넘긴다.
  */
 import { BULLETS } from '../config/bullets';
 import { STAGE_SCALING } from '../config/difficulty';
 import type { BulletId } from '../config/ids';
 import { PLAYFIELD } from '../config/playfield';
-import { TELEGRAPH } from '../config/telegraph';
 import type { BossPattern } from '../config/types';
-import { aimAt, distance } from '../core/vec';
+import { aimAt } from '../core/vec';
 import { bossMuzzleYU, type BossPart, type BossState } from './boss';
 import { fireEnemyBullet } from './bullets';
 import type { World } from './world';
@@ -31,6 +31,16 @@ export const DOWN_RAD = Math.PI / 2;
 
 /** §10.3 · §10.6 「좌우 교차」 참격파가 본체 중심에서 벗어나는 거리 — 선체 반폭 대비 비율 */
 const ARC_ALTERNATE_OFFSET_RATIO = 0.5;
+
+/**
+ * §10.5 「상단 전역」 낙하가 시작되는 y (u). 목업 08_boss4_daetong/scene.js:41과
+ * 10_boss5_flagship/scene.js:36이 둘 다 −40에서 떨어뜨린다.
+ *
+ * **적 활동 영역의 minYU(−200)를 쓰면 한 발도 안 나간다.** 발사체 소멸 경계는 화면 밖
+ * `despawnMarginU`(150u)까지이고 −200은 이미 그 밖이라, 생성된 탄이 같은 스텝의 적분에서
+ * 곧바로 회수된다 — B4 페이즈 1의 2.4초와 B5 페이즈 4의 2.7초가 통째로 무발사 구간이 된다.
+ */
+const TOP_SPAN_SPAWN_YU = -40;
 
 export type VolleyPattern = Extract<BossPattern, { readonly kind: 'volley' }>;
 export type SpreadPattern = Extract<BossPattern, { readonly kind: 'spread' }>;
@@ -71,10 +81,9 @@ export function effectiveSpeedUPerSec(
  * 예고 없는 보스 발사의 유일한 경로. 억제됐거나 상한에 걸리면 거짓이고, 부르는 쪽은
  * 그 발사 하나만 건너뛴다 — 패턴 전체를 지연시키지 않는다(05 §8.2).
  *
- * HR-09를 실효 탄속으로 먼저 본다. `fireEnemyBullet`의 내부 검사는 탄환 표의 속도를 쓰므로
- * 속도를 올린 패턴(§10.2 일제사격 강화)에서 억제되어야 할 발사가 통과한다. 반대로 속도를 낮춘
- * 패턴에서는 내부 검사가 더 엄해 필요보다 넓게 억제되는데, 그쪽은 발사원이 상단에 고정된
- * 보스라 그 거리가 실제로 나오지 않는다.
+ * 억제 판정은 `fireEnemyBullet`에 실효 탄속을 넘겨 그쪽 한 곳에서만 한다. 여기서 한 번 더
+ * 보면 표 속도로 재는 내부 검사와 둘이 되고, **둘 중 엄한 쪽이 이기므로 속도를 낮춘 패턴에서
+ * 과억제가 남는다** — §10.4 B3 P8(speedMul 0.5)은 스펙 억제 거리가 125u인데 표 속도로는 251u다.
  */
 export function fireBossShot(
   world: World,
@@ -84,16 +93,8 @@ export function fireBossShot(
   angleRad: number,
   speedUPerSec: number,
 ): boolean {
-  if (distance(xU, yU, world.player.xU, world.player.yU) < speedUPerSec * TELEGRAPH.minFlightSec) {
-    return false;
-  }
-  const projectile = fireEnemyBullet(world, { bulletId, xU, yU, angleRad, hasTelegraph: false });
-  if (projectile === null) {
-    return false;
-  }
-  projectile.vxUPerSec = Math.cos(angleRad) * speedUPerSec;
-  projectile.vyUPerSec = Math.sin(angleRad) * speedUPerSec;
-  return true;
+  return fireEnemyBullet(world, { bulletId, xU, yU, angleRad, hasTelegraph: false, speedUPerSec })
+    !== null;
 }
 
 function aimRad(world: World, xU: number, yU: number, aim: 'player' | 'down'): number {
@@ -225,7 +226,7 @@ export function fireBarrageShot(
     const spanU = pattern.spanU ?? PLAYFIELD.widthU;
     const centerXU = PLAYFIELD.widthU / 2;
     const xU = world.rng.range(centerXU - spanU / 2, centerXU + spanU / 2);
-    fireBossShot(world, pattern.bullet, xU, PLAYFIELD.enemyBounds.minYU, DOWN_RAD, speedUPerSec);
+    fireBossShot(world, pattern.bullet, xU, TOP_SPAN_SPAWN_YU, DOWN_RAD, speedUPerSec);
     return;
   }
   const yU = muzzleYU(boss, origin);

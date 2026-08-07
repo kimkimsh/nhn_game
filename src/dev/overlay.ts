@@ -233,6 +233,41 @@ export function endFrame(nowMs: number, entities: number): void {
   }
 }
 
+/**
+ * 화면 밖에서 게이트를 판정하는 쪽이 읽는 것. 오버레이는 사람이 눈으로 보는 표시라
+ * 15프레임마다만 다시 계산하는데(RECOMPUTE_INTERVAL_FRAMES), 판정은 마지막 표본까지
+ * 들어간 값이어야 하므로 여기서 한 번 더 계산한다.
+ */
+export interface MetricsSnapshot {
+  readonly sampleCount: number;
+  readonly cpuMs: Percentiles;
+  readonly frameMs: Percentiles;
+  readonly fps: number;
+  readonly droppedFrames: number;
+  readonly drawCalls: number;
+  readonly peakDrawCalls: number;
+  readonly compositeSwitches: number;
+  readonly drawCallLimit: number;
+  readonly budgetMs: number;
+}
+
+export function snapshot(): MetricsSnapshot {
+  const cpuNow = percentilesOf(cpuSamplesMs);
+  const wallNow = percentilesOf(frameSamplesMs);
+  return {
+    sampleCount,
+    cpuMs: cpuNow,
+    frameMs: wallNow,
+    fps: wallNow.p50 > 0 ? 1000 / wallNow.p50 : 0,
+    droppedFrames,
+    drawCalls: frozen.drawCalls,
+    peakDrawCalls,
+    compositeSwitches: frozen.compositeSwitches,
+    drawCallLimit: DRAW_CALL_LIMIT,
+    budgetMs: FRAME_BUDGET_MS,
+  };
+}
+
 /** 측정 창을 비운다. A/B 손잡이를 바꾼 직후에 부르지 않으면 이전 설정의 표본이 섞인다 */
 export function resetSamples(): void {
   sampleCount = 0;

@@ -164,7 +164,10 @@ export function drawOfferedCard(
   ctx.textAlign = 'left';
   ctx.fillStyle = PALETTE.baek;
   setFont(ctx, 700, CARD_NAME_PX, FONTS.display);
-  ctx.fillText(card.name, leftXU, rect.yU + NAME_BASELINE_DYU);
+  // §12 §3.1 웹폰트를 번들하지 않으므로 대체 폰트의 자폭이 기기마다 다르다. 이름 넉 자가
+  // 카드 판을 넘어 옆 카드 밑으로 들어가면 「무명 병졸의 갑」까지만 읽힌다 — maxWidth가
+  // 그 자리에서 글자를 눌러 담고, 표시 폭은 텍스트 열 안에 갇힌다
+  ctx.fillText(card.name, leftXU, rect.yU + NAME_BASELINE_DYU, rightXU - leftXU);
   ruleLine(ctx, leftXU, rightXU, rect.yU + CARD_RULE_DYU, hexA(PALETTE.baek, CARD_RULE_ALPHA));
 
   setFont(ctx, 400, EFFECT_PX, FONTS.body);

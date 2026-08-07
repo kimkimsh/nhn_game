@@ -41,6 +41,7 @@ import type { Input, InputPress } from '../core/input';
 import { FIXED_DT_SEC, MAX_STEPS_PER_FRAME } from '../core/loop';
 import { deriveStream, type Rng } from '../core/rng';
 import { bakeStageBackground } from '../render/backgrounds/index';
+import { prefersReducedMotion, watchReducedMotion } from '../boot/platform-guard';
 import { createCamera, type Camera } from '../render/camera';
 import { bakeEnemyBodies, discardEnemyBodyBakes, type HitstopShake } from '../render/enemy';
 import { drawFrame } from '../render/frame';
@@ -87,6 +88,11 @@ export interface PlayScreen {
   step(fixedDtSec: number): void;
   /** 층 12에 얹을 것. 카드·일시정지·결과·치트 메뉴가 자기 그림을 여기로 넘긴다 */
   render(ctx: CanvasRenderingContext2D, realDtSec: number, overlay: ScenePaint | null): void;
+  /**
+   * sim이 멈춘 프레임인가. 참이면 카메라를 세운다 — 카드·결과·일시정지·치트는 글을 읽는
+   * 화면이고, 그 아래에서 배경이 계속 흔들리면 읽을 수가 없다.
+   */
+  setReading(value: boolean): void;
   /** 스테이지가 바뀐 뒤에 부른다 — 다시 굽고 `entering`으로 되돌린다 */
   enterStage(): void;
   dispose(): void;
@@ -113,6 +119,20 @@ export function createPlayScreen(spec: PlaySpec): PlayScreen {
   const impact: ImpactLayer = createImpactLayer({ bus, rng: deriveStream(spec.renderSeed, 'render/impact') });
   const playerFx: PlayerFxState = createPlayerFx();
   const hudAnim: HudAnim = createHudAnim();
+
+  /**
+   * §16 접근성. 타이틀 데모만 조용하고 본편이 26u로 흔들리면 설정이 있으나 마나다 —
+   * 광과민성 문제이기도 하다. 런 도중에 설정이 바뀌는 경우까지 받는다.
+   */
+  function applyReducedMotion(reduced: boolean): void {
+    camera.setReducedMotion(reduced);
+    impact.setReducedMotion(reduced);
+  }
+  applyReducedMotion(prefersReducedMotion());
+  const stopWatchingMotion = watchReducedMotion(applyReducedMotion);
+
+  /** 글을 읽는 화면(카드 선택·결과·일시정지·치트)에서 참. 그 동안 카메라는 서 있는다 */
+  let reading = false;
 
   // player.ts는 버스를 직접 구독하지 않는다 — 화면마다 수명이 다른 상태라 소유자가 넘긴다
   const offs: Unsubscribe[] = (['parry', 'parryWhiff', 'cooldownReady', 'playerHit'] as const).map((kind) =>
@@ -229,8 +249,16 @@ export function createPlayScreen(spec: PlaySpec): PlayScreen {
       syncPhase();
     },
 
+    setReading(value: boolean): void {
+      reading = value;
+    },
+
     render(ctx: CanvasRenderingContext2D, realDtSec: number, overlay: ScenePaint | null): void {
       backgroundTimeSec += realDtSec;
+      if (reading) {
+        // camera.reset()이 문서로 지목한 자리가 여기다. trauma를 0으로 내리고 킥을 버린다
+        camera.reset();
+      }
       if (phase === 'entering') {
         enterRemainSec -= realDtSec;
         if (enterRemainSec <= 0) {
@@ -257,6 +285,7 @@ export function createPlayScreen(spec: PlaySpec): PlayScreen {
     enterStage,
 
     dispose(): void {
+      stopWatchingMotion();
       for (const off of offs) {
         off();
       }

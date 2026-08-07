@@ -15,7 +15,8 @@
 import { PLAYFIELD } from '../config/playfield';
 import type { BossPattern } from '../config/types';
 import { aimAt, distance } from '../core/vec';
-import { bossStrafeXU, type BossState, type BossTelegraph } from './boss';
+import { bossStrafeXU, releasePatternPosition, type BossState, type BossTelegraph } from './boss';
+import { GUARDS_ENABLED, checkHR05 } from './guards';
 import { DOWN_RAD, effectiveSpeedUPerSec, fireBossShot } from './boss-shots';
 import { applyPlayerHit } from './collision';
 import { isPlayerInvulnerable } from './player';
@@ -87,6 +88,7 @@ export function startCharge(
     trailFired: 0,
   };
   boss.positionOwnedByPattern = true;
+  boss.returnHomeRemainingSec = 0;
   run.telegraph = pushTelegraph(boss, {
     shape: 'dash',
     xU: startXU,
@@ -98,6 +100,9 @@ export function startCharge(
     ageSec: 0,
     durationSec: pattern.telegraphSec,
   });
+  if (GUARDS_ENABLED) {
+    checkHR05('dash', 'bossCharge');
+  }
   world.bus.emit({ kind: 'telegraph', shape: 'dash', xU: startXU, yU: startYU });
   return run;
 }
@@ -174,7 +179,9 @@ export function stepCharge(
     return followUp;
   }
   if (run.returnSec <= 0) {
-    boss.positionOwnedByPattern = false;
+    // §10.3 복귀가 없는 돌진도 도착지에 눌러앉지는 않는다. 좌표를 그냥 놓으면 다음 스텝의
+    // 왕복이 보스를 정위치로 순간이동시키고, 그 한 스텝 동안 HR-08이 정위치 밖을 본다
+    releasePatternPosition(boss);
     return followUp;
   }
   // 복귀 목표는 돌진 시작 좌표가 아니라 **지금의** 왕복 좌표다. 시작 좌표로 되돌리면 그 사이
@@ -184,7 +191,7 @@ export function stepCharge(
   boss.xU = run.targetXU + (bossStrafeXU(world, boss) - run.targetXU) * t;
   boss.yU = run.targetYU + (boss.homeYU - run.targetYU) * t;
   if (t >= 1) {
-    boss.positionOwnedByPattern = false;
+    releasePatternPosition(boss);
   }
   return followUp;
 }
@@ -199,6 +206,9 @@ export function spawnMortarCircle(
   // 그 영역 밖에 놓으면 피할 것이 없는 예고가 된다
   const xU = pattern.trackPlayer ? world.player.xU : world.rng.range(bounds.minXU, bounds.maxXU);
   const yU = pattern.trackPlayer ? world.player.yU : world.rng.range(bounds.minYU, bounds.maxYU);
+  if (GUARDS_ENABLED) {
+    checkHR05('impactCircle', 'P7');
+  }
   world.bus.emit({ kind: 'telegraph', shape: 'impactCircle', xU, yU });
   return pushTelegraph(boss, {
     shape: 'impactCircle',

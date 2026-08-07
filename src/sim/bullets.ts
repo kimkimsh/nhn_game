@@ -20,7 +20,7 @@ import { TELEGRAPH } from '../config/telegraph';
 import type { BulletDef } from '../config/types';
 import { clamp } from '../core/math';
 import { createPool, type Pool } from '../core/pool';
-import { aimAt, distance, lengthOf } from '../core/vec';
+import { aimAt, distance, distanceSq, lengthOf } from '../core/vec';
 import { acquireReflectSlot, canFireEnemyBullet } from './caps';
 import type { World } from './world';
 
@@ -63,6 +63,8 @@ export interface Projectile {
   /** §7.2 6번까지 끝난 값. 명중 시점에 다시 계산하지 않는다 */
   damage: number;
   pierceRemaining: number;
+  /** 태어난 뒤 흐른 sim 시간 (s). 06 §1.4의 P4 자체 회전이 이 값에서 유도된다 */
+  ageSec: number;
 }
 
 function createProjectile(): Projectile {
@@ -87,6 +89,7 @@ function createProjectile(): Projectile {
     lastGrade: null,
     damage: 0,
     pierceRemaining: 0,
+    ageSec: 0,
   };
 }
 
@@ -99,6 +102,7 @@ function resetProjectile(projectile: Projectile): void {
   projectile.lastGrade = null;
   projectile.damage = 0;
   projectile.pierceRemaining = 0;
+  projectile.ageSec = 0;
 }
 
 export function createEnemyBulletPool(stageId: World['stageId']): Pool<Projectile> {
@@ -132,6 +136,14 @@ export interface EnemyShot {
    * 예고가 붙은 것은 억제 대상이 아니다 — 억제하면 근거리 위협을 담당하는 수단이 통째로 사라진다.
    */
   readonly hasTelegraph: boolean;
+  /**
+   * 이 발사의 실효 탄속 (u/s). 생략하면 §14.1의 표 × 스테이지 배율이다.
+   *
+   * **HR-09가 재는 것은 실제 탄속이다**(스펙 §6.2). 속도를 바꾸는 패턴(§10.2 일제사격 강화의
+   * speedMul, §10.5 불화살 비의 speedUPerSec)에서 표 속도로 억제 거리를 재면, 빠른 쪽은 억제
+   * 되어야 할 발사가 통과하고 느린 쪽은 비행 시간이 0.45초를 넘는데도 취소된다.
+   */
+  readonly speedUPerSec?: number;
 }
 
 /**
@@ -143,7 +155,7 @@ export function fireEnemyBullet(world: World, shot: EnemyShot): Projectile | nul
   if (!canFireEnemyBullet(world)) {
     return null;
   }
-  const speedUPerSec = bulletSpeedUPerSec(world, shot.bulletId);
+  const speedUPerSec = shot.speedUPerSec ?? bulletSpeedUPerSec(world, shot.bulletId);
   if (!shot.hasTelegraph) {
     const toPlayerU = distance(shot.xU, shot.yU, world.player.xU, world.player.yU);
     if (toPlayerU < speedUPerSec * TELEGRAPH.minFlightSec) {
@@ -199,15 +211,55 @@ export function convertToReflect(world: World, source: Projectile): Projectile {
 }
 
 /**
- * 유도는 적 탄환일 때만이다. 반사탄이 유도를 갖는 경로는 카드 R03 하나뿐이고, 원래 탄이 들고
- * 있던 유도는 소유권이 뒤집히는 순간 사라진다(sim/reflect.ts).
+ * §11.4 R03. 반사탄이 쫓아갈 자리 — 가장 가까운 적. 하나도 없으면 null이고 그 스텝은 직진한다.
+ * 보스도 후보에 넣는 것은 보스전에 잡몹이 없는 페이즈가 있어서다 — 그 구간에서 카드가 죽는다.
+ */
+function nearestTargetRad(world: World, projectile: Projectile): number | null {
+  let bestSqU = Number.POSITIVE_INFINITY;
+  let bestXU = 0;
+  let bestYU = 0;
+  for (const enemy of world.enemies.active) {
+    const distSqU = distanceSq(projectile.xU, projectile.yU, enemy.xU, enemy.yU);
+    if (distSqU < bestSqU) {
+      bestSqU = distSqU;
+      bestXU = enemy.xU;
+      bestYU = enemy.yU;
+    }
+  }
+  const boss = world.boss;
+  if (boss !== null && !boss.isFinished) {
+    const distSqU = distanceSq(projectile.xU, projectile.yU, boss.xU, boss.yU);
+    if (distSqU < bestSqU) {
+      bestSqU = distSqU;
+      bestXU = boss.xU;
+      bestYU = boss.yU;
+    }
+  }
+  if (bestSqU === Number.POSITIVE_INFINITY) {
+    return null;
+  }
+  return aimAt(projectile.xU, projectile.yU, bestXU, bestYU);
+}
+
+/**
+ * 유도의 대상이 소유권으로 갈린다. 적 탄환은 플레이어를, 반사탄은 가장 가까운 적을 쫓는다 —
+ * 원래 탄이 들고 있던 유도는 소유권이 뒤집히는 순간 사라지고(sim/reflect.ts), 반사탄에 다시
+ * 붙는 경로는 카드 R03 하나뿐이다. 대상을 바꾸지 않으면 쳐낸 탄이 플레이어를 쫓아온다.
  */
 function steerHoming(projectile: Projectile, world: World, dtSec: number): void {
-  if (projectile.homingRemainingSec <= 0 || projectile.owner !== 'enemy') {
+  if (projectile.homingRemainingSec <= 0) {
     return;
   }
   const speedUPerSec = lengthOf(projectile.vxUPerSec, projectile.vyUPerSec);
-  const desiredRad = aimAt(projectile.xU, projectile.yU, world.player.xU, world.player.yU);
+  const towardRad =
+    projectile.owner === 'enemy'
+      ? aimAt(projectile.xU, projectile.yU, world.player.xU, world.player.yU)
+      : nearestTargetRad(world, projectile);
+  if (towardRad === null) {
+    projectile.homingRemainingSec -= dtSec;
+    return;
+  }
+  const desiredRad = towardRad;
   const currentRad = Math.atan2(projectile.vyUPerSec, projectile.vxUPerSec);
   // 각 차이를 [-π, π]로 접지 않으면 한 바퀴 돌아가는 쪽으로 선회한다
   let deltaRad = (desiredRad - currentRad) % FULL_TURN_RAD;
@@ -237,13 +289,26 @@ function isOutOfBounds(projectile: Projectile): boolean {
   );
 }
 
+/**
+ * §11.4 R07. 속도 자체를 깎지 않고 이동량에만 곱한다 — 속도를 고쳐 두면 되돌릴 값이 없어져
+ * 0.35초가 끝난 뒤에도 그 탄만 영원히 느리다. 반사탄은 대상이 아니다.
+ */
+function slowMulFor(projectile: Projectile, world: World): number {
+  if (projectile.owner !== 'enemy' || world.simTimeSec >= world.run.enemyBulletSlowUntilSec) {
+    return 1;
+  }
+  return world.run.enemyBulletSlowMul;
+}
+
 function integrateOne(projectile: Projectile, world: World, dtSec: number): boolean {
   projectile.prevXU = projectile.xU;
   projectile.prevYU = projectile.yU;
   steerHoming(projectile, world, dtSec);
-  projectile.xU += projectile.vxUPerSec * dtSec;
-  projectile.yU += projectile.vyUPerSec * dtSec;
+  const moveSec = dtSec * slowMulFor(projectile, world);
+  projectile.xU += projectile.vxUPerSec * moveSec;
+  projectile.yU += projectile.vyUPerSec * moveSec;
   projectile.lifeRemainingSec -= dtSec;
+  projectile.ageSec += dtSec;
   return projectile.lifeRemainingSec <= 0 || isOutOfBounds(projectile);
 }
 

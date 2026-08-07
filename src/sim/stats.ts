@@ -31,20 +31,8 @@ import { PLAYER } from '../config/player';
 import { REFLECT } from '../config/reflect';
 import { COMBO } from '../config/scoring';
 import { collectCardEffects } from './cards';
-import type {
-  CardInventory,
-  CardStatAccum,
-  EnemyBulletSlow,
-  ReflectReplacement,
-  ReflectSplit,
-  ReflectZone,
-  ShardBurst,
-} from './cards';
-import type {
-  EffectiveParryBand,
-  EffectiveStats as BaseEffectiveStats,
-  StatClamp,
-} from './world';
+import type { CardInventory, CardStatAccum } from './cards';
+import type { EffectiveParryBand, EffectiveStats, StatClamp } from './world';
 
 /**
  * 카드 효과의 정규화된 모양은 sim/cards.ts가 갖는다. EffectiveStats를 읽는 쪽이 그 파일까지
@@ -59,36 +47,11 @@ export type {
 } from './cards';
 
 /**
- * 카드가 실어 나르는 칸까지 갖춘 스냅샷.
- *
- * world.ts의 EffectiveStats가 이것의 부분집합이다 — 그 선언은 카드가 없던 동안의 임시 자리이고,
- * 이리로 옮겨 오면 이 extends는 사라진다. 필드가 늘어난 이유는 하나뿐이다: 31종 중 열둘이
- * 수치 한 칸으로 표현되지 않아 각자 자기 자리를 요구한다.
+ * §11.6의 9단계가 만드는 스냅샷. 형태는 world.ts가 갖는다 — 카드가 있든 없든 같은 계약이고,
+ * 여기서 확장하면 「카드 필드가 있는 스냅샷」과 「없는 스냅샷」 두 형태가 생겨 소비자가
+ * 무엇을 읽을 수 있는지 호출 경로마다 달라진다.
  */
-export interface EffectiveStats extends BaseEffectiveStats {
-  /** N06. 등급 반사 속도 배수에 곱한다. 결과 속도는 reflectSpeedMaxUPerSec에서 잘린다 */
-  readonly reflectSpeedMul: number;
-  /** N12. 적 명중 판정에만 곱한다 — 플레이어 피격 판정은 원래 크기다(HR-07) */
-  readonly reflectHitRadiusMul: number;
-  /** R03. 미보유면 0 */
-  readonly reflectHomingDegPerSec: number;
-  /** R01 · E01. 선언 순서대로 겹친다 */
-  readonly reflectSplits: readonly ReflectSplit[];
-  /** §11.6 4단계. 분열 계수의 곱. 미보유면 1 */
-  readonly reflectSplitDamageRatio: number;
-  readonly reflectReplaceOnGreat: ReflectReplacement | null;
-  readonly enemyBulletSlowOnGreat: EnemyBulletSlow | null;
-  readonly shardOnReflectHit: ShardBurst | null;
-  readonly zoneOnReflectHit: ReflectZone | null;
-  /** E04. 보스전 진입 시 화면 내 적 탄환에 매기는 등급. 미보유면 null */
-  readonly autoParryGradeOnBossEnter: ParryGradeId | null;
-  /** E03. 스테이지가 시작될 때마다 이만큼 충전된다. 현재 충전 수는 RunState가 갖는다 */
-  readonly shieldChargesPerStage: number;
-  /** E03. 보호막을 소모하면 라이프는 줄지 않고 이 시간만큼 무적만 받는다 */
-  readonly shieldInvulnSec: number;
-  /** §11.6 3단계. 조건부 배수는 2단계의 곱연산 **뒤에** 다시 곱한다 */
-  conditionalDamageMulFor(grade: ParryGradeId): number;
-}
+export type { EffectiveStats } from './world';
 
 interface MutableBand {
   id: ParryGradeId;
@@ -335,7 +298,6 @@ export function computeStats(held: CardInventory): EffectiveStats {
     reflectGraceSec: REFLECT.graceSec,
     reflectSpeedMaxUPerSec: REFLECT.speedMaxUPerSec,
     reflectPierceCount: foldStat(accums, 'reflectPierce', REFLECT.pierceCount),
-    reflectHitRadiusBonusU: 0,
     clamps,
 
     reflectSpeedMul: foldStat(accums, 'reflectSpeed', 1),

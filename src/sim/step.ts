@@ -17,16 +17,18 @@
 import { STAGES } from '../config/stages';
 import type { Input } from '../core/input';
 import { lengthOf } from '../core/vec';
-import { createBossState, stepBoss } from './boss';
+import { createBossState, enterPhaseDirectly, stepBoss } from './boss';
 import { bossBodyHitsPlayer, resolveBossHits } from './boss-hits';
 import { decayReflectGrace, integrateProjectiles } from './bullets';
 import { applyPlayerHit, resolvePlayerHits, resolveReflectHits } from './collision';
 import { stepEnemies, stepEnemySpawns } from './enemies';
-import { checkStep, createGuardState, GUARDS_ENABLED, type GuardState } from './guards';
+import { checkStep, guardStateOf, GUARDS_ENABLED } from './guards';
 import { resolveLanceHits } from './lance';
 import { consumeParryInput, resolveParry } from './parry';
 import { announceInvulnEnd, isPlayerInvulnerable, movePlayer } from './player';
-import { settleCombo } from './score';
+import { reflectProjectile } from './reflect';
+import { flushReflectHitEffects } from './reflect-effects';
+import { addCombo, settleCombo } from './score';
 import { stepWaves, wavePhase } from './waves';
 import type { World } from './world';
 import { decayZones, resolveZones } from './zones';
@@ -40,36 +42,43 @@ export interface StepFrame {
   readonly untilMs: number;
 }
 
-interface StepGuards {
-  readonly state: GuardState;
-  /**
-   * 이 스테이지가 적 탄환을 한 번이라도 낸 뒤인가.
-   *
-   * HR-03을 스테이지 시작 시각부터 재면 다섯 스테이지가 전부 시작 즉시 던진다. §9의 웨이브가
-   * 0:00에 시작하는데 §8.2의 진입 궤적은 활동 영역 밖에서 출발하므로, 첫 탄까지의 공백은
-   * 편성이 아니라 진입에 걸리는 시간 자체다 — 웨이브 표로는 없앨 수 없다. HR-03이 금지한
-   * 것은 플레이 중에 벌어지는 공백이므로 재는 시작점을 첫 탄으로 잡는다.
-   *
-   * **면제가 아니라 시작점이다.** 첫 탄이 나온 뒤의 공백은 09 §2.4의 면제 넷 말고는 그대로
-   * 던진다. 진짜 해결은 §9.1의 웨이브 시작 시각이나 HR-03 조문의 개정이고 구현이 못 한다.
-   */
-  armed: boolean;
-}
-
 /**
- * 가드 상태를 World가 아니라 여기 둔다. 릴리스에서 `GUARDS_ENABLED`가 상수 false가 되면
- * 아래 블록과 함께 guards.ts로 가는 유일한 호출이 사라져 모듈이 통째로 트리 셰이킹된다 —
- * World의 필드로 두면 createWorld가 무조건 만들어야 해서 그 길이 막힌다.
+ * §11.5 E04 「각 보스전 진입 시 화면 내 모든 적 탄환을 자동 GREAT 패리」.
+ *
+ * 보스를 세우는 자리가 하나뿐이라 「각 보스전」이 여기 한 줄로 표현된다. 등급을 거리로 매기지
+ * 않고 카드가 정한 등급을 그대로 먹이는 것이 이 카드의 내용이고, 그래서 §5.2의 C1~C5 중
+ * 거리 조건(C1)과 접근 조건(C2)을 지나지 않는다 — 화면 **전부**가 대상이다.
  */
-const GUARD_STATES = new WeakMap<World, StepGuards>();
-
-function guardsOf(world: World): StepGuards {
-  let guards = GUARD_STATES.get(world);
-  if (guards === undefined) {
-    guards = { state: createGuardState(), armed: false };
-    GUARD_STATES.set(world, guards);
+export function autoParryOnBossEnter(world: World): void {
+  const gradeId = world.stats.autoParryGradeOnBossEnter;
+  if (gradeId === null || world.enemyBullets.activeCount === 0) {
+    return;
   }
-  return guards;
+  const band = world.stats.bands.find((entry) => entry.id === gradeId);
+  if (band === undefined) {
+    return;
+  }
+  world.parry.sessionId += 1;
+  let count = 0;
+  // convertToReflect가 활성 목록에서 원소를 빼므로 사본을 훑는다
+  for (const projectile of [...world.enemyBullets.active]) {
+    if (!projectile.isParryable) {
+      continue;
+    }
+    const result = reflectProjectile(world, projectile, band);
+    count += 1;
+    world.bus.emit({
+      kind: 'reflectLaunched',
+      grade: band.id,
+      xU: result.projectile.xU,
+      yU: result.projectile.yU,
+    });
+  }
+  if (count === 0) {
+    return;
+  }
+  addCombo(world, count);
+  world.clock.requestHitstop(band.hitstopSec, world.simTimeSec);
 }
 
 /**
@@ -82,6 +91,8 @@ function stepBossPhase(world: World, dtSec: number): void {
       return;
     }
     world.boss = createBossState(STAGES[world.stageId].bossId);
+    enterPhaseDirectly(world.boss, world.entryBossPhaseIndex);
+    autoParryOnBossEnter(world);
   }
   stepBoss(world, world.boss, dtSec);
 }
@@ -113,15 +124,8 @@ function resolveBossContact(world: World): void {
 
 /** 05 §1의 16번. 개발 빌드만 돈다 */
 function checkGuards(world: World, dtSec: number): void {
-  const guards = guardsOf(world);
-  if (!guards.armed) {
-    if (world.enemyBullets.activeCount === 0) {
-      return;
-    }
-    guards.armed = true;
-  }
   const boss = world.boss;
-  checkStep(world, guards.state, dtSec, {
+  checkStep(world, guardStateOf(world), dtSec, {
     hr03Exemption:
       boss !== null && boss.mode === 'defeated'
         ? 'bossDefeat'
@@ -178,6 +182,10 @@ export function stepWorld(world: World, dtSec: number, frame: StepFrame): void {
   if (world.boss !== null) {
     resolveBossHits(world, world.boss);
   }
+
+  // 11.5 반사탄 명중이 남긴 것 — 12번보다 앞이라 이 스텝에 생긴 장판도 같은 스텝에 판정된다.
+  //      11번이 releaseWhere 안에서 도는 이상 그 안에서 새 반사탄을 집을 수 없어 여기로 밀렸다
+  flushReflectHitEffects(world);
 
   // 12. 장판 판정
   resolveZones(world, dtSec);

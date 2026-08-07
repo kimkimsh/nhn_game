@@ -26,6 +26,8 @@ import {
   type BossState,
 } from './boss';
 import type { Projectile } from './bullets';
+import { GUARDS_ENABLED, checkHR01 } from './guards';
+import { noteReflectHit } from './reflect-effects';
 import type { World } from './world';
 
 function sweepPart(projectile: Projectile, part: BossPart): number {
@@ -90,11 +92,15 @@ export function resolveBossHits(world: World, boss: BossState): void {
   if (boss.isFinished || isBossInvulnerable(boss)) {
     return;
   }
-  const bonusU = world.stats.reflectHitRadiusBonusU;
+  const reflectRadiusMul = world.stats.reflectHitRadiusMul;
   world.reflectBullets.releaseWhere((projectile) => {
+    if (GUARDS_ENABLED) {
+      checkHR01(world, projectile);
+    }
     const part = nearestPart(projectile, boss);
     if (part !== null) {
       applyBossDamage(world, boss, part, projectile.damage);
+      noteReflectHit(world, projectile, projectile.xU, projectile.yU);
       world.bus.emit({ kind: 'reflectHit', xU: part.xU, yU: part.yU });
       return consumePierce(projectile);
     }
@@ -109,12 +115,13 @@ export function resolveBossHits(world: World, boss: BossState): void {
         satellite.prevYU,
         satellite.xU,
         satellite.yU,
-        satellite.hitRadiusU + projectile.radiusU + bonusU,
+        satellite.hitRadiusU + projectile.radiusU * reflectRadiusMul,
       );
       if (entryT === NO_HIT) {
         continue;
       }
       applyBossDamage(world, boss, null, projectile.damage);
+      noteReflectHit(world, projectile, projectile.xU, projectile.yU);
       world.bus.emit({ kind: 'reflectHit', xU: satellite.xU, yU: satellite.yU });
       return consumePierce(projectile);
     }
@@ -123,6 +130,7 @@ export function resolveBossHits(world: World, boss: BossState): void {
       return false;
     }
     applyBossDamage(world, boss, null, projectile.damage);
+    noteReflectHit(world, projectile, projectile.xU, projectile.yU);
     world.bus.emit({ kind: 'reflectHit', xU: projectile.xU, yU: projectile.yU });
     return consumePierce(projectile);
   });

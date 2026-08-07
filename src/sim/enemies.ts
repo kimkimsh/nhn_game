@@ -23,10 +23,12 @@ import { PLAYFIELD } from '../config/playfield';
 import { TELEGRAPH } from '../config/telegraph';
 import type { EnemyDef } from '../config/types';
 import { clamp } from '../core/math';
-import { aimAt } from '../core/vec';
+import { aimAt, distance } from '../core/vec';
+import { bulletSpeedUPerSec } from './bullets';
 import { acquireEnemySlot, canSpawnEnemy } from './caps';
 import { advanceCrossPassFire, advanceFireCycle } from './enemy-shots';
 import { FIELD_EXIT_MARGIN_U, planEntry, sineOffsetU, type FormationEntry } from './formations';
+import { GUARDS_ENABLED, checkHR05, guardStateOf, noteFireSource } from './guards';
 import { isRetreating, takeDueSpawn } from './waves';
 import type { Enemy, World } from './world';
 
@@ -227,6 +229,9 @@ function advanceCharge(
     runtime.aimYU = runtime.dashDirYU;
     runtime.chargeStep = 'telegraph';
     runtime.telegraphRemainingSec = TELEGRAPH.shapes.dash.durationSec;
+    if (GUARDS_ENABLED) {
+      checkHR05('dash', 'enemyCharge');
+    }
     world.bus.emit({ kind: 'telegraph', shape: 'dash', xU: enemy.xU, yU: enemy.yU });
     return;
   }
@@ -290,6 +295,21 @@ function hasLeftField(enemy: Enemy, runtime: EnemyRuntime): boolean {
   );
 }
 
+/**
+ * 09 §2.4의 HR-03 면제 ③. 「이번 주기에 안 쐈다」가 아니라 **지금 그 자리에서 HR-09에 막히는가**를
+ * 넘긴다 — 조문이 「모든 발사원이 억제된 상태」이기 때문이다. 이것을 안 부르면 살아 있는 발사원이
+ * 언제나 0이라 면제가 영원히 안 걸리고, S-04가 실제로 얼마나 나는지를 재는 리포트가 항상 0이 된다.
+ */
+function noteLiveFireSource(world: World, enemy: Enemy, def: EnemyDef): void {
+  const bulletId = def.bullet;
+  if (bulletId === null) {
+    return;
+  }
+  const speedUPerSec = bulletSpeedUPerSec(world, bulletId);
+  const toPlayerU = distance(enemy.xU, enemy.yU, world.player.xU, world.player.yU);
+  noteFireSource(guardStateOf(world), toPlayerU < speedUPerSec * TELEGRAPH.minFlightSec);
+}
+
 function stepOne(world: World, enemy: Enemy, dtSec: number, isRetreat: boolean): boolean {
   const runtime = runtimeByEnemy.get(enemy);
   if (runtime === undefined) {
@@ -335,6 +355,9 @@ function stepOne(world: World, enemy: Enemy, dtSec: number, isRetreat: boolean):
   }
 
   updateAim(world, enemy, runtime, def);
+  if (GUARDS_ENABLED) {
+    noteLiveFireSource(world, enemy, def);
+  }
   if (runtime.behavior === 'crossPass') {
     advanceCrossPassFire(world, enemy, runtime, def, dtSec);
   } else if (runtime.phase === 'stationed') {

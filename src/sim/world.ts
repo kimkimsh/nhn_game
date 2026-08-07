@@ -21,10 +21,16 @@ import { PLAYFIELD } from '../config/playfield';
 import { REFLECT } from '../config/reflect';
 import { bus as globalBus, type FeedbackBus } from '../core/bus';
 import { createClock, type Clock } from '../core/clock';
-import { clamp } from '../core/math';
 import { createPool, type Pool } from '../core/pool';
 import { createRng, type Rng } from '../core/rng';
 import type { BossState } from './boss';
+import type {
+  EnemyBulletSlow,
+  ReflectReplacement,
+  ReflectSplit,
+  ReflectZone,
+  ShardBurst,
+} from './cards';
 import { createEnemyBulletPool, createReflectBulletPool, type Projectile } from './bullets';
 import { createParryState, type ParryState } from './parry';
 import { createPlayer, type Player } from './player';
@@ -68,14 +74,34 @@ export interface EffectiveStats {
   readonly reflectGraceSec: number;
   readonly reflectSpeedMaxUPerSec: number;
   readonly reflectPierceCount: number;
-  /** N12. 적 명중 판정만 넓힌다 — 플레이어 피격 판정은 원래 크기다 */
-  readonly reflectHitRadiusBonusU: number;
+  /** N06. 등급 반사 속도 배수에 곱한다. 결과 속도는 reflectSpeedMaxUPerSec에서 잘린다 */
+  readonly reflectSpeedMul: number;
+  /** N12. 적 명중 판정에만 곱한다 — 플레이어 피격 판정은 원래 크기다(HR-07) */
+  readonly reflectHitRadiusMul: number;
+  /** R03. 미보유면 0 */
+  readonly reflectHomingDegPerSec: number;
+  /** R01 · E01. 선언 순서대로 겹친다 */
+  readonly reflectSplits: readonly ReflectSplit[];
+  /** §11.6 4단계. 분열 계수의 곱. 미보유면 1 */
+  readonly reflectSplitDamageRatio: number;
+  readonly reflectReplaceOnGreat: ReflectReplacement | null;
+  readonly enemyBulletSlowOnGreat: EnemyBulletSlow | null;
+  readonly shardOnReflectHit: ShardBurst | null;
+  readonly zoneOnReflectHit: ReflectZone | null;
+  /** E04. 보스전 진입 시 화면 내 적 탄환에 매기는 등급. 미보유면 null */
+  readonly autoParryGradeOnBossEnter: ParryGradeId | null;
+  /** E03. 스테이지가 시작될 때마다 이만큼 충전된다. 현재 충전 수는 RunState가 갖는다 */
+  readonly shieldChargesPerStage: number;
+  /** E03. 보호막을 소모하면 라이프는 줄지 않고 이 시간만큼 무적만 받는다 */
+  readonly shieldInvulnSec: number;
   readonly clamps: readonly StatClamp[];
 
   /** R05. 콤보 종속이라 카드 목록이 그대로여도 값이 바뀐다 */
   reflectDamageMulFor(combo: number): number;
   /** N13. 쿨다운이 값 하나가 아니라 둘이 된다 */
   cooldownSecFor(outcome: 'hit' | 'empty'): number;
+  /** §11.6 3단계. 조건부 배수는 2단계의 곱연산 **뒤에** 다시 곱한다 */
+  conditionalDamageMulFor(grade: ParryGradeId): number;
   /** R10. 미보유면 null */
   readonly r10ActiveMinGapSec: number | null;
   /** E03 능력치. 현재 충전 수는 RunState가 갖는다 */
@@ -109,10 +135,22 @@ export function createBaseStats(): EffectiveStats {
     reflectGraceSec: REFLECT.graceSec,
     reflectSpeedMaxUPerSec: REFLECT.speedMaxUPerSec,
     reflectPierceCount: REFLECT.pierceCount,
-    reflectHitRadiusBonusU: 0,
+    reflectSpeedMul: 1,
+    reflectHitRadiusMul: 1,
+    reflectHomingDegPerSec: 0,
+    reflectSplits: [],
+    reflectSplitDamageRatio: 1,
+    reflectReplaceOnGreat: null,
+    enemyBulletSlowOnGreat: null,
+    shardOnReflectHit: null,
+    zoneOnReflectHit: null,
+    autoParryGradeOnBossEnter: null,
+    shieldChargesPerStage: 0,
+    shieldInvulnSec: 0,
     clamps: [],
     reflectDamageMulFor: () => 1,
     cooldownSecFor: () => PARRY.cooldownSec,
+    conditionalDamageMulFor: () => 1,
     r10ActiveMinGapSec: null,
     shieldMaxCharges: 0,
   };
@@ -168,6 +206,9 @@ export interface RunState {
   /** 경고를 콤보 한 벌에 한 번만 내기 위한 표시 */
   comboWarned: boolean;
   shieldCharges: number;
+  /** R07. 이 sim 시각까지 적 탄환이 enemyBulletSlowMul 배로 움직인다 */
+  enemyBulletSlowUntilSec: number;
+  enemyBulletSlowMul: number;
 }
 
 export interface World {
@@ -187,6 +228,13 @@ export interface World {
    * 미리 만들지 않는 것은 「보스가 아직 없다」와 「보스가 등장했다」가 구분돼야 하기 때문이다.
    */
   boss: BossState | null;
+  /**
+   * §18.3 이 스테이지가 보스전을 몇 번째 페이즈에서 시작하는가. 정상 진행은 0이다.
+   *
+   * 보스를 세우는 자리가 sim/step.ts 하나뿐이라 진입 요청이 그 자리까지 닿을 통로가 필요하다 —
+   * 런을 sim이 알면 그 통로가 훨씬 넓어진다.
+   */
+  entryBossPhaseIndex: number;
   stats: EffectiveStats;
   readonly clock: Clock;
   readonly rng: Rng;
@@ -210,12 +258,16 @@ export function createWorld(spec: WorldSpec): World {
     simTimeSec: 0,
     player: createPlayer(),
     parry: createParryState(),
-    run: { score: 0, combo: 0, comboUntilSec: 0, comboWarned: false, shieldCharges: 0 },
+    run: {
+      score: 0, combo: 0, comboUntilSec: 0, comboWarned: false, shieldCharges: 0,
+      enemyBulletSlowUntilSec: 0, enemyBulletSlowMul: 1,
+    },
     enemyBullets: createEnemyBulletPool(spec.stageId),
     reflectBullets: createReflectBulletPool(),
     enemies: createPool({ capacity: PLAYFIELD.maxEnemies, create: createEnemy, reset: resetEnemy }),
     zones: createZonePool(),
     boss: null,
+    entryBossPhaseIndex: 0,
     stats: createBaseStats(),
     clock: spec.clock ?? createClock(HITSTOP_BUDGET_PER_SEC),
     rng: createRng(spec.seed),
@@ -226,29 +278,3 @@ export function createWorld(spec: WorldSpec): World {
   };
 }
 
-/** §12.2 배수. 상한 클램프가 없으면 콤보 200 이상에서 스펙을 넘는다 */
-export function comboMultiplier(combo: number): number {
-  return clamp(
-    1 + Math.floor(combo / COMBO.multStep) * COMBO.multPerStep,
-    1,
-    COMBO.multMax,
-  );
-}
-
-/** 점수는 언제나 현재 콤보 배수를 거친다. 배수를 부르는 쪽에 맡기면 곳곳이 갈린다 */
-export function addScore(world: World, basePoints: number): void {
-  world.run.score += Math.floor(basePoints * comboMultiplier(world.run.combo));
-}
-
-/** §12.2 콤보는 패리로 처리한 발사체 개수만큼 오른다. 유지 시간은 그때마다 다시 시작한다 */
-export function addCombo(world: World, count: number): void {
-  const run = world.run;
-  run.combo += count;
-  run.comboUntilSec = world.simTimeSec + world.stats.comboHoldSec;
-  run.comboWarned = false;
-}
-
-export function resetCombo(world: World): void {
-  world.run.combo = 0;
-  world.run.comboWarned = false;
-}
