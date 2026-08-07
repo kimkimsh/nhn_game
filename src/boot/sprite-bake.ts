@@ -14,8 +14,6 @@ import type { ParryableBulletId } from '../config/ids';
 import { GLOW_BAKE_COLORS, PALETTE } from '../config/palette';
 import {
   assertGlowSpritesBaked,
-  glow,
-  hatch,
   hexA,
   invalidateHatchPattern,
   poly,
@@ -26,12 +24,9 @@ import {
   BULLET_SPRITE_STATES,
   PARRYABLE_BULLET_IDS,
   assertBulletSpritesBaked,
-  drawBulletBodyPass,
-  drawBulletGlowPass,
   registerBulletSprite,
   type BulletSpriteState,
 } from '../render/sprites';
-import type { CanvasView } from './canvas';
 
 /** 02 §5.2 — 논리 크기의 4배로 구워 확대 시 뭉개지지 않게 한다 */
 const BAKE_SCALE = 4;
@@ -341,10 +336,11 @@ export function handleViewChanged(): void {
 /**
  * main.ts가 캔버스 부팅 직후 한 번 부른다. 이 함수가 돌아온 뒤에는 지연 생성이 남아 있지 않다.
  *
- * async인 것은 아래 dev 진입 하나 때문이다 — 스트레스 씬을 정적 import하면 제출 빌드에도
- * 그 코드가 들어간다.
+ * 화면 view를 받지 않는다 — 여기서 굽는 것은 전부 자기 오프스크린 캔버스에 논리 단위 고정
+ * 크기로 그려지고, DPR도 창 크기도 결과에 섞이지 않는다. ctx에 묶여 무효가 되는 것은 해칭
+ * 패턴 하나뿐이고 그것은 `handleViewChanged`가 따로 맡는다.
  */
-export async function bakeSprites(view: CanvasView): Promise<void> {
+export function bakeSprites(): void {
   for (const color of GLOW_BAKE_COLORS) {
     bakeGlowSprite(color);
   }
@@ -355,31 +351,4 @@ export async function bakeSprites(view: CanvasView): Promise<void> {
   }
   assertGlowSpritesBaked();
   assertBulletSpritesBaked();
-  await startStressSceneIfRequested(view);
-}
-
-/**
- * P1 게이트용 임시 진입. `index.html#p1-stress`로 열었을 때만 돈다.
- *
- * 여기 있는 것은 부팅 사슬에서 P1이 소유한 파일이 이것뿐이기 때문이다. screens/manager.ts
- * (P6-1)가 생기면 진입은 그쪽으로 가고 이 함수는 지운다 — 03 §2.4가 정한 dev/의 자리는
- * 화면 관리자 아래다.
- *
- * dev/는 render/와 boot/를 import할 수 없으므로(eslint no-restricted-imports) 스트레스 씬이
- * 쓰는 그리기 함수는 여기서 묶어 넘긴다.
- */
-async function startStressSceneIfRequested(view: CanvasView): Promise<void> {
-  if (!window.location.hash.includes('p1-stress')) {
-    return;
-  }
-  const stress = await import('../dev/p1-stress');
-  stress.startP1Stress(view, {
-    drawBulletGlowPass,
-    drawBulletBodyPass,
-    paintBulletShape,
-    glow,
-    hatch,
-    poly,
-    invalidateViewCaches: handleViewChanged,
-  });
 }

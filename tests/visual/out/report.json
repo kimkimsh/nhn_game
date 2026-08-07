@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T20:48:40.115Z",
+  "generatedAt": "2026-08-07T21:29:38.079Z",
   "driver": "playwright chromium 151.0.7922.34",
   "tolerance": {
     "channelDelta": 2,
@@ -25,7 +25,7 @@
         "zones": 0,
         "telegraphs": 0,
         "popups": 1,
-        "particles": 13,
+        "particles": 14,
         "hudPresent": true,
         "maxLife": 4,
         "traumaAtCapture": 0,
@@ -34,91 +34,91 @@
       "masks": {
         "countByKind": {
           "text": 8,
-          "ruling": 14,
+          "ruling": 15,
           "new-element": 1
         },
-        "coverageRatio": 0.07303530092592593
+        "coverageRatio": 0.0732986111111111
       },
       "repeat": {
         "widthPx": 1080,
         "heightPx": 1920,
         "comparedPixels": 2073600,
         "maskedPixels": 0,
-        "diffPixels": 1231,
-        "diffRatio": 0.000593653549382716,
-        "maxChannelDelta": 96,
+        "diffPixels": 1310,
+        "diffRatio": 0.0006317515432098766,
+        "maxChannelDelta": 100,
         "worstCells": [
           {
             "xU": 240,
-            "yU": 480,
+            "yU": 600,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 196,
-            "maxChannelDelta": 89
+            "diffPixels": 231,
+            "maxChannelDelta": 100
           },
           {
-            "xU": 120,
-            "yU": 480,
+            "xU": 360,
+            "yU": 720,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 183,
-            "maxChannelDelta": 88
+            "diffPixels": 195,
+            "maxChannelDelta": 91
           },
           {
             "xU": 120,
             "yU": 600,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 167,
-            "maxChannelDelta": 89
+            "diffPixels": 188,
+            "maxChannelDelta": 100
           },
           {
-            "xU": 360,
+            "xU": 240,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 147,
-            "maxChannelDelta": 65
-          },
-          {
-            "xU": 120,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 133,
-            "maxChannelDelta": 96
+            "diffPixels": 112,
+            "maxChannelDelta": 80
           },
           {
             "xU": 240,
             "yU": 360,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 91,
-            "maxChannelDelta": 86
-          },
-          {
-            "xU": 240,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 84,
-            "maxChannelDelta": 69
+            "diffPixels": 98,
+            "maxChannelDelta": 30
           },
           {
             "xU": 360,
-            "yU": 720,
+            "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 62,
-            "maxChannelDelta": 69
+            "diffPixels": 96,
+            "maxChannelDelta": 40
+          },
+          {
+            "xU": 120,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 49,
+            "maxChannelDelta": 22
+          },
+          {
+            "xU": 120,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 49,
+            "maxChannelDelta": 64
           }
         ]
       },
       "repeatIgnoringParticles": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 2057784,
-        "maskedPixels": 15816,
+        "comparedPixels": 2057168,
+        "maskedPixels": 16432,
         "diffPixels": 0,
         "diffRatio": 0,
         "maxChannelDelta": 0,
@@ -127,10 +127,10 @@
       "compare": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 1922154,
-        "maskedPixels": 151446,
+        "comparedPixels": 1921608,
+        "maskedPixels": 151992,
         "diffPixels": 35754,
-        "diffRatio": 0.018601006995277173,
+        "diffRatio": 0.01860629223025716,
         "maxChannelDelta": 234,
         "worstCells": [
           {
