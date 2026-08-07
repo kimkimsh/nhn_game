@@ -179,7 +179,8 @@ export function bulletPaint(owner: ProjectileOwner, graceRemainingSec: number): 
 function drawGraceRings(ctx: CanvasRenderingContext2D, batch: BulletLayerBatch): void {
   ctx.strokeStyle = GRACE_RING_COLOR;
   ctx.lineWidth = GRACE_RING_STROKE_U;
-  ctx.setLineDash(GRACE_RING_DASH_U);
+  // 점선은 첫 링을 그릴 때 켠다. 위에서 무조건 켜면 유예 중인 탄이 하나도 없는 프레임에서
+  // 아래 되돌리기가 건너뛰어져 대시가 7층으로 샌다
   let drawn = false;
   for (let i = 0; i < batch.count; i += 1) {
     // count ≤ 배열 길이가 배치의 불변 조건이라 인덱스는 항상 유효하다.
@@ -191,6 +192,9 @@ function drawGraceRings(ctx: CanvasRenderingContext2D, batch: BulletLayerBatch):
     const id: ParryableBulletId = batch.bulletId[i]!;
     // 유예 길이는 카드가 바꾸지 않는다(StatTarget에 칸이 없다) — §7.1의 0.15초가 단일 소스다
     const offsetU = GRACE_RING_START_OFFSET_U * clamp01(remainingSec / REFLECT.graceSec);
+    if (!drawn) {
+      ctx.setLineDash(GRACE_RING_DASH_U);
+    }
     ctx.beginPath();
     ctx.arc(batch.xU[i]!, batch.yU[i]!, BULLETS[id].radiusU + offsetU, 0, FULL_TURN_RAD);
     ctx.stroke();

@@ -26,7 +26,8 @@ import { resolveBossHits } from '../src/sim/boss-hits';
 import { stepRunner } from '../src/sim/boss-runner';
 import { drawOffer, type CardRound } from '../src/sim/cards';
 import { stepEnemies, stepEnemySpawns } from '../src/sim/enemies';
-import { clearStage, createRun, disposeRun, pickCard, type Run } from '../src/sim/run';
+import { createInput, type Input } from '../src/core/input';
+import { clearStage, createRun, disposeRun, pickCard, stepRun, type Run } from '../src/sim/run';
 import { comboMul } from '../src/sim/score';
 import { pendingSpawnCount, stepWaves, wavePhase } from '../src/sim/waves';
 import { comboMultiplier, createWorld, type World } from '../src/sim/world';
@@ -311,5 +312,34 @@ describe('P5 게이트 — S1 클리어 → 카드 3장 → 1장 선택 → S2 �
     expect(run.world.enemies.activeCount).toBeGreaterThan(0);
     expect(run.phase).toBe('combat');
     disposeRun(run);
+  });
+
+  /**
+   * 가드는 05 §1의 16번에서 던지므로 그 시점의 월드에는 격파 종료도 라이프 0도 이미 확정돼
+   * 있다. 그런데 stepRun이 화면 전환을 try 안에 두면 그 확정이 영원히 안 읽혀서, 위반이
+   * 이어지는 구간에 들어간 런은 격파가 끝난 보스를 안은 채 그 자리에 멈춘다. 09 §4의 헤드리스
+   * 리포트가 위반을 적고 계속 도는 모드로 돌기 때문에, 그 정지는 곧 무한 루프다.
+   */
+  it('스텝이 던져도 격파 종료와 게임오버는 그 스텝에 반영된다', () => {
+    const throwing: Input = {
+      ...createInput(),
+      decayParryBuffer(): void {
+        throw new Error('가드 위반');
+      },
+    };
+
+    const cleared = createRun({ seed: SEED, stageId: 1 });
+    cleared.world.boss = createBossState('B1');
+    cleared.world.boss.isFinished = true;
+    expect(() => stepRun(cleared, FIXED_DT_SEC, { input: throwing, untilMs: 0 })).toThrow('가드 위반');
+    expect(cleared.phase).toBe('cardSelect');
+    disposeRun(cleared);
+
+    const over = createRun({ seed: SEED, stageId: 1 });
+    over.world.isGameOver = true;
+    expect(() => stepRun(over, FIXED_DT_SEC, { input: throwing, untilMs: 0 })).toThrow('가드 위반');
+    expect(over.phase).toBe('result');
+    expect(over.result).toBe('gameOver');
+    disposeRun(over);
   });
 });

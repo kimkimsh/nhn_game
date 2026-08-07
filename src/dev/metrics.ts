@@ -29,7 +29,7 @@
  * `allSourcesSuppressed`로 잡는 그 구간이라 `unattributed`로 적는다. 추정을 확정처럼 적지 않는다.
  */
 import { ZONE } from '../config/feel';
-import type { ParryGradeId } from '../config/ids';
+import type { ParryGradeId, StageId } from '../config/ids';
 import { PLAYFIELD } from '../config/playfield';
 import type { FeedbackBus, PlayerHitCause, Unsubscribe } from '../core/bus';
 import type { Projectile } from '../sim/bullets';
@@ -89,7 +89,19 @@ export interface MetricsData {
   readonly reflect: ReflectMetrics;
   readonly hits: HitMetrics;
   readonly peaks: PeakMetrics;
+  /**
+   * 스테이지별 도달치. 09 §4.4가 `peaks.enemies`를 §14.1의 10 / 12 / 10 / 18 / 20과 대조하라고
+   * 했는데 그 표가 스테이지마다 다른 값이라, 런 전체의 최대치 하나로는 어느 칸과도 못 맞춘다.
+   * 동시 적 탄환 상한도 스테이지마다 다르므로(difficulty.ts) 같은 이유로 여기서 갈린다.
+   */
+  readonly peaksByStage: Map<StageId, PeakMetrics>;
   readonly emptySpans: Record<EmptySpanCause, EmptySpanTally>;
+  /**
+   * 봇이 실제로 밟은 y 구간 (u). 09 §4.2가 S-04 때문에 봇의 y를 묶었고 그 대가를 리포트 머리에
+   * 찍으라고 했는데, 정책값을 그대로 옮겨 적으면 「봇이 그렇게 하기로 되어 있다」밖에 안 된다.
+   * 실측 구간이어야 플레이어 영역의 얼마를 안 밟고 나온 숫자인지가 관측으로 남는다.
+   */
+  readonly playerYU: { minU: number; maxU: number };
   /** §3.2 초당 히트스톱 누적의 최대치 (s) */
   maxHitstopPerSecSec: number;
   simSec: number;
@@ -121,6 +133,10 @@ function emptySpan(): EmptySpanTally {
   return { spans: 0, simSec: 0, worstSec: 0 };
 }
 
+function zeroPeaks(): PeakMetrics {
+  return { enemyBullets: 0, reflects: 0, enemies: 0, zones: 0, enemySpawnDeferrals: 0 };
+}
+
 function createData(): MetricsData {
   return {
     parry: {
@@ -136,8 +152,10 @@ function createData(): MetricsData {
       total: 0,
       byCause: { enemyBullet: 0, reflectedBullet: 0, body: 0, zone: 0 },
     },
-    peaks: { enemyBullets: 0, reflects: 0, enemies: 0, zones: 0, enemySpawnDeferrals: 0 },
+    peaks: zeroPeaks(),
+    peaksByStage: new Map<StageId, PeakMetrics>(),
     emptySpans: { lull: emptySpan(), bossDefeat: emptySpan(), unattributed: emptySpan() },
+    playerYU: { minU: Number.POSITIVE_INFINITY, maxU: Number.NEGATIVE_INFINITY },
     maxHitstopPerSecSec: 0,
     simSec: 0,
   };
@@ -288,7 +306,7 @@ export function createMetrics(bus: FeedbackBus): Metrics {
    * 나온다. 상한이 풀리는 스텝에 예약이 실제로 줄어드는 것을 확인해야 「기다리고 있었다」가
    * 확정된다. 그래서 세는 값은 상한에 닿은 횟수가 아니라 확정된 지연 구간의 수다.
    */
-  function trackSpawnDeferrals(world: World): void {
+  function trackSpawnDeferrals(world: World, stagePeaks: PeakMetrics): void {
     const pending = pendingSpawnCount(world);
     const full = world.enemies.activeCount >= PLAYFIELD.maxEnemies;
     if (full && pending > 0) {
@@ -296,10 +314,20 @@ export function createMetrics(bus: FeedbackBus): Metrics {
     } else if (deferralPending) {
       if (pending < previousPendingSpawns) {
         data.peaks.enemySpawnDeferrals += 1;
+        stagePeaks.enemySpawnDeferrals += 1;
       }
       deferralPending = false;
     }
     previousPendingSpawns = pending;
+  }
+
+  function peaksOfStage(stageId: StageId): PeakMetrics {
+    let peaks = data.peaksByStage.get(stageId);
+    if (peaks === undefined) {
+      peaks = zeroPeaks();
+      data.peaksByStage.set(stageId, peaks);
+    }
+    return peaks;
   }
 
   return {
@@ -329,13 +357,19 @@ export function createMetrics(bus: FeedbackBus): Metrics {
         data.reflect.bossDamage += previousBossHp - bossHp;
       }
 
-      const peaks = data.peaks;
-      peaks.enemyBullets = Math.max(peaks.enemyBullets, world.enemyBullets.activeCount);
-      peaks.reflects = Math.max(peaks.reflects, world.reflectBullets.activeCount);
-      peaks.enemies = Math.max(peaks.enemies, world.enemies.activeCount);
-      peaks.zones = Math.max(peaks.zones, world.zones.activeCount);
-      trackSpawnDeferrals(world);
+      const stagePeaks = peaksOfStage(world.stageId);
+      for (const peaks of [data.peaks, stagePeaks]) {
+        peaks.enemyBullets = Math.max(peaks.enemyBullets, world.enemyBullets.activeCount);
+        peaks.reflects = Math.max(peaks.reflects, world.reflectBullets.activeCount);
+        peaks.enemies = Math.max(peaks.enemies, world.enemies.activeCount);
+        peaks.zones = Math.max(peaks.zones, world.zones.activeCount);
+      }
+      trackSpawnDeferrals(world, stagePeaks);
       trackEmptySpan(world, dtSec);
+
+      const playerYU = data.playerYU;
+      playerYU.minU = Math.min(playerYU.minU, world.player.yU);
+      playerYU.maxU = Math.max(playerYU.maxU, world.player.yU);
 
       const usedSec = world.clock.budgetUsedSec(world.simTimeSec);
       data.maxHitstopPerSecSec = Math.max(data.maxHitstopPerSecSec, usedSec);

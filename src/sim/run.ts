@@ -229,17 +229,27 @@ export function disposeRun(run: Run): void {
   run.detachTally();
 }
 
-/** 05 §1의 15번 중 런의 몫. 라이프 0은 collision.ts가, 격파 종료는 boss.ts가 확정한다 */
+/**
+ * 05 §1의 15번 중 런의 몫. 라이프 0은 collision.ts가, 격파 종료는 boss.ts가 확정한다.
+ *
+ * **런 상태 반영은 finally에 있다.** 가드는 05 §1의 16번에서 던지므로 그 시점의 월드는 17번
+ * (큐 배출)만 남은 온전한 상태이고, isGameOver와 boss.isFinished는 이미 확정돼 있다. 이 세 줄을
+ * try 안에 두면 가드가 매 스텝 던지는 구간에서 화면 전환이 영원히 실행되지 않아, 격파가 끝난
+ * 보스를 안은 채로 런이 멈춘다 — 위반을 적고 계속 도는 헤드리스 모드가 그때 무한 루프가 된다.
+ */
 export function stepRun(run: Run, dtSec: number, frame?: StepFrame): void {
   if (run.phase !== 'combat') {
     return;
   }
-  stepWorld(run.world, dtSec, frame ?? { input: run.idleInput, untilMs: 0 });
-  run.tally.maxCombo = Math.max(run.tally.maxCombo, run.world.run.combo);
-  if (run.world.isGameOver) {
-    endRun(run, 'gameOver');
-  } else if (run.world.boss?.isFinished === true) {
-    clearStage(run);
+  try {
+    stepWorld(run.world, dtSec, frame ?? { input: run.idleInput, untilMs: 0 });
+  } finally {
+    run.tally.maxCombo = Math.max(run.tally.maxCombo, run.world.run.combo);
+    if (run.world.isGameOver) {
+      endRun(run, 'gameOver');
+    } else if (run.world.boss?.isFinished === true) {
+      clearStage(run);
+    }
   }
 }
 

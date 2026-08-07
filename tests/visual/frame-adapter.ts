@@ -84,7 +84,10 @@ function bulletBatchOf(frame: MockupFrame): BulletLayerBatch {
     batch.xU[i] = row.xU;
     batch.yU[i] = row.yU;
     batch.angleRad[i] = Math.atan2(row.vyUPerSec, row.vxUPerSec);
-    batch.spinRad[i] = row.spinRad;
+    // 목업은 `spin`을 모든 발사체에 누산하지만 그리기에는 `star`(P4 수리검)에서만 쓴다
+    // (engine.js:232). 나머지 종류까지 넘기면 게임 쪽 본체 회전이 목업과 어긋나고, 그 어긋남은
+    // 게임의 결함이 아니라 이 어댑터가 만든 것이다. 06 §3.1도 "P4만 + spin"으로 못 박았다
+    batch.spinRad[i] = BULLETS[batch.bulletId[i]!].shape === 'star' ? row.spinRad : 0;
     batch.graceRemainingSec[i] = row.graceRemainingSec;
     batch.reparryCount[i] = row.reparryCount;
   }

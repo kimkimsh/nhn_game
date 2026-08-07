@@ -47,7 +47,7 @@ import { BOT_POLICY, createBot } from './bot';
 import { createMetrics, ZONE_CAP, type Metrics } from './metrics';
 import { scenarios, type ScenarioSpec } from './scenarios';
 import {
-  bossRowOf, meanGradeMulOf, peaksVerdict, percentile, stageRowOf,
+  bossRowOf, meanGradeMulOf, peaksVerdict, percentile, playerYRangeOf, stagePeakRowsOf, stageRowOf,
   REPORT_SCHEMA, SELF_HARM_LIMIT, T02_MEAN_GRADE_MUL, T02_SUCCESS_RATE, T05_MIN_KILL_SEC,
   type BalanceReport, type BossTrace, type SimStatus, type StageRow, type Verdict,
 } from './report';
@@ -152,7 +152,8 @@ function drive(run: Run, spec: ScenarioSpec, metrics: Metrics): DriveResult {
         return finish('guard-violation');
       }
       // 가드는 05 §1의 16번, 즉 스텝의 거의 끝에서 던진다. 뒤에 남은 것은 17번(큐 배출)뿐이라
-      // 세계는 온전하고, 다음 스텝을 이어 돌려도 판정이 반쯤 적용된 상태를 읽지 않는다
+      // 세계는 온전하고, 화면 전환은 stepRun의 finally가 이미 확정해 두었다. 그 finally가
+      // 없으면 여기서 계속 돌아도 클리어·게임오버가 영원히 안 걸려 런이 그 자리에 멈춘다
       run.bus.flush();
     }
     result.stepMs.push(performance.now() - startedMs);
@@ -207,12 +208,17 @@ export function runScenario(spec: ScenarioSpec): BalanceReport {
   const bossDamagePerBoss = driven.bosses.length === 0 ? 0 : reflect.bossDamage / driven.bosses.length;
   const contaminated = run.contaminated;
   const stages: StageRow[] = [...driven.stages.entries()].map(([id, sec]) => stageRowOf(id, sec));
+  const playerYU = playerYRangeOf(data);
   disposeRun(run);
 
   return {
     schema: REPORT_SCHEMA,
     constraints: [
-      `봇은 y ≥ ${BOT_POLICY.minYU}u를 유지한다(S-04). 플레이어 영역 위쪽 약 30%는 한 번도 밟지 않았다`,
+      `봇은 y ≥ ${BOT_POLICY.minYU}u를 유지한다(S-04). 실제로 밟은 구간은 ` +
+        (playerYU === null
+          ? '없다 — 스텝이 한 번도 안 돌았다'
+          : `y ${playerYU.minU.toFixed(0)}~${playerYU.maxU.toFixed(0)}u, ` +
+            `§3.1 플레이어 이동 영역(620~1830u)의 ${playerYU.boundsPct.toFixed(1)}%다`),
       '봇은 x축으로만 정렬하고 반사탄을 쫓지 않는다 — T-02의 재패리 0회 전제를 지키기 위해서다',
       'Run.entry를 읽는 sim 코드가 아직 없다. 보스 시나리오도 웨이브를 실제로 지나 보스를 만난다',
       'HR-03 면제의 셋째 칸(unattributed)은 관측이 아니라 추정이다 — 가드의 집계는 밖에서 못 읽는다',
@@ -273,14 +279,16 @@ export function runScenario(spec: ScenarioSpec): BalanceReport {
       enemySpawnDeferrals: data.peaks.enemySpawnDeferrals,
       zones: data.peaks.zones,
       zoneCap: ZONE_CAP,
-      verdict: peaksVerdict(data, spec.stageId),
+      verdict: peaksVerdict(data.peaks, spec.stageId),
     },
+    peaksByStage: stagePeakRowsOf(data),
     hitstop: {
       maxPerSecondSec: data.maxHitstopPerSecSec,
       capSec: HITSTOP_BUDGET_PER_SEC,
       verdict: data.maxHitstopPerSecSec > HITSTOP_BUDGET_PER_SEC ? 'fail' : 'pass',
     },
     hr03: data.emptySpans,
+    playerYU,
     perf: {
       simStepMsP50: percentile(sortedStepMs, 0.5),
       simStepMsP99: percentile(sortedStepMs, 0.99),

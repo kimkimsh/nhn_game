@@ -19,7 +19,7 @@ import { PLAYFIELD } from '../config/playfield';
 import type { BossDef } from '../config/types';
 import type { CardInventory } from '../sim/cards';
 import type { StageEntry } from '../sim/run';
-import { ZONE_CAP, type MetricsData } from './metrics';
+import { ZONE_CAP, type MetricsData, type PeakMetrics } from './metrics';
 
 export const REPORT_SCHEMA = 'hwando-balance-report/1';
 
@@ -40,6 +40,15 @@ export const T05_MIN_KILL_SEC = 20;
  */
 export const S5_MIN_PEAK_ENEMIES = 18;
 export const S5_MIN_SPAWN_DEFERRALS = 1;
+
+/**
+ * 스펙 §14.1 「동시 잡몹 최대 도달치」 행. **합격선이 아니라 대조용 참조 열이다** —
+ * 09 §4.4가 합격선으로 준 것은 상한 20기와 S5의 하한 둘뿐이고, 나머지 스테이지에 이 값을
+ * 밴드로 걸면 스펙이 주지 않은 밴드를 지어내는 것이 된다.
+ */
+export const SPEC_PEAK_ENEMIES: Readonly<Record<StageId, number>> = {
+  1: 10, 2: 12, 3: 10, 4: 18, 5: 20,
+};
 
 /** §14.3 T-02의 전제. 캘리브레이션이 맞추는 표적이고 이 축으로는 판정하지 않는다 */
 export const T02_SUCCESS_RATE = 0.5;
@@ -91,6 +100,20 @@ export interface StageRow {
   readonly clearSec: number | null;
   readonly targetSec: number;
   readonly deltaPct: number | null;
+  readonly verdict: Verdict;
+}
+
+/** 스테이지 하나가 실제로 도달한 동시 존재 수. 상한이 스테이지마다 다르므로 대조도 여기서 한다 */
+export interface StagePeakRow {
+  readonly id: StageId;
+  readonly enemies: number;
+  /** 스펙 §14.1의 대조값. 밴드가 아니다 */
+  readonly specEnemies: number;
+  readonly enemyBullets: number;
+  readonly enemyBulletCap: number;
+  readonly enemySpawnDeferrals: number;
+  readonly reflects: number;
+  readonly zones: number;
   readonly verdict: Verdict;
 }
 
@@ -167,6 +190,8 @@ export interface BalanceReport {
     readonly zoneCap: number;
     readonly verdict: Verdict;
   };
+  /** 09 §4.4가 §14.1과 대조하라고 지시한 스테이지별 도달치. 런 전체의 최대치 하나로는 못 맞춘다 */
+  readonly peaksByStage: readonly StagePeakRow[];
   readonly hitstop: {
     readonly maxPerSecondSec: number;
     readonly capSec: number;
@@ -174,6 +199,8 @@ export interface BalanceReport {
   };
   /** 09 §4.4가 요구한 HR-03 면제 구간 표. 셋째 칸은 관측이 아니라 추정이다(metrics.ts 참고) */
   readonly hr03: MetricsData['emptySpans'];
+  /** S-04의 대가를 관측으로 남긴 값. 밟은 적이 없으면 null이다 */
+  readonly playerYU: { readonly minU: number; readonly maxU: number; readonly boundsPct: number } | null;
   readonly perf: {
     readonly simStepMsP50: number;
     readonly simStepMsP99: number;
@@ -211,6 +238,15 @@ export function totalBossHp(bossId: BossId): number {
   return total;
 }
 
+/**
+ * 09 §4.5의 손익분기 명중률 `h* = 필요 DPS / 추정 DPS`. 보스를 만나지 못한 리포트도 이 값은
+ * 낼 수 있어야 한다 — 실측 `h`가 h*의 어느 쪽인지가 T-01의 판정이라, 만나지도 못한 보스에
+ * 대해서도 「얼마가 필요했는가」는 표에 남아야 다음 조정의 근거가 된다.
+ */
+export function breakEvenHitRateOf(bossId: BossId): number {
+  return totalBossHp(bossId) / BOSSES[bossId].targetKillSec / SPEC_ESTIMATED_DPS[bossId];
+}
+
 export function percentile(sorted: readonly number[], ratio: number): number {
   if (sorted.length === 0) {
     return 0;
@@ -242,7 +278,7 @@ export function bossRowOf(trace: BossTrace, hitRate: number, bossDamage: number)
     requiredDps,
     estimatedDps,
     measuredDps: killSec === null || killSec <= 0 ? null : bossDamage / killSec,
-    breakEvenHitRate: requiredDps / estimatedDps,
+    breakEvenHitRate: breakEvenHitRateOf(trace.bossId),
     measuredHitRate: hitRate,
     verdict: withinBand ? 'pass' : 'alert-T-01',
   };
@@ -259,8 +295,7 @@ export function stageRowOf(id: StageId, clearSec: number | null): StageRow {
   };
 }
 
-export function peaksVerdict(data: MetricsData, stageId: StageId): Verdict {
-  const peaks = data.peaks;
+export function peaksVerdict(peaks: PeakMetrics, stageId: StageId): Verdict {
   if (
     peaks.enemyBullets > STAGE_SCALING[stageId].maxEnemyBullets ||
     peaks.reflects > PLAYFIELD.maxReflectBullets ||
@@ -277,4 +312,34 @@ export function peaksVerdict(data: MetricsData, stageId: StageId): Verdict {
     peaks.enemies >= S5_MIN_PEAK_ENEMIES &&
     peaks.enemySpawnDeferrals >= S5_MIN_SPAWN_DEFERRALS;
   return dense ? 'pass' : 'fail';
+}
+
+/**
+ * 밟은 y 구간과 그것이 §3.1 플레이어 이동 영역의 몇 %인가. 09 §4.2가 "약 30%를 안 밟는다"고
+ * 미리 적어 두었지만 그 값은 정책에서 나온 추정이고, 여기는 실제로 지난 구간을 잰다.
+ */
+export function playerYRangeOf(data: MetricsData): BalanceReport['playerYU'] {
+  const { minU, maxU } = data.playerYU;
+  if (!Number.isFinite(minU) || !Number.isFinite(maxU)) {
+    return null;
+  }
+  const bounds = PLAYFIELD.playerBounds;
+  return { minU, maxU, boundsPct: ((maxU - minU) / (bounds.maxYU - bounds.minYU)) * 100 };
+}
+
+/** 스테이지별 도달치 표. 밟지 않은 스테이지는 줄이 없다 — 0으로 채우면 「안 갔다」가 「0이었다」가 된다 */
+export function stagePeakRowsOf(data: MetricsData): StagePeakRow[] {
+  return [...data.peaksByStage.entries()]
+    .sort(([left], [right]) => left - right)
+    .map(([id, peaks]) => ({
+      id,
+      enemies: peaks.enemies,
+      specEnemies: SPEC_PEAK_ENEMIES[id],
+      enemyBullets: peaks.enemyBullets,
+      enemyBulletCap: STAGE_SCALING[id].maxEnemyBullets,
+      enemySpawnDeferrals: peaks.enemySpawnDeferrals,
+      reflects: peaks.reflects,
+      zones: peaks.zones,
+      verdict: peaksVerdict(peaks, id),
+    }));
 }
