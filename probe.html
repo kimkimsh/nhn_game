@@ -12,10 +12,13 @@
   th, td { padding: 5px 14px 5px 0; text-align: left; vertical-align: top; }
   th { color: #9aa3b2; font-weight: 500; border-bottom: 1px solid #1e2635; }
   td.n { text-align: right; font-variant-numeric: tabular-nums; }
-  .verdict { padding: 10px 14px; margin: 14px 0; border-left: 3px solid; }
-  .ok   { border-color: #35b7e0; }
-  .warn { border-color: #f5b324; }
-  .bad  { border-color: #e23c2e; }
+  /* 판정은 색 띠가 아니라 값 자체에 싣는다. 이 페이지는 전부 테두리 없는 데이터 표라
+     상자 하나만 카드처럼 보이면 오히려 눈이 그리로 끌려간다. */
+  .verdict { margin: 16px 0; }
+  .verdict b { font-size: 15px; }
+  .ok   b { color: #35b7e0; }
+  .warn b { color: #f5b324; }
+  .bad  b { color: #e23c2e; }
   .env { color: #5d6675; font-size: 12px; }
   canvas { display: none; }
   #out { white-space: pre-wrap; }
