@@ -76,6 +76,13 @@ export type FormationDef = {
   readonly stopYU: number | null;
   /** 진입 중 좌우 진폭 (u). 0이면 흔들지 않는다 */
   readonly amplitudeU: number;
+  /**
+   * 홀수번째 개체를 이만큼 아래로 내려 지그재그로 세운다 (u). 0이면 한 줄로 선다.
+   *
+   * spacingU와 같은 축이 아니다 — 저쪽은 개체 사이의 간격이고 이것은 그 간격을 유지한 채 한 칸
+   * 걸러 내리는 오프셋이라, 하나로 합치면 「간격은 그대로인데 줄만 어긋난 배치」를 못 만든다.
+   */
+  readonly zigzagYU: number;
   readonly note: string;
 };
 
@@ -102,6 +109,14 @@ export type LanceDef = {
   readonly activeSec: number;
   /** HR-04. 줄 사이에 반드시 남겨야 하는 안전 지대 폭 (u) */
   readonly safeCorridorU: number;
+  /**
+   * 줄 전체의 가로 중심 (u). 생략하면 플레이필드 가로 중심이다.
+   *
+   * 줄 사이 간격은 여전히 safeCorridorU가 정한다 — HR-04가 지키라는 것이 통로 폭이므로 그쪽에서
+   * 좌표를 유도해야 규칙과 값이 어긋날 수 없다. 여기 있는 것은 그 묶음이 통째로 서는 자리이고,
+   * 대칭이 아닌 배치를 담을 자리가 이 필드 하나뿐이다.
+   */
+  readonly centerXU?: number;
 };
 
 /**
@@ -328,6 +343,14 @@ export type BossPhase = {
   readonly patternOrder?: 'randomNoRepeat';
   /** §10.6 B5 페이즈 4의 관통 대창. sim/lance.ts를 웨이브와 공유한다(12 §10 E-10) */
   readonly lance?: LanceDef;
+  /**
+   * §10.6 B5 페이즈 3. 이 페이즈 동안 본체 판정 도형이 선체가 아니라 갑판으로 나온 총대장이다.
+   * 없으면 BossDef.hitBox를 그대로 쓴다.
+   *
+   * 부위(BossPartDef)로 만들 수 없다 — 별도 HP가 없고 파괴되지도 않으며, 선체를 대신하는 것이지
+   * 선체에 얹히는 것이 아니다. 페이즈에 붙는 이유도 같다: 등판은 페이즈 3에서만 유효하다.
+   */
+  readonly bodyHitBox?: HitBox;
 };
 
 /**

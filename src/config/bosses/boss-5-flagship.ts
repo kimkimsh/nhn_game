@@ -101,6 +101,9 @@ export const BOSS_5 = {
       // §10.6 페이즈 3 (50% → 25%) — 백병전
       hpThreshold: 0.50,          // §10.6 진입 HP 비율
       onEnter: null,
+      // §10.6 「총대장 본체가 갑판으로 나와」. 이 페이즈 동안 판정 도형이 선체가 아니라
+      // 갑판 위 총대장이다 — 목업 10_boss5_flagship/scene.js:14의 hitW · hitH 실측 (u)
+      bodyHitBox: { wU: 220, hU: 240 },
       patterns: [
         {
           name: '총대장 등판',

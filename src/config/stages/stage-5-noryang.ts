@@ -31,6 +31,9 @@ const BACKGROUND_FLEET_LANCE = {
   // HR-04 · §9.7. 목업 실측 2줄이 x = 300 · 800이고 폭 40u라 실제 통로가 460u다
   // (10_스펙_목업_불일치.md §3). §10.6이 B5에 요구한 최소 200u를 넘는다
   safeCorridorU: 460, // §9.7 (u)
+  // 목업 두 줄이 x = 300 · 800이라 중심이 플레이필드 중심 540이 아니라 550이다
+  // (09_stage5_noryang/scene.js:59). 유도만 하면 두 줄이 통째로 10u 왼쪽에 선다
+  centerXU: 550, // §9.7 줄 묶음의 가로 중심 (u). 목업 실측
 } as const satisfies LanceDef;
 
 export const STAGE_5 = {

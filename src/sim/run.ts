@@ -229,13 +229,7 @@ export function disposeRun(run: Run): void {
   run.detachTally();
 }
 
-/**
- * 05 §1의 15번 중 런의 몫. dtSec은 stepWorld와 같게 언제나 고정 스텝이다.
- *
- * 라이프 0의 확정은 collision.ts가, 보스 격파 연출의 종료는 boss.ts가 그 자리에서 하고 여기는
- * 두 상태를 읽어 화면만 넘긴다. 게임오버를 먼저 보는 것은 격파 연출 중에도 장판·잔존 반사탄이
- * 살아 있어 마지막 라이프가 그 구간에서 빠질 수 있기 때문이다(§10.1의 무적은 피격 무적이다).
- */
+/** 05 §1의 15번 중 런의 몫. 라이프 0은 collision.ts가, 격파 종료는 boss.ts가 확정한다 */
 export function stepRun(run: Run, dtSec: number, frame?: StepFrame): void {
   if (run.phase !== 'combat') {
     return;
@@ -244,9 +238,7 @@ export function stepRun(run: Run, dtSec: number, frame?: StepFrame): void {
   run.tally.maxCombo = Math.max(run.tally.maxCombo, run.world.run.combo);
   if (run.world.isGameOver) {
     endRun(run, 'gameOver');
-    return;
-  }
-  if (run.world.boss?.isFinished === true) {
+  } else if (run.world.boss?.isFinished === true) {
     clearStage(run);
   }
 }

@@ -205,6 +205,8 @@ type PlayerHud = {
   readonly cooldownRingEndRU: number;
   readonly cooldownRingEndSec: number;
   readonly invulnRingRU: number;
+  /** 무적이 끝나는 순간의 반경 (u). 링이 이 값까지 단조 수축해 남은 시간이 반경으로 읽힌다(12 §8-4) */
+  readonly invulnRingEndRU: number;
   readonly invulnRingStrokeU: number;
   readonly invulnDashU: readonly number[];
   readonly invulnBlinkHz: number;

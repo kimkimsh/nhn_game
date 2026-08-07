@@ -28,6 +28,7 @@ export const FORMATIONS = {
     spacingU: 120,            // 스펙 값 없음. 종대 앞뒤 간격 (u)
     stopYU: 300,              // §8.2 「지정 y에서 정지」의 y (u). 값 자체는 스펙에 없다
     amplitudeU: 0,            // §8.2 흔들지 않는다 (u)
+    zigzagYU: 0,              // 한 줄로 선다 (u)
     note: '선두가 stopYU에 서고 뒤는 spacingU만큼씩 위에 남는다. 전원을 stopYU로 몰면 한 점에 겹친다',
   },
   'F-2': {
@@ -37,6 +38,7 @@ export const FORMATIONS = {
     spacingU: 150,            // 스펙 값 없음. 같은 쪽 개체 사이의 세로 간격 (u)
     stopYU: 420,              // 스펙 값 없음. 안쪽으로 들어와 멈추는 y (u)
     amplitudeU: 0,            // §8.2 흔들지 않는다 (u)
+    zigzagYU: 0,              // 한 줄로 선다 (u)
     note: '안쪽 정지 x는 이 표에 없다 — FormationDef에 가로 좌표 필드가 없어서다. 좌우 대칭이므로 sim/formations.ts가 기수와 spacingU로 정한다',
   },
   'F-3': {
@@ -46,6 +48,7 @@ export const FORMATIONS = {
     spacingU: 170,            // 스펙 값 없음. 정렬 후 좌우 등간격 (u). 6기까지 가로 1080u 안에 선다
     stopYU: 240,              // 스펙 값 없음. 정렬선 y (u)
     amplitudeU: 0,            // §8.2 흔들지 않는다 (u)
+    zigzagYU: 0,              // 한 줄로 선다 (u)
     note: '§9.3~§9.7이 F-4와 짝지어 쓴다. 위에서 횡대가 고정 사격을 하고 그 아래로 사인 강하가 파고드는 배치다',
   },
   'F-4': {
@@ -55,6 +58,7 @@ export const FORMATIONS = {
     spacingU: 130,            // 스펙 값 없음. 앞뒤 간격 (u)
     stopYU: 520,              // 스펙 값 없음. 흔들며 내려와 멈추는 y (u). F-3보다 아래다
     amplitudeU: 200,          // §8.2가 직접 준 유일한 값 — 좌우 진폭 (u)
+    zigzagYU: 0,              // 한 줄로 선다 (u). 흔드는 것은 amplitudeU다
     note: '진폭 200u는 중심 경로가 x ∈ [200, 880] 안에 있어야 화면 밖으로 나가지 않는다는 뜻이기도 하다',
   },
   'F-5': {
@@ -64,7 +68,8 @@ export const FORMATIONS = {
     spacingU: 170,            // 목업 03_stage2_dongnaeseong/scene.js의 x 간격 실측 (u)
     stopYU: 240,              // 목업 03_stage2_dongnaeseong/scene.js의 배치 y 실측 (u)
     amplitudeU: 0,            // §8.2 이동 없음 (u)
-    note: '성곽·함선 스테이지 전용. 목업이 짝수번째를 46u 내려 지그재그로 놓았으나 그 오프셋을 담을 필드가 없어 옮기지 않았다',
+    zigzagYU: 46,             // 목업 03_stage2_dongnaeseong/scene.js:11의 `240 + (i % 2) * 46` 실측 (u)
+    note: '성곽·함선 스테이지 전용. 한 칸 걸러 내려 세우는 것이 성벽의 총안처럼 읽히게 하는 유일한 장치다',
   },
   'F-6': {
     name: '측면 통과',
@@ -73,6 +78,7 @@ export const FORMATIONS = {
     spacingU: 90,             // 목업 09_stage5_noryang/scene.js의 레인 사이 세로 간격 실측 (u)
     stopYU: null,             // §8.2 정지하지 않는다. 통과 후 소멸이고 되돌아오지 않는다(A8)
     amplitudeU: 0,            // §8.2 흔들지 않는다 (u)
+    zigzagYU: 0,              // 레인이 이미 spacingU만큼 갈려 있다 (u)
     note: '개체 하나는 한쪽에서만 들어오고 좌우를 번갈아 낸다. 첫 레인의 y는 이 표에 없다 — stopYU가 null이라 담을 자리가 없고, sim/formations.ts가 플레이어 영역 상단부터 spacingU만큼씩 내려 잡는다',
   },
 } as const satisfies Record<FormationId, FormationDef>;

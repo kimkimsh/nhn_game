@@ -40,9 +40,9 @@ export const PARRY_LOCKOUT_SEC = PARRY.cooldownSec - PARRY.activeSec;
  * (12_통합_계약.md §10 E-06).
  */
 export const PARRY_BANDS = [
-  { id: 'GREAT',   maxDistU: 28,   damageMul: 3.5, speedMul: 2.6, hitstopSec: 0.075, score: 400 },
-  { id: 'GOOD',    maxDistU: 48,   damageMul: 2.0, speedMul: 1.8, hitstopSec: 0.05,  score: 150 },
-  { id: 'NOT_BAD', maxDistU: null, damageMul: 1.0, speedMul: 1.3, hitstopSec: 0.02,  score: 50  },
+  { id: 'GREAT',   maxDistU: 28,   damageMul: 3.5, speedMul: 2.6, hitstopSec: 0.075, shakeAmplitudeU: 6, score: 400 },
+  { id: 'GOOD',    maxDistU: 48,   damageMul: 2.0, speedMul: 1.8, hitstopSec: 0.05,  shakeAmplitudeU: 4, score: 150 },
+  { id: 'NOT_BAD', maxDistU: null, damageMul: 1.0, speedMul: 1.3, hitstopSec: 0.02,  shakeAmplitudeU: 2, score: 50  },
 ] as const satisfies readonly ParryBand[];
 
 /**

@@ -87,6 +87,13 @@ export type ParryBand = {
   readonly speedMul: number;
   /** §5.3 등급별 히트스톱의 단일 소스다. feel.ts는 이 세 값을 갖지 않는다(12 §5) */
   readonly hitstopSec: number;
+  /**
+   * 히트스톱이 시작될 때의 진동 진폭 (u). render 변위에만 쓰고 판정은 움직이지 않는다.
+   *
+   * 등급 구분이 길이만으로는 안 읽히기 때문에 있다 — NOT BAD의 0.02초는 60Hz에서 한두 프레임이라
+   * 설계된 체감 비율이 화면에서 뭉개진다(12 §8-3).
+   */
+  readonly shakeAmplitudeU: number;
   readonly score: number;
 };
 

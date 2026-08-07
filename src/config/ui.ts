@@ -213,6 +213,7 @@ export const UI = {
      * 남은 시간으로 안 읽히고 명멸로만 보인다. 수축 끝 반경 50u는 이 타입에 칸이 없다.
      */
     invulnRingRU: 62,
+    invulnRingEndRU: 50,       // §15.1 · 12 §8-4 수축 끝 반경 (u). 남은 시간이 반경으로 읽힌다
     invulnRingStrokeU: 2.5,    // §15.1 (u)
     invulnDashU: [9, 7],       // §15.1 점선 패턴 (u)
     /**
