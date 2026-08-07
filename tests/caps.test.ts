@@ -33,7 +33,8 @@ import {
   canFireEnemyBullet,
   canSpawnEnemy,
 } from '../src/sim/caps';
-import { createWorld, stepWorld, type Enemy, type World } from '../src/sim/world';
+import { stepWorld } from '../src/sim/step';
+import { createWorld, type Enemy, type World } from '../src/sim/world';
 
 /** 눌림 소비 상한. 큐에 넣은 것을 전부 이번 스텝이 가져가게 하는 값이다 */
 const HORIZON_MS = 1e9;

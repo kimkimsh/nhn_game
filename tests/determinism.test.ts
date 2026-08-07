@@ -23,7 +23,8 @@ import { FIXED_DT_SEC, MAX_STEPS_PER_FRAME, createLoop } from '../src/core/loop'
 import { createRng, deriveStream } from '../src/core/rng';
 import { aimAt } from '../src/core/vec';
 import { fireEnemyBullet } from '../src/sim/bullets';
-import { createWorld, stepWorld, type World } from '../src/sim/world';
+import { stepWorld } from '../src/sim/step';
+import { createWorld, type World } from '../src/sim/world';
 
 const REPO_ROOT = fileURLToPath(new URL('..', import.meta.url));
 

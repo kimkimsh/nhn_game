@@ -1,9 +1,9 @@
 /**
- * 세계 상태와 한 스텝의 순서 — 05_시스템_설계.md §1.
+ * 세계 상태 — 05_시스템_설계.md §1이 도는 대상.
  *
- * 이 파일이 갖는 것은 「무엇이 있는가」와 「무슨 순서로 도는가」 둘뿐이다. 각 단계가 하는 일은
- * 전부 이웃 모듈에 있고, stepWorld는 그 호출을 순서대로 늘어놓기만 한다. 순서를 바꾸면 깨지는
- * 자리마다 그 이유를 그 줄에 적었다.
+ * 이 파일이 갖는 것은 「무엇이 있는가」 하나다. 한 스텝의 순서는 sim/step.ts가 갖는다 —
+ * 여기 두면 sim/ 전체가 이 파일을 import하는 것만으로 순서에 손댈 수 있게 되고, 순서를
+ * 바꾸면 스펙이 깨지는 자리 넷(05 §1)의 소유자가 사라진다.
  *
  * ── EffectiveStats가 여기 있는 것은 임시다 ────────────────────────────────────────
  *
@@ -12,7 +12,7 @@
  * 런타임 파생이 갈려 있고, parryCooldownSec와 reflectDamageMul은 필드가 아니다. 둘은 호출
  * 시점의 상태 없이는 값이 없는 것이고, 필드로 두면 그 사실이 감춰진다.
  */
-import { COMBO, COMBO_WARN_SEC } from '../config/scoring';
+import { COMBO } from '../config/scoring';
 import { HITSTOP_BUDGET_PER_SEC } from '../config/feel';
 import type { ParryGradeId, StageId } from '../config/ids';
 import { PARRY, PARRY_BANDS } from '../config/parry';
@@ -21,20 +21,14 @@ import { PLAYFIELD } from '../config/playfield';
 import { REFLECT } from '../config/reflect';
 import { bus as globalBus, type FeedbackBus } from '../core/bus';
 import { createClock, type Clock } from '../core/clock';
-import type { Input } from '../core/input';
 import { clamp } from '../core/math';
 import { createPool, type Pool } from '../core/pool';
 import { createRng, type Rng } from '../core/rng';
-import {
-  createEnemyBulletPool,
-  createReflectBulletPool,
-  decayReflectGrace,
-  integrateProjectiles,
-  type Projectile,
-} from './bullets';
-import { resolvePlayerHits, resolveReflectHits } from './collision';
-import { consumeParryInput, createParryState, resolveParry, type ParryState } from './parry';
-import { announceInvulnEnd, createPlayer, movePlayer, type Player } from './player';
+import type { BossState } from './boss';
+import { createEnemyBulletPool, createReflectBulletPool, type Projectile } from './bullets';
+import { createParryState, type ParryState } from './parry';
+import { createPlayer, type Player } from './player';
+import { createZonePool, type Zone } from './zones';
 
 /** §18.4 어느 단계에서 어느 규칙이 어떤 값을 얼마로 잘랐는지. 네 필드 이름이 계약이다 */
 export interface StatClamp {
@@ -186,6 +180,13 @@ export interface World {
   readonly enemyBullets: Pool<Projectile>;
   readonly reflectBullets: Pool<Projectile>;
   readonly enemies: Pool<Enemy>;
+  /** §9.6 P9와 E06이 공유하는 하나. 풀 용량이 곧 상한이라 초과 상태가 존재하지 않는다 */
+  readonly zones: Pool<Zone>;
+  /**
+   * 보스 구간에 들어가기 전에는 null이다. 세우는 자리는 sim/step.ts의 7번 하나이고, 여기서
+   * 미리 만들지 않는 것은 「보스가 아직 없다」와 「보스가 등장했다」가 구분돼야 하기 때문이다.
+   */
+  boss: BossState | null;
   stats: EffectiveStats;
   readonly clock: Clock;
   readonly rng: Rng;
@@ -213,6 +214,8 @@ export function createWorld(spec: WorldSpec): World {
     enemyBullets: createEnemyBulletPool(spec.stageId),
     reflectBullets: createReflectBulletPool(),
     enemies: createPool({ capacity: PLAYFIELD.maxEnemies, create: createEnemy, reset: resetEnemy }),
+    zones: createZonePool(),
+    boss: null,
     stats: createBaseStats(),
     clock: spec.clock ?? createClock(HITSTOP_BUDGET_PER_SEC),
     rng: createRng(spec.seed),
@@ -248,87 +251,4 @@ export function addCombo(world: World, count: number): void {
 export function resetCombo(world: World): void {
   world.run.combo = 0;
   world.run.comboWarned = false;
-}
-
-/**
- * §12.2 만료와 경고. 05 §1의 14번이 이것 하나를 갖는다 — 1번이 시간을 밀고 여기서만 확정한다.
- * 두 곳에서 보면 같은 스텝에 만료와 갱신이 둘 다 일어난다.
- */
-function settleCombo(world: World): void {
-  const run = world.run;
-  if (run.combo === 0) {
-    return;
-  }
-  const remainingSec = run.comboUntilSec - world.simTimeSec;
-  if (remainingSec <= 0) {
-    resetCombo(world);
-    return;
-  }
-  if (remainingSec <= COMBO_WARN_SEC && !run.comboWarned) {
-    run.comboWarned = true;
-    world.bus.emit({ kind: 'comboWarn' });
-  }
-}
-
-export interface StepFrame {
-  readonly input: Input;
-  /**
-   * 이 스텝이 소비해도 되는 눌림의 상한 (ms). 프레임 단위로 소비하면 등급을 고를 수 있는
-   * 해상도가 고정 스텝이 아니라 프레임 간격이 된다.
-   */
-  readonly untilMs: number;
-}
-
-/**
- * 05 §1의 한 스텝. 인자 dtSec은 언제나 고정 스텝이다.
- *
- * 아직 없는 단계(4·5·6·7·12·16)는 자리만 비워 둔다. 지우면 다음 단계를 붙이는 사람이
- * 순서를 다시 판단해야 하고, 그 판단이 한 번이라도 어긋나면 조용히 고장 난다.
- */
-export function stepWorld(world: World, dtSec: number, frame: StepFrame): void {
-  // 1. 타이머 감산 — 전부 sim 시계다. 실시간에 남는 것은 press edge 검출뿐이다
-  world.simTimeSec += dtSec;
-  frame.input.decayParryBuffer(dtSec);
-  decayReflectGrace(world, dtSec);
-  announceInvulnEnd(world);
-
-  // 2. 입력 소비
-  consumeParryInput(world, frame.input, frame.untilMs);
-
-  // 3. 플레이어 이동
-  movePlayer(world, dtSec, frame.input);
-
-  // 4. 웨이브 진행 — sim/waves.ts
-  // 5. 적 스폰 — sim/enemies.ts. 6번보다 앞이다: 같은 스텝에 스폰된 적이 예비동작 없이 쏜다
-  // 6. 적 행동·발사 — sim/enemies.ts
-  // 7. 보스 진행 — sim/boss-runner.ts
-  for (const enemy of world.enemies.active) {
-    enemy.prevXU = enemy.xU;
-    enemy.prevYU = enemy.yU;
-  }
-
-  // 8. 발사체 적분. 9번은 적분 후 위치로 등급을 매기고 10번은 이전 위치로 선분을 만든다
-  integrateProjectiles(world, dtSec);
-
-  // 9. 패리 판정. 10번보다 반드시 앞이다 — GREAT 밴드 안에서 대형 탄환은 이미 코어를 덮고 있다
-  resolveParry(world, frame.input);
-
-  // 10. 피격 판정
-  resolvePlayerHits(world);
-
-  // 11. 반사탄 대 적 판정
-  resolveReflectHits(world);
-
-  // 12. 장판 판정 — sim/zones.ts
-  // 13. 상한 정리. 반사탄 상한은 9번의 슬롯 획득이 이미 지킨다 — sim/caps.ts의 acquireReflectSlot이
-  //     여유가 없으면 가장 오래된 것을 회수하므로 신규 반사탄이 버려지는 경로가 없다
-
-  // 14. 점수·콤보 정산
-  settleCombo(world);
-
-  // 15. 런 상태 검사 — 라이프 0은 applyPlayerHit이 그 자리에서 확정한다
-  // 16. 가드 검사 — sim/guards.ts
-
-  // 17. 이벤트 큐 배출
-  world.bus.flush();
 }

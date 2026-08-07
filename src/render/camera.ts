@@ -158,15 +158,24 @@ export function createCamera(deps: CameraDeps): Camera {
   let offsetYU = 0;
   let rotationRad = 0;
 
+  function addTrauma(amount: number): void {
+    trauma = Math.min(1, trauma + amount);
+  }
+
   /**
-   * `cap`이 있는 이유는 연쇄뿐이다 — 링크가 이어지는 동안 trauma가 0.6~1.0에 머물면 진폭
-   * 9.4~26u가 0.8초 지속되는데, §4.2 자신이 흔들림 1회의 체감 길이를 0.1~0.3초로 적었다.
-   * **이미 상한을 넘겨 있는 trauma를 끌어내리지는 않는다** — 피격 0.85 직후의 연쇄가 화면을
-   * 갑자기 안정시키면 피격이 없던 일이 된다.
+   * 연쇄 링크의 가산 — 12 §7.3.
+   *
+   * **끌어올리는 것이 아니라 끌어내린다.** 06 §6.2가 적은 증상은 "연쇄 내내 trauma가 0.6~1.0에
+   * 머문다"였고, 그 0.6~1.0은 링크가 만드는 것이 아니라 **직전의 패리(0.40)와 첫 처치(0.30)가
+   * 이미 만들어 둔 값**이다. 링크에만 상한을 걸고 기존 값을 남겨 두면 0.70이 그대로 서서
+   * 진폭 12.7u가 연쇄 내내 지속된다 — 고치려던 것이 하나도 안 고쳐진다.
+   *
+   * 그래서 둘째 처치가 도착하는 순간 화면이 7.9u로 내려앉고, 이후 링크는 같은 천장에 +0.04씩
+   * 부딪힌다. 연쇄가 한 번에 읽혀야 한다는 §17의 요구는 흔들림이 아니라 `×N` 팝업과 0.04초
+   * 스태거가 담당한다.
    */
-  function addTrauma(amount: number, cap: number): void {
-    const raised = Math.min(trauma + amount, cap);
-    trauma = Math.min(1, Math.max(trauma, raised));
+  function addChainTrauma(amount: number): void {
+    trauma = Math.min(trauma + amount, TRAUMA_ON.chainCap);
   }
 
   function addKick(dirX: number, dirY: number, magnitudeU: number, decaySec: number): void {
@@ -195,7 +204,7 @@ export function createCamera(deps: CameraDeps): Camera {
   }
 
   function onParry(event: FeedbackEventOf<'parry'>): void {
-    addTrauma(traumaForGrade(event.grade), 1);
+    addTrauma(traumaForGrade(event.grade));
     const slot = chainSlotFor(event.parrySeq);
     slot.parryXU = event.xU;
     slot.parryYU = event.yU;
@@ -210,7 +219,7 @@ export function createCamera(deps: CameraDeps): Camera {
   function onEnemyKilled(event: FeedbackEventOf<'enemyKilled'>): void {
     const slot = chainSlotFor(event.parrySeq);
     if (event.chainIndex === 0) {
-      addTrauma(TRAUMA_ON.enemyKilled, 1);
+      addTrauma(TRAUMA_ON.enemyKilled);
       slot.firstKillXU = event.xU;
       slot.firstKillYU = event.yU;
       slot.hasFirstKill = true;
@@ -219,7 +228,7 @@ export function createCamera(deps: CameraDeps): Camera {
     const amount = event.chainIndex === CHAIN_LINK_SECOND
       ? TRAUMA_ON.chainLink2
       : TRAUMA_ON.chainLink3Up;
-    addTrauma(amount, TRAUMA_ON.chainCap);
+    addChainTrauma(amount);
     if (event.chainIndex !== CHAIN_LINK_SECOND || !slot.hasFirstKill) {
       return;
     }
@@ -232,18 +241,18 @@ export function createCamera(deps: CameraDeps): Camera {
   }
 
   function onPlayerHit(event: FeedbackEventOf<'playerHit'>): void {
-    addTrauma(TRAUMA_ON.playerHit, 1);
+    addTrauma(TRAUMA_ON.playerHit);
     addKick(event.dirX, event.dirY, KICK.playerHit.magnitudeU, KICK.playerHit.decaySec);
   }
 
   subscriptions.push(deps.bus.on('parry', onParry));
   subscriptions.push(deps.bus.on('enemyKilled', onEnemyKilled));
   subscriptions.push(deps.bus.on('playerHit', onPlayerHit));
-  subscriptions.push(deps.bus.on('reflectHit', () => addTrauma(TRAUMA_ON.reflectHit, 1)));
-  subscriptions.push(deps.bus.on('shieldBlocked', () => addTrauma(TRAUMA_ON.shieldBlocked, 1)));
-  subscriptions.push(deps.bus.on('bossPartBroken', () => addTrauma(TRAUMA_ON.bossPartBreak, 1)));
-  subscriptions.push(deps.bus.on('bossPhase', () => addTrauma(TRAUMA_ON.bossPhase, 1)));
-  subscriptions.push(deps.bus.on('bossDefeated', () => addTrauma(TRAUMA_ON.bossDeath, 1)));
+  subscriptions.push(deps.bus.on('reflectHit', () => addTrauma(TRAUMA_ON.reflectHit)));
+  subscriptions.push(deps.bus.on('shieldBlocked', () => addTrauma(TRAUMA_ON.shieldBlocked)));
+  subscriptions.push(deps.bus.on('bossPartBroken', () => addTrauma(TRAUMA_ON.bossPartBreak)));
+  subscriptions.push(deps.bus.on('bossPhase', () => addTrauma(TRAUMA_ON.bossPhase)));
+  subscriptions.push(deps.bus.on('bossDefeated', () => addTrauma(TRAUMA_ON.bossDeath)));
   // 돌진 착탄은 trauma 표에 행이 없다 — 방향이 정보의 전부라 무방향 성분을 주지 않는다
   subscriptions.push(
     deps.bus.on('bossChargeLand', (event: FeedbackEventOf<'bossChargeLand'>) => {

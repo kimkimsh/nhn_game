@@ -87,9 +87,19 @@ npx vitest run tests/visual/visual.test.ts
 
 ## 게임 렌더러와의 결합점
 
-`renderer-binding.ts` **한 파일**이 게임 코드에 대한 가정 전부를 들고 있다. `render/frame.ts`가
-아직 없으므로 프레임 대조는 `renderer-missing`으로 남고, 목업 캡처 · 재현성 · 마스크 적용 · 배경
-굽기 검증은 그대로 돈다. P4-1이 정한 시그니처가 그 파일의 표와 다르면 **고칠 곳은 그 파일뿐이다.**
+`renderer-binding.ts` **한 파일**이 게임 코드에 대한 가정 전부를 들고 있고, `frame-adapter.ts`가
+주입 payload를 그 시그니처에 맞는 뷰로 옮겨 적는다. `render/frame.ts`가 붙었으므로 프레임 대조는
+`compared`로 돈다 — `render/frame.ts`가 없으면 다시 `renderer-missing`으로 떨어지고 목업 캡처 ·
+재현성 · 마스크 적용 · 배경 굽기 검증은 그대로 돈다.
+
+**게임 쪽 시그니처가 바뀌면 고칠 곳은 그 둘뿐이다.** 지금 걸려 있는 가정은 셋이다 —
+`drawFrame(ctx, FrameView, FrameDeps)` · `BACKGROUNDS` 굽기 API · 프레임을 넘겨 사는 다섯
+(`camera` · `particles` · `impact` · `playerFx` · `hudAnim`)의 생성 함수.
+
+`frame-adapter.ts`가 채우지 못하는 칸이 있다 — 목업이 그 값을 안 들고 있기 때문이고, 각 자리에
+무엇을 넣었는지가 그 파일 주석에 있다. 리포트를 읽을 때 "게임이 다르게 그렸다"와 "목업에 그 값이
+없었다"를 갈라 봐야 한다. 정지 프레임이라 `realDt`가 0이므로 **HUD의 점수 카운트업과 콤보 게이지는
+구조적으로 목업과 다르게 나온다**(점수는 0에서 출발하고 게이지는 비어 있다).
 
 ## 의존성
 
@@ -117,6 +127,7 @@ npx vitest run tests/visual/visual.test.ts
 | `compare.ts` | 양쪽 | 순수 픽셀 대조. 캔버스도 DOM도 모른다 |
 | `adapt.ts` | 브라우저 | `HWSTATE` → 주입 payload |
 | `renderer-binding.ts` | 브라우저 | 게임 렌더러 · 배경 굽기 API 해석 |
+| `frame-adapter.ts` | 브라우저 | 주입 payload → `FrameView` · 프레임 상태 다섯 생성 |
 | `page-canvas.ts` | 브라우저 | 목업 iframe 적재 · 픽셀 읽기 · 산출 그림 |
 | `in-page.ts` | 브라우저 | 캡처 · 마스크 조립 · 대조 |
 | `bake.ts` | 브라우저 | 06 §3.2 정적 배경 굽기 검증 |

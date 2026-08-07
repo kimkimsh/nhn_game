@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T19:31:07.699Z",
+  "generatedAt": "2026-08-07T20:28:00.290Z",
   "driver": "playwright chromium 151.0.7922.34",
   "tolerance": {
     "channelDelta": 2,
@@ -37,88 +37,88 @@
           "ruling": 15,
           "new-element": 1
         },
-        "coverageRatio": 0.07329668209876543
+        "coverageRatio": 0.0734375
       },
       "repeat": {
         "widthPx": 1080,
         "heightPx": 1920,
         "comparedPixels": 2073600,
         "maskedPixels": 0,
-        "diffPixels": 1335,
-        "diffRatio": 0.0006438078703703703,
-        "maxChannelDelta": 100,
+        "diffPixels": 1343,
+        "diffRatio": 0.0006476658950617284,
+        "maxChannelDelta": 97,
         "worstCells": [
           {
             "xU": 120,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 230,
-            "maxChannelDelta": 90
+            "diffPixels": 196,
+            "maxChannelDelta": 70
+          },
+          {
+            "xU": 360,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 196,
+            "maxChannelDelta": 78
+          },
+          {
+            "xU": 240,
+            "yU": 720,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 183,
+            "maxChannelDelta": 76
           },
           {
             "xU": 120,
-            "yU": 600,
+            "yU": 720,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 202,
-            "maxChannelDelta": 81
+            "diffPixels": 182,
+            "maxChannelDelta": 94
           },
           {
             "xU": 360,
             "yU": 600,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 145,
-            "maxChannelDelta": 100
+            "diffPixels": 147,
+            "maxChannelDelta": 84
+          },
+          {
+            "xU": 240,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 49,
+            "maxChannelDelta": 85
+          },
+          {
+            "xU": 360,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 49,
+            "maxChannelDelta": 44
           },
           {
             "xU": 240,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 133,
-            "maxChannelDelta": 86
-          },
-          {
-            "xU": 240,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 119,
-            "maxChannelDelta": 83
-          },
-          {
-            "xU": 120,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 98,
-            "maxChannelDelta": 65
-          },
-          {
-            "xU": 120,
-            "yU": 360,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 97,
-            "maxChannelDelta": 50
-          },
-          {
-            "xU": 360,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 97,
-            "maxChannelDelta": 93
+            "diffPixels": 49,
+            "maxChannelDelta": 26
           }
         ]
       },
       "repeatIgnoringParticles": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 2056424,
-        "maskedPixels": 17176,
+        "comparedPixels": 2056772,
+        "maskedPixels": 16828,
         "diffPixels": 0,
         "diffRatio": 0,
         "maxChannelDelta": 0,
@@ -127,10 +127,10 @@
       "compare": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 1921612,
-        "maskedPixels": 151988,
-        "diffPixels": 35801,
-        "diffRatio": 0.018630712131273118,
+        "comparedPixels": 1921320,
+        "maskedPixels": 152280,
+        "diffPixels": 35815,
+        "diffRatio": 0.018640830262527844,
         "maxChannelDelta": 234,
         "worstCells": [
           {

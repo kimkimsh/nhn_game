@@ -7,7 +7,8 @@ import { createInput, type Input } from '../src/core/input';
 import { FIXED_DT_SEC } from '../src/core/loop';
 import type { Projectile } from '../src/sim/bullets';
 import { acquireEnemySlot } from '../src/sim/caps';
-import { stepWorld, createWorld, type World } from '../src/sim/world';
+import { stepWorld } from '../src/sim/step';
+import { createWorld, type World } from '../src/sim/world';
 
 const HORIZON_MS = 1e9;
 
@@ -125,10 +126,17 @@ describe('P3-B 최소 전투 루프', () => {
     enemy.hp = def.hp;
     enemy.maxHp = def.hp;
     enemy.scoreValue = def.score;
+    // 05 §1의 4·5번이 붙은 뒤로 이 200스텝 사이에 W1 편성이 함께 들어온다. 남은 기수로도
+    // 객체 동일성으로도 볼 수 없다 — 풀이 죽은 슬롯을 그 자리에서 다시 내주므로 죽은 그 기가
+    // 곧 새로 들어온 기가 된다. 처치 사건의 좌표가 세워 둔 자리와 같은지가 유일한 증거다
+    const placedYU = enemy.yU;
+    const kills: number[] = [];
+    const off = world.bus.on('enemyKilled', (event) => void kills.push(event.yU));
     placeIncoming(world, 'P2', 20);
     press(input);
     step(world, input, 200);
-    expect(world.enemies.activeCount).toBe(0);
+    off();
+    expect(kills).toContain(placedYU);
     expect(world.run.score).toBeGreaterThan(0);
   });
 

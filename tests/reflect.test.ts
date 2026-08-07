@@ -21,7 +21,8 @@ import { FIXED_DT_SEC } from '../src/core/loop';
 import { createVec2, dot, lengthOf, reflectAboutCenterInto } from '../src/core/vec';
 import { bulletSpeedUPerSec, decayReflectGrace, type Projectile } from '../src/sim/bullets';
 import { consumeParryInput, resolveParry } from '../src/sim/parry';
-import { createBaseStats, createWorld, stepWorld, type World } from '../src/sim/world';
+import { stepWorld } from '../src/sim/step';
+import { createBaseStats, createWorld, type World } from '../src/sim/world';
 
 const HORIZON_MS = 1e9;
 const PARRY_KEY = 'Space';
@@ -83,6 +84,18 @@ function parryNow(world: World, input: Input): void {
 
 function step(world: World, input: Input, count: number): void {
   for (let index = 0; index < count; index += 1) {
+    stepWorld(world, FIXED_DT_SEC, { input, untilMs: HORIZON_MS });
+  }
+}
+
+/**
+ * 잡몹을 매 스텝 비우고 도는 스텝. 5번이 세운 개체는 진입 시작 지점에 선 채로 사라지므로
+ * 반사탄의 항로에 아무것도 남지 않는다 — 반사탄이 명중이 아니라 다른 이유로 사라지는 것을
+ * 보는 케이스가 쓴다.
+ */
+function stepEmptyField(world: World, input: Input, count: number): void {
+  for (let index = 0; index < count; index += 1) {
+    world.enemies.releaseAll();
     stepWorld(world, FIXED_DT_SEC, { input, untilMs: HORIZON_MS });
   }
 }
@@ -190,9 +203,11 @@ describe('§7.1 반사탄의 일생', () => {
     expect(reflected.lastGrade).toBe('NOT_BAD');
     expect(reflected.lifeRemainingSec).toBe(3.0);
 
-    step(world, input, 350);
+    // 05 §1의 5번이 붙은 뒤로 W1 편성이 같은 세로줄로 내려온다. 비우지 않으면 반사탄이 수명
+    // 전에 명중으로 사라져 이 케이스가 재는 것이 수명이 아니게 된다
+    stepEmptyField(world, input, 350);
     expect(world.reflectBullets.activeCount).toBe(1);
-    step(world, input, 15);
+    stepEmptyField(world, input, 15);
     expect(world.reflectBullets.activeCount).toBe(0);
   });
 

@@ -25,8 +25,8 @@
 <body>
 <canvas id="stage"></canvas>
 <script type="module">
-  const harness = await import('/src/dev/p3-harness.ts');
-  harness.startP3Harness();
+  const entry = await import('/src/boot/p3-entry.ts');
+  await entry.startP3Entry();
 </script>
 </body>
 </html>

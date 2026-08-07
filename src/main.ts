@@ -22,13 +22,13 @@ type BootStep = (view: CanvasView) => void | Promise<void>;
 const SCREEN_MANAGER_MODULE: BootModules = import.meta.glob('./screens/manager.ts');
 
 /**
- * 모듈이 아직 없으면 조용히 건너뛰고, 있는데 약속한 함수가 없으면 던진다.
+ * 모듈이 아직 없으면 조용히 건너뛰고 거짓을 낸다. 있는데 약속한 함수가 없으면 던진다 —
  * 둘을 같이 삼키면 P6-1이 export 이름을 틀렸을 때 검은 화면만 남는다.
  */
-async function runBootStep(modules: BootModules, exportName: string, view: CanvasView): Promise<void> {
+async function runBootStep(modules: BootModules, exportName: string, view: CanvasView): Promise<boolean> {
   const load = Object.values(modules)[0];
   if (load === undefined) {
-    return;
+    return false;
   }
   const loaded = await load();
   const step: unknown = (loaded as Record<string, unknown>)[exportName];
@@ -36,6 +36,7 @@ async function runBootStep(modules: BootModules, exportName: string, view: Canva
     throw new Error(`부팅 모듈이 ${exportName}을 export하지 않는다`);
   }
   await (step as BootStep)(view);
+  return true;
 }
 
 async function boot(): Promise<void> {
@@ -48,7 +49,14 @@ async function boot(): Promise<void> {
     onViewChanged: handleViewChanged,
   });
   await bakeSprites(view);
-  await runBootStep(SCREEN_MANAGER_MODULE, 'startScreens', view);
+  if (await runBootStep(SCREEN_MANAGER_MODULE, 'startScreens', view)) {
+    return;
+  }
+  // P6-1이 오기 전까지의 대역. 이것이 없으면 index.html은 검은 캔버스만 내보내고, 검은 화면은
+  // 원인이 안 보이는 실패라 부팅이 성공한 것으로 오해된다. manager.ts가 생기는 순간 이 갈래는
+  // 위 return에 막혀 죽고, boot/p3-entry.ts와 dev/p3-harness.ts를 함께 지우면 된다
+  const p3 = await import('./boot/p3-entry');
+  await p3.startP3Entry(view);
 }
 
 boot().catch((cause: unknown) => {
