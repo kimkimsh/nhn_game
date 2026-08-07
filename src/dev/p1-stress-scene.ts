@@ -38,8 +38,9 @@ export interface StressBulletBatch {
  * dev/는 render/와 boot/를 import할 수 없어서(03 §5) 구조로만 맞춘다.
  */
 export interface StressRenderApi {
-  drawBulletGlowPass(ctx: CanvasRenderingContext2D, pixelsPerUnit: number, batch: StressBulletBatch): void;
-  drawBulletBodyPass(ctx: CanvasRenderingContext2D, pixelsPerUnit: number, batch: StressBulletBatch): void;
+  // 배율 인자가 없다. 두 패스가 들어올 때의 ctx 변환을 기준으로 쓴다 (render/sprites.ts)
+  drawBulletGlowPass(ctx: CanvasRenderingContext2D, batch: StressBulletBatch): void;
+  drawBulletBodyPass(ctx: CanvasRenderingContext2D, batch: StressBulletBatch): void;
   paintBulletShape(ctx: CanvasRenderingContext2D, id: ParryableBulletId, state: BulletSpriteState): void;
   glow(ctx: CanvasRenderingContext2D, xU: number, yU: number, radiusU: number, color: string, alpha: number): void;
   hatch(): CanvasPattern;

@@ -1,0 +1,427 @@
+{
+  "timeSec": 5,
+  "stageKey": "haengju",
+  "title": "보스 B4 · 대통 포병 대장",
+  "player": {
+    "xU": 246.25266044285414,
+    "yU": 1150.1210789617407,
+    "parryActiveRemainingSec": 0,
+    "cooldownRemainingSec": 0.040000000000000036,
+    "invulnRemainingSec": 0
+  },
+  "bullets": [
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 130.15761821276368,
+      "yU": 1970.3175651471352,
+      "vxUPerSec": -89.8075263767521,
+      "vyUPerSec": 588.385628823554,
+      "spinRad": 30.749999999999886,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 442.0344345759596,
+      "yU": 1848.9725989515175,
+      "vxUPerSec": -96.98411360332983,
+      "vyUPerSec": 587.2453675496951,
+      "spinRad": 28.949999999999903,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 185.3958212160083,
+      "yU": 1754.9407592668524,
+      "vxUPerSec": -15.117407331709993,
+      "vyUPerSec": 595.0079864972967,
+      "spinRad": 27.14999999999992,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 775.6718820381979,
+      "yU": 1620.9487362736938,
+      "vxUPerSec": 80.83025397805515,
+      "vyUPerSec": 589.6859418723183,
+      "spinRad": 25.349999999999937,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 1130.7874413649433,
+      "yU": 1484.524577175678,
+      "vxUPerSec": 102.22593898651729,
+      "vyUPerSec": 586.3556066060296,
+      "spinRad": 23.399999999999956,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 413.81481550087665,
+      "yU": 1386.673663692774,
+      "vxUPerSec": 29.922839792032118,
+      "vyUPerSec": 594.447359871991,
+      "spinRad": 21.599999999999973,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 505.67984353861743,
+      "yU": 1250.4437841388694,
+      "vxUPerSec": -70.22297242506379,
+      "vyUPerSec": 591.042954567423,
+      "spinRad": 19.64999999999999,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": -71.35847449222868,
+      "yU": 1112.0473847269723,
+      "vxUPerSec": -105.43651245367552,
+      "vyUPerSec": 585.7868057933756,
+      "spinRad": 17.70000000000001,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 375.06837118014096,
+      "yU": 1008.6281379161442,
+      "vxUPerSec": -44.11224272822087,
+      "vyUPerSec": 593.5630969336677,
+      "spinRad": 15.900000000000027,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 860.1962697310428,
+      "yU": 878.1402869532552,
+      "vxUPerSec": 58.19114176195991,
+      "vyUPerSec": 592.3485722279066,
+      "spinRad": 13.950000000000022,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 389.0764930981339,
+      "yU": 740.778605053274,
+      "vxUPerSec": 106.55736982359933,
+      "vyUPerSec": 585.5839537899554,
+      "spinRad": 12.000000000000018,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 583.1323143156728,
+      "yU": 157.4753517503547,
+      "vxUPerSec": 57.39694294701735,
+      "vyUPerSec": 592.4260552510641,
+      "spinRad": 2.999999999999999,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "reflect",
+      "xU": -69.8876189193574,
+      "yU": 916.1756137191139,
+      "vxUPerSec": -1563.3157842971232,
+      "vyUPerSec": -1139.2748213523682,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "reflect",
+      "xU": -11.055372336401206,
+      "yU": 1447.8861385520604,
+      "vxUPerSec": -1250.995091298039,
+      "vyUPerSec": 1475.4371018610761,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 230.37494581940476,
+      "yU": 1305.2305779885012,
+      "vxUPerSec": -0.002732864596889851,
+      "vyUPerSec": 743.9999999949807,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 116.38929677572233,
+      "yU": 1258.0155630763247,
+      "vxUPerSec": -526.0903438354386,
+      "vyUPerSec": 526.0845465541731,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 69.17553794441717,
+      "yU": 1144.029393748262,
+      "vxUPerSec": -743.9999999799232,
+      "vyUPerSec": -0.005465729193742829,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 116.39097154894148,
+      "yU": 1030.0439181357824,
+      "vxUPerSec": -526.0826141128881,
+      "vyUPerSec": -526.0922762483308,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 230.37731430205514,
+      "yU": 982.8305779993759,
+      "vxUPerSec": 0.008198593790356859,
+      "vyUPerSec": -743.9999999548273,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "reflect",
+      "xU": 319.1211108358089,
+      "yU": 879.6419662990933,
+      "vxUPerSec": 399.8866804241972,
+      "vyUPerSec": -1278.1030016470959,
+      "spinRad": 1.9499999999999995,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 875.7532533302842,
+      "yU": 29.241499473825847,
+      "vxUPerSec": -44.97211431185153,
+      "vyUPerSec": 593.4985669185072,
+      "spinRad": 1.05,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 555.1755379400672,
+      "yU": 1294.0305779895878,
+      "vxUPerSec": 744,
+      "vyUPerSec": 0,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 547.9117539063459,
+      "yU": 1311.5668583701029,
+      "vxUPerSec": 526.0864789883598,
+      "vyUPerSec": 526.0884114154483,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 530.3754468445807,
+      "yU": 1318.8305779894206,
+      "vxUPerSec": -0.002732864596889851,
+      "vyUPerSec": 743.9999999949807,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 512.8391931455526,
+      "yU": 1311.5667295413934,
+      "vxUPerSec": -526.0903438354386,
+      "vyUPerSec": 526.0845465541731,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 505.57553794073647,
+      "yU": 1294.0303957986146,
+      "vxUPerSec": -743.9999999799232,
+      "vyUPerSec": -0.005465729193742829,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 512.839450802971,
+      "yU": 1276.49416878131,
+      "vxUPerSec": -526.0826141128881,
+      "vyUPerSec": -526.0922762483308,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 530.375811226527,
+      "yU": 1269.2305779910937,
+      "vxUPerSec": 0.008198593790356859,
+      "vyUPerSec": -743.9999999548273,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 547.9120115618714,
+      "yU": 1276.4945552674374,
+      "vxUPerSec": 526.0942086541245,
+      "vyUPerSec": -526.0806816645053,
+      "spinRad": 0.3,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    }
+  ],
+  "enemies": [
+    {
+      "enemyType": "B-ART",
+      "xU": 540,
+      "yU": 340,
+      "hp": 3850,
+      "maxHp": 3850,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": true,
+      "parts": []
+    }
+  ],
+  "zones": [
+    {
+      "xU": 397.8201012850732,
+      "yU": 1343.9429839327547,
+      "radiusU": 90,
+      "ageSec": 2.8166666666666615,
+      "durationSec": 4
+    },
+    {
+      "xU": 697.8201012850732,
+      "yU": 1493.9429839327547,
+      "radiusU": 90,
+      "ageSec": 2.633333333333329,
+      "durationSec": 4
+    },
+    {
+      "xU": 920,
+      "yU": 1373.9429839327547,
+      "radiusU": 90,
+      "ageSec": 2.449999999999996,
+      "durationSec": 4
+    },
+    {
+      "xU": 230.37553794006726,
+      "yU": 1144.0305779895878,
+      "radiusU": 90,
+      "ageSec": 0.21666666666666665,
+      "durationSec": 4
+    },
+    {
+      "xU": 530.3755379400673,
+      "yU": 1294.0305779895878,
+      "radiusU": 90,
+      "ageSec": 0.03333333333333333,
+      "durationSec": 4
+    }
+  ],
+  "telegraphs": [
+    {
+      "kind": "circle",
+      "xU": 820.3755379400673,
+      "yU": 1174.0305779895878,
+      "radiusU": 90,
+      "widthU": 0,
+      "ageSec": 1.056666666666668,
+      "durationSec": 1.2
+    }
+  ],
+  "popups": [
+    {
+      "xU": 266.27248291086346,
+      "yU": 993.6839950865717,
+      "text": "GREAT",
+      "sub": "×3",
+      "color": "#f5b324",
+      "lifeSec": 0.6499999999999994,
+      "maxLifeSec": 0.85
+    }
+  ],
+  "particles": [],
+  "hud": {
+    "life": 2,
+    "maxLife": 4,
+    "score": 731500,
+    "combo": 44,
+    "stage": 4,
+    "wave": "보스전",
+    "progress": 1,
+    "boss": {
+      "name": "B4 대통 포병 대장",
+      "hpRatio": 0.82,
+      "phase": 1,
+      "phaseThresholds": [
+        0.6,
+        0.3
+      ]
+    }
+  },
+  "traumaAtCapture": 0,
+  "hitstopRemainingSec": 0.075
+}

@@ -1,0 +1,270 @@
+{
+  "timeSec": 4.25,
+  "stageKey": "busanjin",
+  "title": "스테이지 1 · 부산진 새벽",
+  "player": {
+    "xU": 426.5762349679293,
+    "yU": 1156.3276324723633,
+    "parryActiveRemainingSec": 0,
+    "cooldownRemainingSec": 0.07333333333333336,
+    "invulnRemainingSec": 0
+  },
+  "bullets": [
+    {
+      "bulletType": "P2",
+      "owner": "enemy",
+      "xU": 835.8745559489562,
+      "yU": 2055.6995598041963,
+      "vxUPerSec": 47.61968052696598,
+      "vyUPerSec": 758.5066684126842,
+      "spinRad": 21.89999999999997,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P2",
+      "owner": "enemy",
+      "xU": 694.5638336385323,
+      "yU": 1852.920986189192,
+      "vxUPerSec": -113.92072565877554,
+      "vyUPerSec": 751.413380414122,
+      "spinRad": 18.6,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P2",
+      "owner": "enemy",
+      "xU": 785.5989672287495,
+      "yU": 1457.127058589248,
+      "vxUPerSec": 140.34226698785534,
+      "vyUPerSec": 746.9297477652832,
+      "spinRad": 15.750000000000027,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 773.5047951977194,
+      "yU": 1025.8920135809553,
+      "vxUPerSec": 373.93199656979976,
+      "vyUPerSec": 361.351438272111,
+      "spinRad": 12.60000000000002,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 635.781805508228,
+      "yU": 1137.3786508608891,
+      "vxUPerSec": 275.5584325058766,
+      "vyUPerSec": 440.9847506149212,
+      "spinRad": 12.60000000000002,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "reflect",
+      "xU": 428.00576718516646,
+      "yU": 975.2135523428183,
+      "vxUPerSec": -122.33275744755767,
+      "vyUPerSec": -927.971279973296,
+      "spinRad": 12.60000000000002,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 760.1306147533396,
+      "yU": 1109.1145485639051,
+      "vxUPerSec": 206.3724513312539,
+      "vyUPerSec": 477.29488927866095,
+      "spinRad": 9.600000000000012,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 630.6152319192697,
+      "yU": 1147.214757526992,
+      "vxUPerSec": 84.9517799243133,
+      "vyUPerSec": 513.0138351815583,
+      "spinRad": 9.600000000000012,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 495.73169331724057,
+      "yU": 1152.8973034249211,
+      "vxUPerSec": -41.50153751508805,
+      "vyUPerSec": 518.341221960866,
+      "spinRad": 9.600000000000012,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 785.0441357225022,
+      "yU": 898.6741097278436,
+      "vxUPerSec": -61.30345128749857,
+      "vyUPerSec": 516.3737859925127,
+      "spinRad": 6.600000000000005,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 694.8933669706203,
+      "yU": 876.5968435398372,
+      "vxUPerSec": -184.2363177673357,
+      "vyUPerSec": 486.26842300887,
+      "spinRad": 6.600000000000005,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P1",
+      "owner": "enemy",
+      "xU": 612.7464783173118,
+      "yU": 833.3943497058972,
+      "vxUPerSec": -296.25480229457537,
+      "vyUPerSec": 427.35593141712917,
+      "spinRad": 6.600000000000005,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    }
+  ],
+  "enemies": [
+    {
+      "enemyType": "E-A",
+      "xU": 150,
+      "yU": 300,
+      "hp": 30,
+      "maxHp": 30,
+      "flash": 0,
+      "charge": 0.03508771929824411,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-A",
+      "xU": 360,
+      "yU": 210,
+      "hp": 30,
+      "maxHp": 30,
+      "flash": 0,
+      "charge": 0.42105263157894585,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-A",
+      "xU": 720,
+      "yU": 210,
+      "hp": 30,
+      "maxHp": 30,
+      "flash": 0,
+      "charge": 0.7543859649122799,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-A",
+      "xU": 930,
+      "yU": 300,
+      "hp": 30,
+      "maxHp": 30,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-A",
+      "xU": 540,
+      "yU": 150,
+      "hp": 30,
+      "maxHp": 30,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-B",
+      "xU": 250,
+      "yU": 520,
+      "hp": 36,
+      "maxHp": 36,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-B",
+      "xU": 540,
+      "yU": 600,
+      "hp": 36,
+      "maxHp": 36,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-B",
+      "xU": 830,
+      "yU": 520,
+      "hp": 36,
+      "maxHp": 36,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    }
+  ],
+  "zones": [],
+  "telegraphs": [],
+  "popups": [
+    {
+      "xU": 455.82563956049233,
+      "yU": 1004.6764783032472,
+      "text": "GOOD",
+      "sub": "",
+      "color": "#35b7e0",
+      "lifeSec": 0.6833333333333328,
+      "maxLifeSec": 0.85
+    }
+  ],
+  "particles": [],
+  "hud": {
+    "life": 3,
+    "maxLife": 3,
+    "score": 24850,
+    "combo": 17,
+    "stage": 1,
+    "wave": "W2  0:19 / 0:27",
+    "progress": 0.31,
+    "boss": null
+  },
+  "traumaAtCapture": 0,
+  "hitstopRemainingSec": 0.05
+}

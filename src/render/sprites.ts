@@ -130,16 +130,18 @@ function glowColorFor(state: BulletSpriteState): string {
  * 가산이라 같은 패스에 합류하고, **절대 좌표로 계산해서** 그린다 — 회전 프레임에 두면
  * P4 수리검의 꼬리가 탄과 함께 돈다 (12 §7.2).
  *
- * 호출 순서 제약: 이 함수가 기준 변환을 스스로 걸므로 흔들림 변위는 호출부가 이미
- * 적용해 둔 상태여야 하고, 끝난 뒤 drawBulletBodyPass가 바로 이어져야 한다 —
+ * **기준 변환을 스스로 세우지 않는다.** 들어올 때의 `ctx` 변환이 곧 논리 단위 프레임이고,
+ * 거기에는 render/camera.ts의 흔들림 변위가 이미 걸려 있다. 배율을 숫자로 받아
+ * `setTransform(pixelsPerUnit, …)`을 걸면 그 변위가 통째로 지워져 **탄환 층만 흔들림 밖으로
+ * 빠져나간다** — 06 §2가 "흔들림이 1~9층을 감싼다"고 못 박은 자리다.
+ *
+ * 호출 순서 제약: 끝난 뒤 drawBulletBodyPass가 바로 이어져야 한다 —
  * 합성 모드를 `lighter`로 둔 채 돌려준다.
  */
 export function drawBulletGlowPass(
   ctx: CanvasRenderingContext2D,
-  pixelsPerUnit: number,
   batch: BulletBatch,
 ): void {
-  ctx.setTransform(pixelsPerUnit, 0, 0, pixelsPerUnit, 0, 0);
   ctx.globalCompositeOperation = 'lighter';
   ctx.strokeStyle = STREAK_COLOR;
   ctx.lineCap = 'round';
@@ -207,29 +209,33 @@ export function drawBulletGlowPass(
 /**
  * 본체 패스 — 탄환 층의 두 번째. `source-over` 하나로 전부 내보낸다.
  *
- * save/restore 대신 setTransform을 직접 쓴다. 상태 스택 push/pop 1,040회가 여기서 사라지고,
- * 실측상 setTransform 자체는 비용이 없다 (13 §4.3).
+ * save/restore 대신 기준 변환 복원 + translate + rotate를 직접 쓴다. 상태 스택 push/pop
+ * 1,040회가 여기서 사라지고, 실측상 상태 호출 자체는 비용이 없다 (13 §4.3).
+ *
+ * **기준 변환은 들어올 때의 `ctx` 변환이다.** 배율 숫자로 다시 세우면 흔들림 변위가 지워진다
+ * (drawBulletGlowPass의 머리말 참고). 그래서 한 번만 읽어 두고 발마다 그 위에 얹는다 —
+ * `setTransform(base)`은 같은 객체를 넘기므로 발당 할당이 없다.
  *
  * 호출 순서 제약: drawBulletGlowPass 바로 뒤에만 부른다. 끝난 뒤 기준 변환을 되돌려 준다.
  */
 export function drawBulletBodyPass(
   ctx: CanvasRenderingContext2D,
-  pixelsPerUnit: number,
   batch: BulletBatch,
 ): void {
   ctx.globalCompositeOperation = 'source-over';
   ctx.globalAlpha = 1;
+  const base = ctx.getTransform();
 
   for (let i = 0; i < batch.count; i += 1) {
     const id = batch.bulletId[i]!;
     const sprite = getBulletSprite(id, batch.state[i]!);
     const angle = batch.angleRad[i]! + BODY_ANGLE_OFFSET_RAD + batch.spinRad[i]!;
-    const cos = Math.cos(angle) * pixelsPerUnit;
-    const sin = Math.sin(angle) * pixelsPerUnit;
-    ctx.setTransform(cos, sin, -sin, cos, batch.xU[i]! * pixelsPerUnit, batch.yU[i]! * pixelsPerUnit);
+    ctx.setTransform(base);
+    ctx.translate(batch.xU[i]!, batch.yU[i]!);
+    ctx.rotate(angle);
     const half = sprite.halfExtentU;
     ctx.drawImage(sprite.image, -half, -half, half * 2, half * 2);
   }
 
-  ctx.setTransform(pixelsPerUnit, 0, 0, pixelsPerUnit, 0, 0);
+  ctx.setTransform(base);
 }

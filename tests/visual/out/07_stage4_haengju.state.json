@@ -1,0 +1,309 @@
+{
+  "timeSec": 3,
+  "stageKey": "haengju",
+  "title": "스테이지 4 · 행주산성 야전",
+  "player": {
+    "xU": 791.1761033153426,
+    "yU": 1239.7923062461107,
+    "parryActiveRemainingSec": 0,
+    "cooldownRemainingSec": 0,
+    "invulnRemainingSec": 0
+  },
+  "bullets": [
+    {
+      "bulletType": "P8",
+      "owner": "reflect",
+      "xU": 486.7419529855807,
+      "yU": 1477.379344097697,
+      "vxUPerSec": -867.5561707012378,
+      "vyUPerSec": 628.6163697186109,
+      "spinRad": 20.399999999999984,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 696.5883332166727,
+      "yU": 1542.106880151654,
+      "vxUPerSec": 232.31838230147375,
+      "vyUPerSec": 547.9883294786728,
+      "spinRad": 20.399999999999984,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P11",
+      "owner": "reflect",
+      "xU": -102.67683003610955,
+      "yU": 1494.1915560213363,
+      "vxUPerSec": -1195.048697232766,
+      "vyUPerSec": 269.7732856349354,
+      "spinRad": 19.049999999999997,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P6",
+      "owner": "enemy",
+      "xU": 652.4249182996883,
+      "yU": 1210.976877738825,
+      "vxUPerSec": 204.6228398134018,
+      "vyUPerSec": 310.6662090197434,
+      "spinRad": 17.70000000000001,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 825.1648670066584,
+      "yU": 1135.4862950610996,
+      "vxUPerSec": 243.09892020399585,
+      "vyUPerSec": 543.2917770366595,
+      "spinRad": 15.000000000000025,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 662.2861427871204,
+      "yU": 1191.9570806503496,
+      "vxUPerSec": 145.37168567227081,
+      "vyUPerSec": 577.174248390209,
+      "spinRad": 15.000000000000025,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P11",
+      "owner": "enemy",
+      "xU": 866.9881595722607,
+      "yU": 1257.5425681076647,
+      "vxUPerSec": 470.31758452229406,
+      "vyUPerSec": 28.823769516056615,
+      "spinRad": 10.950000000000015,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 815.3647096691027,
+      "yU": 835.3402420039796,
+      "vxUPerSec": 147.96639016104925,
+      "vyUPerSec": 576.5145161942656,
+      "spinRad": 9.450000000000012,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 708.2202116338698,
+      "yU": 853.0969529615627,
+      "vxUPerSec": 45.924011079877026,
+      "vyUPerSec": 593.4256694872032,
+      "spinRad": 9.450000000000012,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P6",
+      "owner": "enemy",
+      "xU": 655.8467660836893,
+      "yU": 920.6119083770964,
+      "vxUPerSec": 151.1044775004644,
+      "vyUPerSec": 339.92857614403596,
+      "spinRad": 6.900000000000006,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 910.559804482597,
+      "yU": 577.7594358774176,
+      "vxUPerSec": 1.1995810341355353,
+      "vyUPerSec": 595.1987911658949,
+      "spinRad": 4.199999999999999,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P8",
+      "owner": "enemy",
+      "xU": 862.4647146642583,
+      "yU": 573.662226564153,
+      "vxUPerSec": -101.86132571944522,
+      "vyUPerSec": 586.4190569231845,
+      "spinRad": 4.199999999999999,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    }
+  ],
+  "enemies": [
+    {
+      "enemyType": "E-H",
+      "xU": 170,
+      "yU": 300,
+      "hp": 96,
+      "maxHp": 96,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-H",
+      "xU": 420,
+      "yU": 230,
+      "hp": 96,
+      "maxHp": 96,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-H",
+      "xU": 660,
+      "yU": 230,
+      "hp": 96,
+      "maxHp": 96,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-H",
+      "xU": 910,
+      "yU": 300,
+      "hp": 96,
+      "maxHp": 96,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-H",
+      "xU": 540,
+      "yU": 420,
+      "hp": 96,
+      "maxHp": 96,
+      "flash": 0,
+      "charge": 0.20512820512820457,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-E",
+      "xU": 250,
+      "yU": 560,
+      "hp": 168,
+      "maxHp": 168,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-E",
+      "xU": 540,
+      "yU": 620,
+      "hp": 168,
+      "maxHp": 168,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-E",
+      "xU": 830,
+      "yU": 560,
+      "hp": 168,
+      "maxHp": 168,
+      "flash": 0,
+      "charge": 0.6666666666666664,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-F",
+      "xU": 1069.3333333333348,
+      "yU": 880,
+      "hp": 48,
+      "maxHp": 48,
+      "flash": 0,
+      "charge": 0.9583333333333334,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    },
+    {
+      "enemyType": "E-F",
+      "xU": 10.666666666665694,
+      "yU": 1010,
+      "hp": 48,
+      "maxHp": 48,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": false,
+      "parts": []
+    }
+  ],
+  "zones": [
+    {
+      "xU": 250,
+      "yU": 1560,
+      "radiusU": 90,
+      "ageSec": 2.9999999999999942,
+      "durationSec": 4
+    },
+    {
+      "xU": 720,
+      "yU": 1620,
+      "radiusU": 90,
+      "ageSec": 3.6999999999999913,
+      "durationSec": 4
+    }
+  ],
+  "telegraphs": [],
+  "popups": [
+    {
+      "xU": 820.04543390165,
+      "yU": 1104.895278238261,
+      "text": "GOOD",
+      "sub": "",
+      "color": "#35b7e0",
+      "lifeSec": 0.49999999999999895,
+      "maxLifeSec": 0.85
+    }
+  ],
+  "particles": [],
+  "hud": {
+    "life": 2,
+    "maxLife": 4,
+    "score": 612400,
+    "combo": 38,
+    "stage": 4,
+    "wave": "W4  0:54 / 1:00",
+    "progress": 0.79,
+    "boss": null
+  },
+  "traumaAtCapture": 0,
+  "hitstopRemainingSec": 0.05
+}

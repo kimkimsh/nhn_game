@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <title>환도 — 시각 회귀 하네스</title>
+    <style>
+      /* 목업 iframe은 화면 밖에 놓인다. 여기서 보이는 것은 아무것도 없어야 한다 */
+      html,
+      body {
+        margin: 0;
+        background: #06070a;
+        color: #cfd6e4;
+        font: 14px ui-monospace, monospace;
+      }
+      p {
+        padding: 24px;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      이 페이지는 드라이버가 <code>page.evaluate</code>로 조종한다. 직접 열면 아무 일도 일어나지
+      않는다 — 09 §5.2의 절차는 <code>tests/visual/harness.ts</code>가 순서대로 부른다.
+    </p>
+    <script type="module" src="/tests/visual/entry.ts"></script>
+  </body>
+</html>

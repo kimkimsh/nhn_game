@@ -1,0 +1,183 @@
+{
+  "timeSec": 6.5,
+  "stageKey": "dongnae",
+  "title": "보스 B2 · 왜장 사무라이 대장",
+  "player": {
+    "xU": 507.60768117707346,
+    "yU": 1275.4111240696543,
+    "parryActiveRemainingSec": 0,
+    "cooldownRemainingSec": 0,
+    "invulnRemainingSec": 0
+  },
+  "bullets": [
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 1043.6947511249832,
+      "yU": 2043.9779302798875,
+      "vxUPerSec": 117.04225547883796,
+      "vyUPerSec": 637.3422239522707,
+      "spinRad": 22.649999999999963,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 45.11344774867098,
+      "yU": 1911.005606754732,
+      "vxUPerSec": -279.74501738592176,
+      "vyUPerSec": 584.5055391078432,
+      "spinRad": 22.649999999999963,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P5",
+      "owner": "enemy",
+      "xU": 405.4614025592067,
+      "yU": 997.0288892298092,
+      "vxUPerSec": -291.5519937921139,
+      "vyUPerSec": 347.4915753163567,
+      "spinRad": 13.650000000000022,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P5",
+      "owner": "enemy",
+      "xU": 334.0018102424827,
+      "yU": 958.3924777986979,
+      "vxUPerSec": -120.2646825772819,
+      "vyUPerSec": 437.3663980286845,
+      "spinRad": 10.050000000000013,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P5",
+      "owner": "enemy",
+      "xU": 603.1225944835893,
+      "yU": 751.8933449504083,
+      "vxUPerSec": -225.91360637529073,
+      "vyUPerSec": 393.3395510935942,
+      "spinRad": 6.450000000000005,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P5",
+      "owner": "enemy",
+      "xU": 387.8973790579188,
+      "yU": 613.3980367109788,
+      "vxUPerSec": 26.317347468195738,
+      "vyUPerSec": 452.83590540309217,
+      "spinRad": 2.849999999999999,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 525.3560046443924,
+      "yU": 443.4299070552942,
+      "vxUPerSec": 614.4531351790421,
+      "vyUPerSec": 205.7944233176541,
+      "spinRad": 0.15,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 521.3869216859175,
+      "yU": 448.79229729919257,
+      "vxUPerSec": 376.3081576705469,
+      "vyUPerSec": 527.5378379515528,
+      "spinRad": 0.15,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 515.0245712893213,
+      "yU": 450.79962041469855,
+      "vxUPerSec": -5.432866125221686,
+      "vyUPerSec": 647.9772248819131,
+      "spinRad": 0.15,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 508.69677316412333,
+      "yU": 448.685898686123,
+      "vxUPerSec": -385.1007536371021,
+      "vyUPerSec": 521.1539211673803,
+      "spinRad": 0.15,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    },
+    {
+      "bulletType": "P4",
+      "owner": "enemy",
+      "xU": 504.8181621620026,
+      "yU": 443.25771065019984,
+      "vxUPerSec": -617.8174137643488,
+      "vyUPerSec": 195.46263901198975,
+      "spinRad": 0.15,
+      "reparryCount": 0,
+      "graceRemainingSec": 0
+    }
+  ],
+  "enemies": [
+    {
+      "enemyType": "B-SAM",
+      "xU": 515.115119058075,
+      "yU": 380,
+      "hp": 2250,
+      "maxHp": 2250,
+      "flash": 0,
+      "charge": 0,
+      "shieldCharges": 0,
+      "hideHpBar": true,
+      "parts": []
+    }
+  ],
+  "zones": [],
+  "telegraphs": [
+    {
+      "kind": "dash",
+      "xU": 617.0472745358582,
+      "yU": 380,
+      "radiusU": 0,
+      "widthU": 0,
+      "ageSec": 0.9166666666666679,
+      "durationSec": 1
+    }
+  ],
+  "popups": [],
+  "particles": [],
+  "hud": {
+    "life": 2,
+    "maxLife": 3,
+    "score": 196400,
+    "combo": 41,
+    "stage": 2,
+    "wave": "보스전",
+    "progress": 1,
+    "boss": {
+      "name": "B2 왜장 사무라이 대장",
+      "hpRatio": 0.47,
+      "phase": 2,
+      "phaseThresholds": [
+        0.65,
+        0.3
+      ]
+    }
+  },
+  "traumaAtCapture": 0,
+  "hitstopRemainingSec": 0
+}

@@ -1,0 +1,1493 @@
+{
+  "generatedAt": "2026-08-07T19:31:07.699Z",
+  "driver": "playwright chromium 151.0.7922.34",
+  "tolerance": {
+    "channelDelta": 2,
+    "maxDiffRatio": 0.002,
+    "measuredAt": null
+  },
+  "frames": [
+    {
+      "id": "12_parry_moment",
+      "url": "http://localhost:5173/docs/sample_image/12_parry_moment/index.html?at=2.32",
+      "atSec": 2.32,
+      "locks": "등급 밴드 · 반사 공식 · 동시 반사 · 코어 비가림",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 5,
+        "reflectBullets": 5,
+        "enemies": 6,
+        "zones": 0,
+        "telegraphs": 0,
+        "popups": 1,
+        "particles": 14,
+        "hudPresent": true,
+        "maxLife": 4,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0.075
+      },
+      "masks": {
+        "countByKind": {
+          "text": 8,
+          "ruling": 15,
+          "new-element": 1
+        },
+        "coverageRatio": 0.07329668209876543
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 1335,
+        "diffRatio": 0.0006438078703703703,
+        "maxChannelDelta": 100,
+        "worstCells": [
+          {
+            "xU": 120,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 230,
+            "maxChannelDelta": 90
+          },
+          {
+            "xU": 120,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 202,
+            "maxChannelDelta": 81
+          },
+          {
+            "xU": 360,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 145,
+            "maxChannelDelta": 100
+          },
+          {
+            "xU": 240,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 133,
+            "maxChannelDelta": 86
+          },
+          {
+            "xU": 240,
+            "yU": 720,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 119,
+            "maxChannelDelta": 83
+          },
+          {
+            "xU": 120,
+            "yU": 720,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 98,
+            "maxChannelDelta": 65
+          },
+          {
+            "xU": 120,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 97,
+            "maxChannelDelta": 50
+          },
+          {
+            "xU": 360,
+            "yU": 720,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 97,
+            "maxChannelDelta": 93
+          }
+        ]
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2056424,
+        "maskedPixels": 17176,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1921612,
+        "maskedPixels": 151988,
+        "diffPixels": 35801,
+        "diffRatio": 0.018630712131273118,
+        "maxChannelDelta": 234,
+        "worstCells": [
+          {
+            "xU": 480,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3411,
+            "maxChannelDelta": 207
+          },
+          {
+            "xU": 480,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2938,
+            "maxChannelDelta": 234
+          },
+          {
+            "xU": 720,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1588,
+            "maxChannelDelta": 103
+          },
+          {
+            "xU": 480,
+            "yU": 960,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1551,
+            "maxChannelDelta": 37
+          },
+          {
+            "xU": 360,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1498,
+            "maxChannelDelta": 106
+          },
+          {
+            "xU": 480,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1299,
+            "maxChannelDelta": 221
+          },
+          {
+            "xU": 120,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1233,
+            "maxChannelDelta": 62
+          },
+          {
+            "xU": 840,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1135,
+            "maxChannelDelta": 61
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 21,
+      "baselineBlockers": [
+        {
+          "ruling": "06 §4.5",
+          "why": "임팩트 프레임(레이어 6.5)은 목업에 없는 신규 층이다. 이 프레임이 히트스톱 구간이면 게임은 전면 백색 채움을 그리고 목업은 안 그린다"
+        },
+        {
+          "ruling": "06 §1.11 · D-05",
+          "why": "이 프레임에만 처치 파편 14개가 있고, 목업 burst가 Math.random()으로 뽑는다. 같은 프레임을 두 번 띄우기만 해도 파편 자리가 달라진다 — 목업이 결정론적이지 않은 유일한 층이다"
+        }
+      ],
+      "artifacts": [
+        "12_parry_moment.mockup.png",
+        "12_parry_moment.game.png",
+        "12_parry_moment.diff.png",
+        "12_parry_moment.state.json"
+      ]
+    },
+    {
+      "id": "01_stage1_busanjin",
+      "url": "http://localhost:5173/docs/sample_image/01_stage1_busanjin/index.html?at=4.25",
+      "atSec": 4.25,
+      "locks": "§15.1 HUD 전 요소 — 라이프 · 점수 · 콤보 · 쿨다운 링 · 코어 · 진행도",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 12,
+        "reflectBullets": 1,
+        "enemies": 8,
+        "zones": 0,
+        "telegraphs": 0,
+        "popups": 1,
+        "particles": 0,
+        "hudPresent": true,
+        "maxLife": 3,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0.05
+      },
+      "masks": {
+        "countByKind": {
+          "text": 8,
+          "ruling": 1,
+          "new-element": 1
+        },
+        "coverageRatio": 0.06947386188271605
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1929539,
+        "maskedPixels": 144061,
+        "diffPixels": 31199,
+        "diffRatio": 0.016169147138254267,
+        "maxChannelDelta": 235,
+        "worstCells": [
+          {
+            "xU": 360,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 4284,
+            "maxChannelDelta": 209
+          },
+          {
+            "xU": 120,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2914,
+            "maxChannelDelta": 153
+          },
+          {
+            "xU": 720,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2731,
+            "maxChannelDelta": 201
+          },
+          {
+            "xU": 840,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2481,
+            "maxChannelDelta": 84
+          },
+          {
+            "xU": 240,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1537,
+            "maxChannelDelta": 179
+          },
+          {
+            "xU": 360,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1503,
+            "maxChannelDelta": 179
+          },
+          {
+            "xU": 720,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1435,
+            "maxChannelDelta": 123
+          },
+          {
+            "xU": 600,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1392,
+            "maxChannelDelta": 162
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 0,
+      "baselineBlockers": [
+        {
+          "ruling": "A15",
+          "why": "E-B 3발 부채꼴의 예비동작 시간이 0.95초에서 0.4초로 바뀐다. 적의 charge 발광 상태가 달라지므로 적 실루엣 주변 픽셀이 통째로 어긋난다"
+        }
+      ],
+      "artifacts": [
+        "01_stage1_busanjin.mockup.png",
+        "01_stage1_busanjin.game.png",
+        "01_stage1_busanjin.diff.png",
+        "01_stage1_busanjin.state.json"
+      ]
+    },
+    {
+      "id": "07_stage4_haengju",
+      "url": "http://localhost:5173/docs/sample_image/07_stage4_haengju/index.html?at=3",
+      "atSec": 3,
+      "locks": "패리 불가 화염 장판 — 색이 아니라 형태(해칭)로 구분한다는 §17",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 12,
+        "reflectBullets": 2,
+        "enemies": 10,
+        "zones": 2,
+        "telegraphs": 0,
+        "popups": 1,
+        "particles": 0,
+        "hudPresent": true,
+        "maxLife": 4,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0.05
+      },
+      "masks": {
+        "countByKind": {
+          "text": 8,
+          "ruling": 1,
+          "new-element": 1
+        },
+        "coverageRatio": 0.06947386188271605
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1929539,
+        "maskedPixels": 144061,
+        "diffPixels": 44521,
+        "diffRatio": 0.02307338695926851,
+        "maxChannelDelta": 242,
+        "worstCells": [
+          {
+            "xU": 480,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 5994,
+            "maxChannelDelta": 201
+          },
+          {
+            "xU": 720,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3896,
+            "maxChannelDelta": 237
+          },
+          {
+            "xU": 720,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3472,
+            "maxChannelDelta": 217
+          },
+          {
+            "xU": 840,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2429,
+            "maxChannelDelta": 225
+          },
+          {
+            "xU": 840,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1548,
+            "maxChannelDelta": 145
+          },
+          {
+            "xU": 600,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1544,
+            "maxChannelDelta": 27
+          },
+          {
+            "xU": 480,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1491,
+            "maxChannelDelta": 126
+          },
+          {
+            "xU": 120,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1454,
+            "maxChannelDelta": 151
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 26,
+      "baselineBlockers": [
+        {
+          "ruling": "A6",
+          "why": "E-H 불화살 2발의 확산이 ±5°에서 ±10°로 바뀌어 탄 위치가 갈린다"
+        },
+        {
+          "ruling": "A15",
+          "why": "E-H 2발 부채꼴도 예비동작 0.55초 → 0.4초다"
+        },
+        {
+          "ruling": "A9 · A16",
+          "why": "E-F 척후의 편성 수(2 → 4)와 이동 속도(450 → 420 u/s)가 둘 다 바뀐다"
+        }
+      ],
+      "artifacts": [
+        "07_stage4_haengju.mockup.png",
+        "07_stage4_haengju.game.png",
+        "07_stage4_haengju.diff.png",
+        "07_stage4_haengju.state.json"
+      ]
+    },
+    {
+      "id": "09_stage5_noryang",
+      "url": "http://localhost:5173/docs/sample_image/09_stage5_noryang/index.html?at=3.25",
+      "atSec": 3.25,
+      "locks": "잡몹 20기 밀도 + 관통 대창 예고선 (예고 3종 중 하나)",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 22,
+        "reflectBullets": 3,
+        "enemies": 20,
+        "zones": 0,
+        "telegraphs": 2,
+        "popups": 1,
+        "particles": 0,
+        "hudPresent": true,
+        "maxLife": 4,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0.05
+      },
+      "masks": {
+        "countByKind": {
+          "text": 8,
+          "ruling": 1,
+          "new-element": 1
+        },
+        "coverageRatio": 0.06947386188271605
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1929539,
+        "maskedPixels": 144061,
+        "diffPixels": 214418,
+        "diffRatio": 0.11112395240521182,
+        "maxChannelDelta": 244,
+        "worstCells": [
+          {
+            "xU": 120,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 13853,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 0,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 11503,
+            "maxChannelDelta": 36
+          },
+          {
+            "xU": 240,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 10632,
+            "maxChannelDelta": 99
+          },
+          {
+            "xU": 360,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 9579,
+            "maxChannelDelta": 32
+          },
+          {
+            "xU": 0,
+            "yU": 0,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 8676,
+            "maxChannelDelta": 12
+          },
+          {
+            "xU": 600,
+            "yU": 0,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 7960,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 0,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 7920,
+            "maxChannelDelta": 8
+          },
+          {
+            "xU": 240,
+            "yU": 0,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 7075,
+            "maxChannelDelta": 70
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 276,
+      "baselineBlockers": [
+        {
+          "ruling": "A13",
+          "why": "E-F 셋째 기가 y = 1040에서 990으로 내려온다. §3.1의 적 활동 영역 상한이 1000u다"
+        },
+        {
+          "ruling": "A9 · A16",
+          "why": "E-F 편성 수와 이동 속도가 바뀐다"
+        },
+        {
+          "ruling": "06 §1.9",
+          "why": "번개(engine.js:1608-1619)가 정적 굽기에서 빠지고 간헐 이벤트가 된다. 목업은 이 프레임에 번개를 붙잡아 두었다"
+        }
+      ],
+      "artifacts": [
+        "09_stage5_noryang.mockup.png",
+        "09_stage5_noryang.game.png",
+        "09_stage5_noryang.diff.png",
+        "09_stage5_noryang.state.json"
+      ]
+    },
+    {
+      "id": "08_boss4_daetong",
+      "url": "http://localhost:5173/docs/sample_image/08_boss4_daetong/index.html?at=5",
+      "atSec": 5,
+      "locks": "착탄 예고 원 + 장판 누적 (예고 3종 중 둘째)",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 29,
+        "reflectBullets": 3,
+        "enemies": 1,
+        "zones": 5,
+        "telegraphs": 1,
+        "popups": 1,
+        "particles": 0,
+        "hudPresent": true,
+        "maxLife": 4,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0.075
+      },
+      "masks": {
+        "countByKind": {
+          "text": 8,
+          "ruling": 1,
+          "new-element": 1
+        },
+        "coverageRatio": 0.06947386188271605
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1929539,
+        "maskedPixels": 144061,
+        "diffPixels": 33904,
+        "diffRatio": 0.017571036397813156,
+        "maxChannelDelta": 234,
+        "worstCells": [
+          {
+            "xU": 480,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3218,
+            "maxChannelDelta": 11
+          },
+          {
+            "xU": 240,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3067,
+            "maxChannelDelta": 210
+          },
+          {
+            "xU": 480,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2462,
+            "maxChannelDelta": 177
+          },
+          {
+            "xU": 840,
+            "yU": 1320,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2065,
+            "maxChannelDelta": 23
+          },
+          {
+            "xU": 120,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2005,
+            "maxChannelDelta": 206
+          },
+          {
+            "xU": 360,
+            "yU": 1320,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1641,
+            "maxChannelDelta": 165
+          },
+          {
+            "xU": 600,
+            "yU": 1440,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1303,
+            "maxChannelDelta": 26
+          },
+          {
+            "xU": 240,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 842,
+            "maxChannelDelta": 50
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 0,
+      "baselineBlockers": [],
+      "artifacts": [
+        "08_boss4_daetong.mockup.png",
+        "08_boss4_daetong.game.png",
+        "08_boss4_daetong.diff.png",
+        "08_boss4_daetong.state.json"
+      ]
+    },
+    {
+      "id": "04_boss2_samurai",
+      "url": "http://localhost:5173/docs/sample_image/04_boss2_samurai/index.html?at=6.5",
+      "atSec": 6.5,
+      "locks": "돌진 방향선(회피) vs 참격파(패리) — HR-05의 교육 구조가 한 화면에 있는 유일한 자리",
+      "status": "compared",
+      "detail": "목업과 게임을 같은 상태로 그려서 대조했다",
+      "widthPx": 1080,
+      "heightPx": 1920,
+      "scale": 1,
+      "nativeWidthPx": 2160,
+      "capture": {
+        "bullets": 11,
+        "reflectBullets": 0,
+        "enemies": 1,
+        "zones": 0,
+        "telegraphs": 1,
+        "popups": 0,
+        "particles": 0,
+        "hudPresent": true,
+        "maxLife": 3,
+        "traumaAtCapture": 0,
+        "hitstopRemainingSec": 0
+      },
+      "masks": {
+        "countByKind": {
+          "text": 7,
+          "ruling": 1,
+          "new-element": 1
+        },
+        "coverageRatio": 0.041729359567901234
+      },
+      "repeat": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "repeatIgnoringParticles": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      },
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 1987070,
+        "maskedPixels": 86530,
+        "diffPixels": 38775,
+        "diffRatio": 0.019513655784647747,
+        "maxChannelDelta": 234,
+        "worstCells": [
+          {
+            "xU": 360,
+            "yU": 960,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 4197,
+            "maxChannelDelta": 212
+          },
+          {
+            "xU": 480,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3887,
+            "maxChannelDelta": 206
+          },
+          {
+            "xU": 480,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 3395,
+            "maxChannelDelta": 20
+          },
+          {
+            "xU": 240,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2578,
+            "maxChannelDelta": 210
+          },
+          {
+            "xU": 360,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2454,
+            "maxChannelDelta": 205
+          },
+          {
+            "xU": 360,
+            "yU": 480,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2098,
+            "maxChannelDelta": 204
+          },
+          {
+            "xU": 240,
+            "yU": 960,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 2043,
+            "maxChannelDelta": 201
+          },
+          {
+            "xU": 480,
+            "yU": 360,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 1694,
+            "maxChannelDelta": 114
+          }
+        ]
+      },
+      "cheatMarkDiffPixels": 89,
+      "baselineBlockers": [
+        {
+          "ruling": "A18",
+          "why": "페이즈 2에 페이즈 1 패턴인 투척 수리검이 섞여 있다. 게임은 그 자리에 참격파 4연발을 그리므로 탄환이 통째로 다른 물건이 된다"
+        },
+        {
+          "ruling": "A5",
+          "why": "수리검이 남는다 해도 확산이 ±72°에서 ±36°로 좁아진다"
+        }
+      ],
+      "artifacts": [
+        "04_boss2_samurai.mockup.png",
+        "04_boss2_samurai.game.png",
+        "04_boss2_samurai.diff.png",
+        "04_boss2_samurai.state.json"
+      ]
+    }
+  ],
+  "bakes": [
+    {
+      "stageKey": "hansando",
+      "scale": 1,
+      "status": "verified",
+      "detail": "다른 픽셀 3681 · 최대 채널차 2",
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 3681,
+        "diffRatio": 0.001775173611111111,
+        "maxChannelDelta": 2,
+        "worstCells": [
+          {
+            "xU": 360,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 326,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 240,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 302,
+            "maxChannelDelta": 2
+          },
+          {
+            "xU": 720,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 301,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 600,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 273,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 120,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 176,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 840,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 172,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 0,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 155,
+            "maxChannelDelta": 1
+          },
+          {
+            "xU": 960,
+            "yU": 240,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 150,
+            "maxChannelDelta": 1
+          }
+        ]
+      }
+    },
+    {
+      "stageKey": "hansando",
+      "scale": 2,
+      "status": "verified",
+      "detail": "다른 픽셀 4603048 · 최대 채널차 70",
+      "compare": {
+        "widthPx": 2160,
+        "heightPx": 3840,
+        "comparedPixels": 8294400,
+        "maskedPixels": 0,
+        "diffPixels": 4603048,
+        "diffRatio": 0.5549585262345679,
+        "maxChannelDelta": 70,
+        "worstCells": [
+          {
+            "xU": 120,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45273,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45273,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 840,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45271,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 360,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45187,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 0,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45185,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 720,
+            "yU": 1200,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45179,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 120,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45096,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45096,
+            "maxChannelDelta": 7
+          }
+        ]
+      }
+    },
+    {
+      "stageKey": "busanjin",
+      "scale": 1,
+      "status": "verified",
+      "detail": "구운 레이어와 매 프레임 그린 것이 비트 단위로 같다",
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      }
+    },
+    {
+      "stageKey": "busanjin",
+      "scale": 2,
+      "status": "verified",
+      "detail": "다른 픽셀 5095948 · 최대 채널차 63",
+      "compare": {
+        "widthPx": 2160,
+        "heightPx": 3840,
+        "comparedPixels": 8294400,
+        "maskedPixels": 0,
+        "diffPixels": 5095948,
+        "diffRatio": 0.6143841628086419,
+        "maxChannelDelta": 63,
+        "worstCells": [
+          {
+            "xU": 120,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43691,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43691,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 840,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43691,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 0,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43582,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 360,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43582,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 720,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43582,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 120,
+            "yU": 1680,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43296,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 1680,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 43296,
+            "maxChannelDelta": 7
+          }
+        ]
+      }
+    },
+    {
+      "stageKey": "haengju",
+      "scale": 1,
+      "status": "verified",
+      "detail": "구운 레이어와 매 프레임 그린 것이 비트 단위로 같다",
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      }
+    },
+    {
+      "stageKey": "haengju",
+      "scale": 2,
+      "status": "verified",
+      "detail": "다른 픽셀 3204812 · 최대 채널차 38",
+      "compare": {
+        "widthPx": 2160,
+        "heightPx": 3840,
+        "comparedPixels": 8294400,
+        "maskedPixels": 0,
+        "diffPixels": 3204812,
+        "diffRatio": 0.3863826195987654,
+        "maxChannelDelta": 38,
+        "worstCells": [
+          {
+            "xU": 840,
+            "yU": 120,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40509,
+            "maxChannelDelta": 16
+          },
+          {
+            "xU": 120,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40429,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40429,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 840,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40429,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 0,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40290,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 360,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40290,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 720,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 40290,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 240,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 39861,
+            "maxChannelDelta": 7
+          }
+        ]
+      }
+    },
+    {
+      "stageKey": "noryang",
+      "scale": 1,
+      "status": "verified",
+      "detail": "구운 레이어와 매 프레임 그린 것이 비트 단위로 같다",
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      }
+    },
+    {
+      "stageKey": "noryang",
+      "scale": 2,
+      "status": "verified",
+      "detail": "다른 픽셀 4647371 · 최대 채널차 60",
+      "compare": {
+        "widthPx": 2160,
+        "heightPx": 3840,
+        "comparedPixels": 8294400,
+        "maskedPixels": 0,
+        "diffPixels": 4647371,
+        "diffRatio": 0.5603022521219135,
+        "maxChannelDelta": 60,
+        "worstCells": [
+          {
+            "xU": 840,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46214,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 120,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46209,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 480,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46205,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 0,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46116,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 720,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46110,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 360,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 46098,
+            "maxChannelDelta": 7
+          },
+          {
+            "xU": 960,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45782,
+            "maxChannelDelta": 5
+          },
+          {
+            "xU": 600,
+            "yU": 1080,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 45780,
+            "maxChannelDelta": 7
+          }
+        ]
+      }
+    },
+    {
+      "stageKey": "dongnae",
+      "scale": 1,
+      "status": "verified",
+      "detail": "구운 레이어와 매 프레임 그린 것이 비트 단위로 같다",
+      "compare": {
+        "widthPx": 1080,
+        "heightPx": 1920,
+        "comparedPixels": 2073600,
+        "maskedPixels": 0,
+        "diffPixels": 0,
+        "diffRatio": 0,
+        "maxChannelDelta": 0,
+        "worstCells": []
+      }
+    },
+    {
+      "stageKey": "dongnae",
+      "scale": 2,
+      "status": "verified",
+      "detail": "다른 픽셀 5098642 · 최대 채널차 36",
+      "compare": {
+        "widthPx": 2160,
+        "heightPx": 3840,
+        "comparedPixels": 8294400,
+        "maskedPixels": 0,
+        "diffPixels": 5098642,
+        "diffRatio": 0.6147089602623457,
+        "maxChannelDelta": 36,
+        "worstCells": [
+          {
+            "xU": 120,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 42039,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 480,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 42039,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 840,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 42039,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 0,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 41931,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 360,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 41931,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 720,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 41931,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 240,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 41681,
+            "maxChannelDelta": 9
+          },
+          {
+            "xU": 600,
+            "yU": 1560,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 41681,
+            "maxChannelDelta": 9
+          }
+        ]
+      }
+    }
+  ]
+}

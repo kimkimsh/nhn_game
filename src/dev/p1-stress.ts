@@ -314,8 +314,8 @@ function draw(view: StressView, api: StressRenderApi): void {
   drawZones(ctx, api);
   drawEnemies(ctx, api);
   if (toggles.bakedBullets) {
-    api.drawBulletGlowPass(ctx, scale, batch);
-    api.drawBulletBodyPass(ctx, scale, batch);
+    api.drawBulletGlowPass(ctx, batch);
+    api.drawBulletBodyPass(ctx, batch);
   } else {
     drawBulletsUnbaked(ctx, api);
   }

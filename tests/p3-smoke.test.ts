@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { BULLETS } from './src/config/bullets';
-import { ENEMIES } from './src/config/enemies';
-import { PARRY } from './src/config/parry';
-import { PLAYER } from './src/config/player';
-import { createInput, type Input } from './src/core/input';
-import { FIXED_DT_SEC } from './src/core/loop';
-import type { Projectile } from './src/sim/bullets';
-import { acquireEnemySlot } from './src/sim/caps';
-import { stepWorld, createWorld, type World } from './src/sim/world';
+import { BULLETS } from '../src/config/bullets';
+import { ENEMIES } from '../src/config/enemies';
+import { PARRY } from '../src/config/parry';
+import { PLAYER } from '../src/config/player';
+import { createInput, type Input } from '../src/core/input';
+import { FIXED_DT_SEC } from '../src/core/loop';
+import type { Projectile } from '../src/sim/bullets';
+import { acquireEnemySlot } from '../src/sim/caps';
+import { stepWorld, createWorld, type World } from '../src/sim/world';
 
 const HORIZON_MS = 1e9;
 
