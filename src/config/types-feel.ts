@@ -89,7 +89,7 @@ export type ParticleTier = {
  * §17 파티클
  *
  * 각도는 균등 링 + 지터다. 순수 난수 각도는 뭉치고 빈틈을 남긴다.
- * 난수는 core/rng.ts를 쓴다 — Math.random()은 D-05의 결정론을 깬다.
+ * 난수는 core/rng.ts를 쓴다 — 전역 난수(`Math`의 `random`)는 D-05의 결정론을 깬다.
  */
 export type ParticleConfig = {
   readonly small: ParticleTier;

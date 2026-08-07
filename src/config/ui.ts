@@ -13,14 +13,16 @@
  * 된다 — render/에 그대로 둔다(08 §9).
  */
 
+import { PARRY } from './parry';
+import { PLAYFIELD } from './playfield';
 import type { FontStacks, UiConfig } from './types';
 
 /**
  * §3.1 논리 해상도 (u). 오른쪽·아래 정렬선이 전부 이 둘에서 나오므로 먼저 이름을 준다.
- * playfield.ts와 같은 숫자이고, 계층이 서로를 import할 수 없어 생긴 중복이다.
+ * 숫자는 playfield.ts에만 산다 — HUD가 옛 해상도로 정렬되는 고장은 화면을 봐도 안 보인다.
  */
-const PLAYFIELD_WIDTH_U = 1080;
-const PLAYFIELD_HEIGHT_U = 1920;
+const PLAYFIELD_WIDTH_U = PLAYFIELD.widthU;
+const PLAYFIELD_HEIGHT_U = PLAYFIELD.heightU;
 
 /**
  * §15 폰트 스택 3종. HUD는 전부 data(모노)다 — 숫자가 자릿수마다 흔들리면 안 된다
@@ -193,10 +195,11 @@ export const UI = {
      */
     cooldownRingAlphaBase: 0.9,
     /**
-     * §5.1 기본 쿨다운 (초) — 위 식의 기준값. parry.ts의 cooldownSec과 같은 숫자이고,
-     * config/ 파일끼리 import할 수 없어 생긴 중복이다(playfield 좌표와 같은 사정).
+     * §5.1 기본 쿨다운 (초) — 위 식의 기준값. 카드가 실효 쿨다운을 줄였을 때 링이 옅어지는
+     * 것이 이 표시의 전부이므로, 기준값이 parry.ts의 진짜 기본 쿨다운과 갈리면 카드 0장에서도
+     * 링이 옅어지거나 영영 안 옅어진다.
      */
-    cooldownRingRefSec: 0.24,
+    cooldownRingRefSec: PARRY.cooldownSec,
     /**
      * 쿨다운이 끝나는 순간의 신호(12 §8-1). 링이 한 바퀴를 채우면 여기까지 확장한 뒤 소멸한다.
      * 1프레임 밝기 상승을 쓰지 않는 이유는 이 사건이 기본 쿨다운에서 초당 4.16회여서

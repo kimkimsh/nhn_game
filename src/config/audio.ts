@@ -20,6 +20,7 @@
  *    쌍이 그대로 목록이다(07 §2.7). 따로 적으면 같은 숫자가 두 곳에 산다.
  */
 
+import { TELEGRAPH } from './telegraph';
 import type { AudioConfig, BgmConfig } from './types';
 
 export const AUDIO = {
@@ -218,8 +219,9 @@ export const AUDIO = {
    * §6.2 예고 표시 3종. 전부 sawtooth 전용이고 엔벨로프로만 구분한다(07 §3.10).
    *
    * 셋은 패리로 지울 수 없고 회피만이 대응책이라(HR-04) 한 가족으로 들려야 한다. 버즈 음색이
-   * 들리면 패리로 못 푸는 공격이라는 규칙을 소리 쪽에서도 인코딩한 것이다. durSec은 예고 도형이
-   * 떠 있는 시간의 사본이다 — 유일 소스는 config/telegraph.ts의 shapes[*].durationSec이다.
+   * 들리면 패리로 못 푸는 공격이라는 규칙을 소리 쪽에서도 인코딩한 것이다. durSec은 숫자가 아니라
+   * telegraph.ts의 shapes[*].durationSec을 가리키는 식이다 — 소리가 도형보다 길거나 짧으면
+   * 도형이 사라진 뒤에도 위잉 소리가 남고, 그건 회피 판단을 흐린다.
    */
   warn: {
     IMPACT_CIRCLE: {
@@ -233,7 +235,8 @@ export const AUDIO = {
     PIERCE_LINE: {
       fromHz: 240,             // §6.2 상승 시작 (Hz)
       toHz: 300,               // §6.2 상승 도착 (Hz)
-      durSec: 0.80,            // §6.2 예고선이 떠 있는 시간 (s). 끊김 없이 이어져 선이 계속 거기 있음과 대응한다
+      // §6.2 예고선이 떠 있는 시간 (s). 끊김 없이 이어져 선이 계속 거기 있음과 대응한다
+      durSec: TELEGRAPH.shapes.pierceLine.durationSec,
       gain: 0.10,              // §6.2 게인 (0~1)
       bandHz: 1200,            // §6.2 bandpass 중심 (Hz)
       bandQ: 8,                // §6.2 bandpass Q (무단위). 좁혀야 위잉 소리가 된다
@@ -241,7 +244,8 @@ export const AUDIO = {
     CHARGE_LINE: {
       fromHz: 120,             // §6.2 하강 시작 (Hz)
       toHz: 90,                // §6.2 하강 도착 (Hz). 커지면서 낮아지는 것이 "다가온다"다
-      durSec: 1.00,            // §6.2 방향선이 떠 있는 시간 (s)
+      // §6.2 방향선이 떠 있는 시간 (s)
+      durSec: TELEGRAPH.shapes.dash.durationSec,
       gainFrom: 0.10,          // §6.2 시작 게인 (0~1)
       gainTo: 0.16,            // §6.2 도착 게인 (0~1)
       lowpassHz: 300,          // §6.2 lowpass 컷오프 (Hz). 저역 럼블만 남긴다

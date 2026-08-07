@@ -25,30 +25,37 @@
  * `lance`는 이 목록에 없다 — 웨이브 위협이라 `LanceDef`이고 `sim/lance.ts`가 돌린다(12 §10 E-10).
  * §10.1 공통 규칙 셋(`phaseTransitionSec` · `patternGapSec` · `deathSec`)도 없다 —
  * `bosses/index.ts`의 `BOSS_COMMON`이 갖는다(12 §10 E-12).
+ *
+ * 아래 다섯 중 넷은 숫자가 아니라 식이다. 같은 §6.2 행을 잡몹 쪽(`difficulty.ts`)과 도형
+ * 쪽(`telegraph.ts`)이 이미 갖고 있어서, 보스용 이름만 여기 두고 값은 그쪽을 가리킨다.
  */
+import { SLASH_TELL_SEC, SPREAD_TELL_SEC } from '../difficulty';
+import { TELEGRAPH } from '../telegraph';
 
 /**
  * §6.2 확산·링 발사의 예비동작 (s)
  *
  * §14.1의 스테이지별 값은 "단발 직선 (P1~P3)" 행에만 걸린다. 확산과 링은 스테이지와 무관하게
  * 이 값이며, 목업이 여기에 스테이지 값을 쓴 것이 10_스펙_목업_불일치.md A15의 오류다.
- * 같은 §6.2 행을 잡몹 쪽에서는 `difficulty.ts`의 `SPREAD_TELL_SEC`가 읽는다.
+ * 잡몹 쪽 이름이 `difficulty.ts`의 `SPREAD_TELL_SEC`이고 숫자는 그쪽에만 산다 — 보스와 잡몹이
+ * 같은 §6.2 한 행을 읽으므로 값을 여기 다시 적으면 한쪽만 늙는다.
  */
-export const PATTERN_SPREAD_TELL_SEC = 0.4;      // §6.2 (s)
+export const PATTERN_SPREAD_TELL_SEC = SPREAD_TELL_SEC;
 
 /** §6.2 참격파(P5)의 백스윙 (s). 스테이지와 무관하게 고정이고 궤적 잔상을 미리 그리지 않는다 */
-export const PATTERN_ARC_BACKSWING_SEC = 0.7;    // §6.2 (s)
+export const PATTERN_ARC_BACKSWING_SEC = SLASH_TELL_SEC;
 
 /**
  * §6.2 본체 돌진의 방향선 표시 시간 (s)
  *
- * HR-05가 예고 도형을 붙이도록 허용한 셋 중 하나다. `telegraph.ts`의 `shapes.dash.durationSec`가
- * 같은 §6.2 행을 도형 쪽에서 읽으므로 두 값은 언제나 같아야 한다.
+ * HR-05가 예고 도형을 붙이도록 허용한 셋 중 하나다. 도형 쪽 소유자가 `telegraph.ts`의
+ * `shapes.dash`이므로 시간도 그 도형이 갖는다 — 방향선이 떠 있는 시간과 돌진이 시작하기까지의
+ * 시간은 같은 §6.2 한 행이고, 갈라 적으면 도형이 사라진 뒤에 돌진하거나 그 반대가 된다.
  */
-export const PATTERN_CHARGE_TELEGRAPH_SEC = 1.0; // §6.2 (s)
+export const PATTERN_CHARGE_TELEGRAPH_SEC = TELEGRAPH.shapes.dash.durationSec;
 
-/** §6.2 곡사(P7) 착탄 예고 원의 표시 시간 (s). `telegraph.ts`의 `shapes.impactCircle`과 같은 행이다 */
-export const PATTERN_MORTAR_TELEGRAPH_SEC = 1.2; // §6.2 (s)
+/** §6.2 곡사(P7) 착탄 예고 원의 표시 시간 (s). 도형이 `shapes.impactCircle`이라 시간도 그쪽이다 */
+export const PATTERN_MORTAR_TELEGRAPH_SEC = TELEGRAPH.shapes.impactCircle.durationSec;
 
 /**
  * 링 탄막의 첫 탄 각도 (deg) — §10.3 · §10.5 · §10.6

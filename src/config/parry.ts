@@ -8,6 +8,7 @@
  * 등급별 히트스톱도 여기 있다. PARRY_BANDS[].hitstopSec가 단일 소스이고 feel.ts는 그 셋을 갖지
  * 않는다(12_통합_계약.md §5). feel.ts에 남는 것은 피격 히트스톱과 누적 상한뿐이다.
  */
+import { REFLECT } from './reflect';
 import type { ParryConfig, ParryBand, HardLimits } from './types';
 
 export const PARRY = {
@@ -61,13 +62,14 @@ export const INV_1_MARGIN_E07_SEC = 0.04;  // §11.5 E07만 이 값을 쓴다. I
 /**
  * §11.6 5단계의 개별 상한. 어떤 카드 조합으로도 넘을 수 없다.
  *
- * reflectSpeedMaxUPerSec는 reflect.ts의 REFLECT.speedMaxUPerSec와 같은 숫자다. config/의 파일은
- * ./ids와 ./types 말고는 서로 import하지 않으므로 한쪽에서 유도해 올 수단이 없다 —
- * 한쪽만 고치는 실수는 tests/guards.test.ts의 관계 단언으로 잡아야 한다.
+ * reflectSpeedMaxUPerSec는 숫자가 아니라 reflect.ts를 가리키는 식이다. 스펙이 이 상한을 §7.1
+ * 반사탄 항목에서 정했고 §11.6은 카드가 그 상한을 넘지 못한다고만 말한다 — 소유자가 §7.1인
+ * 이상 여기는 그것을 다시 적을 자리가 아니다.
  */
 export const HARD_LIMITS = {
   cooldownMinSec:         0.15,  // §11.6 쿨다운 하한 (s). 다만 실효 하한은 대개 INV-1이 먼저 정한다
   parryRadiusMaxU:        150,   // §11.6 패리 반경 상한 (u)
   moveSpeedMaxUPerSec:    900,   // §11.6 이동 속도 상한 (u/s)
-  reflectSpeedMaxUPerSec: 2400,  // §7.1 반사탄 속도 상한 (u/s)
+  // §7.1 반사탄 속도 상한 (u/s)
+  reflectSpeedMaxUPerSec: REFLECT.speedMaxUPerSec,
 } as const satisfies HardLimits;

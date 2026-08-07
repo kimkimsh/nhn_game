@@ -42,7 +42,7 @@ export const HITSTOP_BUDGET_PER_SEC = 0.32; // §3.2
  * 과해진다 — trauma 0.30 / 0.60 / 0.90이 제곱을 거치면 3% / 22% / 73%가 된다.
  *
  * 노이즈는 core/rng.ts의 시드로 만든 value noise를 x 이동 · y 이동 · 회전 3채널로 샘플한다.
- * Math.random()은 D-05의 결정론을 깨고, 부드러운 노이즈라야 히트스톱(=슬로모션) 중에도
+ * 전역 난수(`Math`의 `random`)는 D-05의 결정론을 깨고, 부드러운 노이즈라야 히트스톱(=슬로모션) 중에도
  * 저절로 맞고 §7의 촬영본이 재현된다.
  *
  * 흔들림은 render 변위로만 적용한다 — 카메라 원점을 옮기면 판정이 따라 움직인다.
@@ -104,7 +104,7 @@ export const TRAUMA_ON = {
  *   vx    = cos(angle) × speed
  *   vy    = sin(angle) × speed + initialKickUPerSec
  *
- * 난수는 core/rng.ts를 쓴다. Math.random()은 D-05의 결정론을 깬다.
+ * 난수는 core/rng.ts를 쓴다. 전역 난수(`Math`의 `random`)는 D-05의 결정론을 깬다.
  *
  * 티어 배정은 §17 표 17행 전부에 걸린다 — NOT BAD 패리·반사탄 발생·자해 유예·빈 패리·쿨다운
  * 종료·무적 종료·예비동작·장판은 small, GOOD 패리·재패리·적 처치는 medium, GREAT 패리·피격·

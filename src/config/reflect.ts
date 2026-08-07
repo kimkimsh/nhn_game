@@ -11,15 +11,15 @@
  * 화면 밖 소멸 경계(+150u)는 여기 없다. 반사탄만의 규칙이 아니라 모든 발사체에 공통이므로
  * playfield.ts의 despawnMarginU가 갖는다.
  */
+import { SCORING } from './scoring';
 import type { ReflectConfig } from './types';
 
 export const REFLECT = {
   graceSec:        0.15,  // §7.1 자해 유예 (s). 반사 직후 피격도 패리도 판정하지 않는다.
                           //      재패리마다 새로 시작한다(§7.4)
   lifetimeSec:     3.0,   // §7.1 수명 (s). 재패리 시 재설정한다(§7.4)
-  speedMaxUPerSec: 2400,  // §7.1 속도 상한 (u/s). parry.ts의 HARD_LIMITS.reflectSpeedMaxUPerSec와
-                          //      같은 숫자이고, config/는 서로 import하지 않으므로 유도로 묶지 못한다
+  speedMaxUPerSec: 2400,  // §7.1 속도 상한 (u/s). §11.6 카드 상한도 이 값을 가리킨다
   pierceCount:     0,     // §7.1 추가 관통 수 (기). 0이면 적 1기 명중 시 소멸 — R02가 +1~2를 준다
-  scoreRatio:      0.5,   // §7.4 재패리 점수는 등급 점수의 이 비율 (25 / 75 / 200).
-                          //      scoring.ts의 SCORING.reparryRatio와 같은 숫자다
+  // §7.4 재패리 점수는 등급 점수의 이 비율 (25 / 75 / 200). 점수 규칙이라 숫자는 §12.1이 갖는다
+  scoreRatio:      SCORING.reparryRatio,
 } as const satisfies ReflectConfig;
