@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>환도 — Canvas 2D 성능 프로브</title>
+<style>
+  body { margin: 0; padding: 24px; background: #06070a; color: #ede6d8;
+         font: 14px/1.6 ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  h1 { font-size: 16px; margin: 0 0 4px; letter-spacing: .06em; }
+  .sub { color: #5d6675; margin-bottom: 20px; }
+  table { border-collapse: collapse; margin: 14px 0; }
+  th, td { padding: 5px 14px 5px 0; text-align: left; vertical-align: top; }
+  th { color: #9aa3b2; font-weight: 500; border-bottom: 1px solid #1e2635; }
+  td.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .verdict { padding: 10px 14px; margin: 14px 0; border-left: 3px solid; }
+  .ok   { border-color: #35b7e0; }
+  .warn { border-color: #f5b324; }
+  .bad  { border-color: #e23c2e; }
+  .env { color: #5d6675; font-size: 12px; }
+  canvas { display: none; }
+  #out { white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<h1>환도 — Canvas 2D 성능 프로브</h1>
+<div class="sub">docs/plan/12_통합_계약.md §10 E-18 · docs/plan/06_렌더링과_게임필.md §3.7.1</div>
+<div id="out">측정 중… (수 초)</div>
+<canvas id="cv" width="1080" height="1920"></canvas>
+
+<script>
+/* 이 파일이 재는 것은 딱 둘이다.
+ *
+ *   1. `lighter` 합성으로 스프라이트 한 장을 drawImage 하는 1회 비용 (µs)
+ *      → 프레임당 드로우 콜 상한 = 16,670µs ÷ t
+ *   2. 전체 화면 fillRect 의 Mpx/s
+ *      → fill-rate 예산이 실제로 얼마인지
+ *
+ * 기획안의 2,500 이라는 상한은 측정된 적이 없는 추정이다(01 R-02). 이 두 숫자가
+ * 그것을 측정값으로 대체한다. 의존성 0, 빌드 0.
+ *
+ * 덤으로 두 가지를 더 잰다. 합성 모드 전환 비용은 12 §10 E-14 가 두 패스 렌더링을
+ * 확정한 근거인데 아무도 재지 않았고, GPU 가속 여부는 이 측정 전체의 유효 조건이다 —
+ * 소프트웨어 래스터라이저로 떨어진 채 잰 숫자는 D-02 를 반증하지 못한다.
+ */
+
+const LOGICAL_W = 1080, LOGICAL_H = 1920;   // 스펙 §3.1
+const FRAME_BUDGET_US = 16670;              // 60fps 한 프레임
+/* 시행 수와 시행당 반복. 이 측정의 변동계수는 약 10% 라서 n=5 로는 실행마다 20% 씩
+   다른 값이 나온다 — 점추정이 아니라 분포를 봐야 한다. 다만 총 작업량이 늘면 페이지가
+   수십 초 멈추므로, 시행을 늘린 만큼 시행당 반복을 줄여 총량을 유지한다. */
+const TRIALS = 15;
+const ITERS = 3000;
+
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d', { alpha: false });
+
+/* ── 환경 ────────────────────────────────────────────────────────── */
+
+function gpuInfo() {
+  try {
+    const g = document.createElement('canvas').getContext('webgl2')
+           || document.createElement('canvas').getContext('webgl');
+    if (!g) return { renderer: '(WebGL 사용 불가)', accelerated: null };
+    const ext = g.getExtension('WEBGL_debug_renderer_info');
+    const r = ext ? g.getParameter(ext.UNMASKED_RENDERER_WEBGL) : g.getParameter(g.RENDERER);
+    /* SwiftShader · llvmpipe · softpipe 는 전부 CPU 래스터라이저다 */
+    const soft = /swiftshader|llvmpipe|softpipe|software/i.test(r);
+    return { renderer: r, accelerated: !soft };
+  } catch (e) {
+    return { renderer: '(조회 실패: ' + e.message + ')', accelerated: null };
+  }
+}
+
+/* ── 측정 도구 ───────────────────────────────────────────────────── */
+
+/* Canvas 2D 는 비동기로 큐잉된다. getImageData 한 번이 큐를 비우게 만들므로 측정 구간
+   안에 넣는다. 그런데 1080×1920 GPU 캔버스의 readback 은 수십 ms 가 될 수 있고, 그러면
+   측정값이 `d + R/N` 이 되어 호출당 비용에 R/N 이 통째로 얹힌다.
+   N=10,000 에 R=45ms 면 4.5µs 다 — "호출 고정비" 로 읽힐 만한 크기다.
+   그래서 §스윕이 N 을 바꿔가며 이 오염을 직접 드러낸다. 차이를 보는 항목(setTransform,
+   합성 전환)은 flush 가 양쪽에 똑같이 들어가 상쇄되므로 영향받지 않는다. */
+function flush() { ctx.getImageData(0, 0, 1, 1); }
+
+function timeIt(fn, iters) {
+  const t0 = performance.now();
+  fn(iters);
+  flush();
+  return (performance.now() - t0) * 1000 / iters;   // µs / 회
+}
+
+function median(xs) {
+  const s = [...xs].sort((a, b) => a - b);
+  return s[Math.floor(s.length / 2)];
+}
+
+function best(fn, iters) {
+  const runs = [];
+  for (let i = 0; i < TRIALS; i++) runs.push(timeIt(fn, iters));
+  const s = [...runs].sort((a, b) => a - b);
+  return {
+    median: median(runs),
+    p95: s[Math.floor((s.length - 1) * 0.95)],   /* 게이트가 p99 프레임 타임이라 꼬리를 본다 */
+    min: s[0],
+    max: s[s.length - 1],
+  };
+}
+
+/* ── 스프라이트 굽기 (06 §3.1 의 방식 그대로) ────────────────────── */
+
+function bakeGlow(diameter) {
+  const s = document.createElement('canvas');
+  s.width = s.height = diameter;
+  const g = s.getContext('2d');
+  const r = diameter / 2;
+  const grad = g.createRadialGradient(r, r, 0, r, r, r);
+  grad.addColorStop(0,    'rgba(245,179,36,1)');
+  grad.addColorStop(0.35, 'rgba(245,179,36,0.42)');
+  grad.addColorStop(1,    'rgba(245,179,36,0)');
+  g.fillStyle = grad;
+  g.fillRect(0, 0, diameter, diameter);
+  return s;
+}
+
+/* 탄환 글로우 반경은 06 §3.1 상 `def.r * 1.6 + 26`.
+   P2(r=6) → 35.6u 반경 = 71u 지름,  P6(r=26) → 67.6u = 135u 지름.
+   85 는 그 사이의 대표값이고, 크기 의존성을 보려고 세 가지를 잰다. */
+const SIZES = [71, 85, 135];
+const sprites = new Map(SIZES.map(d => [d, bakeGlow(d)]));
+
+/* 스프라이트를 화면 전체에 흩는다 — 같은 자리에 겹쳐 그리면 캐시가 유리해져
+   실제 탄막과 다른 숫자가 나온다. */
+const POS = Array.from({ length: 512 }, (_, i) => ({
+  x: (i * 137) % (LOGICAL_W - 140),
+  y: (i * 311) % (LOGICAL_H - 140),
+}));
+
+/* ── 측정 항목 ───────────────────────────────────────────────────── */
+
+function drawLighter(sprite) {
+  return (n) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) {
+      const p = POS[i & 511];
+      ctx.drawImage(sprite, p.x, p.y);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  };
+}
+
+function drawSourceOver(sprite) {
+  return (n) => {
+    for (let i = 0; i < n; i++) {
+      const p = POS[i & 511];
+      ctx.drawImage(sprite, p.x, p.y);
+    }
+  };
+}
+
+/* 12 §10 E-14 — 탄환마다 합성 모드를 왕복하는 현재 설계 */
+function drawAlternating(sprite) {
+  return (n) => {
+    for (let i = 0; i < n; i++) {
+      const p = POS[i & 511];
+      ctx.globalCompositeOperation = 'lighter';
+      ctx.drawImage(sprite, p.x, p.y);
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.drawImage(sprite, p.x, p.y);
+    }
+  };
+}
+
+/* 두 패스로 나눈 형태. 전환이 n×2 회에서 2 회가 된다 */
+function drawTwoPass(sprite) {
+  return (n) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) { const p = POS[i & 511]; ctx.drawImage(sprite, p.x, p.y); }
+    ctx.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < n; i++) { const p = POS[i & 511]; ctx.drawImage(sprite, p.x, p.y); }
+  };
+}
+
+/* ── 비용 분해 ───────────────────────────────────────────────────
+ * 7.33µs 가 어디서 오는지 가른다. 이 네 줄이 이 프로브의 헤드라인이다 —
+ * 호출 고정비가 지배적이면 픽셀을 줄이는 최적화는 값을 하지 않는다.
+ *
+ *   JS 루프만      그리기 없음                    → 루프 자체의 비용
+ *   1×1 스프라이트  fill 이 사실상 0               → 순수 호출 고정비
+ *   85px 한 자리    fill 있음, 프레임버퍼 국소     → + fill
+ *   85px 흩뿌림     fill 있음, 프레임버퍼 산포     → + 산포
+ */
+function loopOnly(n) {
+  let acc = 0;
+  for (let i = 0; i < n; i++) acc += POS[i & 511].x;
+  return acc;
+}
+
+const tinySprite = (() => {
+  const s = document.createElement('canvas');
+  s.width = s.height = 1;
+  const g = s.getContext('2d');
+  g.fillStyle = '#f5b324';
+  g.fillRect(0, 0, 1, 1);
+  return s;
+})();
+
+function drawTiny(n) {
+  ctx.globalCompositeOperation = 'lighter';
+  for (let i = 0; i < n; i++) { const p = POS[i & 511]; ctx.drawImage(tinySprite, p.x, p.y); }
+  ctx.globalCompositeOperation = 'source-over';
+}
+
+function drawSameSpot(sprite) {
+  return (n) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) ctx.drawImage(sprite, 500, 900);
+    ctx.globalCompositeOperation = 'source-over';
+  };
+}
+
+/* ── flush 오염 스윕 ─────────────────────────────────────────────
+ * 측정값 = d + R/N. N 을 4배씩 키우며 값이 수렴하는지 본다.
+ *   수렴한다  → 남는 값이 진짜 호출 비용 d
+ *   계속 준다 → 지금까지의 "호출 고정비" 는 flush 를 나눠 본 것이다
+ */
+function sweepFlushBias(sprite) {
+  const out = [];
+  for (const n of [500, 2000, 10000, 40000]) {
+    const runs = [];
+    for (let k = 0; k < 7; k++) {
+      const t0 = performance.now();
+      drawLighter(sprite)(n);
+      flush();
+      runs.push((performance.now() - t0) * 1000 / n);
+    }
+    runs.sort((a, b) => a - b);
+    out.push({ n, us: runs[3] });
+  }
+  return out;
+}
+
+/* flush 1회의 절대 비용 — 위 스윕의 R 이다 */
+function measureFlushCost() {
+  drawLighter(sprites.get(85))(200);
+  const t0 = performance.now();
+  flush();
+  return performance.now() - t0;
+}
+
+function fullFill(n) {
+  for (let i = 0; i < n; i++) {
+    ctx.fillStyle = i & 1 ? '#06070a' : '#0b0d13';
+    ctx.fillRect(0, 0, LOGICAL_W, LOGICAL_H);
+  }
+}
+
+/* setTransform 을 낀 형태 — 06 §3.1 의 발당 시퀀스 */
+function drawWithTransform(sprite) {
+  const half = sprite.width / 2;
+  return (n) => {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < n; i++) {
+      const p = POS[i & 511];
+      ctx.setTransform(1, 0, 0, 1, p.x + half, p.y + half);
+      ctx.rotate(i * 0.01);
+      ctx.drawImage(sprite, -half, -half);
+    }
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.globalCompositeOperation = 'source-over';
+  };
+}
+
+/* ── 실행 ────────────────────────────────────────────────────────── */
+
+function run() {
+  const env = gpuInfo();
+
+  // 워밍업 — JIT 와 텍스처 업로드를 측정에서 뺀다
+  for (const d of SIZES) drawLighter(sprites.get(d))(1500);
+  drawTiny(1500); drawSameSpot(sprites.get(85))(1500);
+  fullFill(10);
+  flush();
+
+  const N = ITERS;
+  const results = {};
+
+  for (const d of SIZES) {
+    results['lighter_' + d]    = best(drawLighter(sprites.get(d)), N);
+    results['sourceover_' + d] = best(drawSourceOver(sprites.get(d)), N);
+  }
+  results.transform_85   = best(drawWithTransform(sprites.get(85)), N);
+  results.loopOnly       = best(loopOnly, N);
+  results.tiny           = best(drawTiny, N);
+  results.sameSpot_85    = best(drawSameSpot(sprites.get(85)), N);
+  results.alternating_85 = best(drawAlternating(sprites.get(85)), N / 2);
+  results.twopass_85     = best(drawTwoPass(sprites.get(85)), N / 2);
+  results.fill           = best(fullFill, 20);
+  const sweep     = sweepFlushBias(sprites.get(85));
+  const flushCost = measureFlushCost();
+
+  /* 판정 기준은 중앙값이 아니라 p95 다. 06 §3.7.2 의 게이트가 p99 프레임 타임이므로,
+     프레임의 99% 가 예산 안에 들어오려면 호출 비용의 꼬리를 견뎌야 한다. */
+  const t = results.lighter_85.p95;
+  const ceiling = Math.round(FRAME_BUDGET_US / t);
+  const fillMs = results.fill.median / 1000;         // 전체화면 1회 ms
+  const mpxPerSec = (LOGICAL_W * LOGICAL_H) / (results.fill.median / 1e6) / 1e6;
+
+  render(env, results, { t, ceiling, fillMs, mpxPerSec, sweep, flushCost });
+}
+
+function render(env, r, v) {
+  const row = (label, res, unit) =>
+    `<tr><td>${label}</td><td class="n">${res.median.toFixed(3)}</td>` +
+    `<td class="n"><b>${res.p95.toFixed(3)}</b></td>` +
+    `<td class="n">${res.min.toFixed(3)}</td><td class="n">${res.max.toFixed(3)}</td><td>${unit}</td></tr>`;
+
+  let verdict, cls;
+  if (v.t <= 1.5) {
+    verdict = `상한 ${v.ceiling.toLocaleString()} 회/프레임. 기획안의 추정 2,500 을 크게 웃돈다 — ` +
+              `드로우 콜 초과(2,619) 논쟁이 소멸한다. 12 §7.4-B 의 유보 판정을 측정값으로 닫는다.`;
+    cls = 'ok';
+  } else if (v.t < 12) {
+    verdict = `상한 ${v.ceiling.toLocaleString()} 회/프레임. 추정 2,500 과 같은 자릿수다 — ` +
+              `초과분 2,619 가 실재하므로 06 §3.5 의 손잡이(청해파문 스트립 굽기, −286)를 P1 에서 함께 잰다.`;
+    cls = v.ceiling >= 2619 ? 'ok' : 'warn';
+  } else {
+    verdict = `상한 ${v.ceiling.toLocaleString()} 회/프레임. GPU 경로가 아닐 가능성이 높다 — ` +
+              `상한 조정이 아니라 D-02(Canvas 2D) 재검토 구간이다.`;
+    cls = 'bad';
+  }
+
+  const alt = r.alternating_85.median, two = r.twopass_85.median;
+  const switchCost = (alt - two) / 2;   // 왕복 1쌍당 추가분 → 전환 1회분
+
+  document.getElementById('out').innerHTML = `
+<div class="env">${env.renderer}${env.accelerated === false
+    ? ' <b style="color:#e23c2e">— 소프트웨어 래스터라이저. 아래 숫자는 GPU 경로를 반영하지 않는다</b>'
+    : env.accelerated ? ' — 하드웨어 가속' : ''}
+캔버스 ${LOGICAL_W}×${LOGICAL_H} · 시행 ${TRIALS}회 중앙값 · ${navigator.userAgent}</div>
+
+<div class="verdict ${cls}"><b>기준값 t = ${v.t.toFixed(3)} µs/회</b> (85px 글로우 lighter, <b>p95</b> — 게이트가 p99 프레임 타임이므로 중앙값이 아니라 꼬리를 쓴다)<br>${verdict}</div>
+
+<table>
+<tr><th>측정</th><th>중앙값</th><th>p95</th><th>최소</th><th>최대</th><th></th></tr>
+${SIZES.map(d => row(`drawImage lighter ${d}px`, r['lighter_' + d], 'µs/회')).join('')}
+${SIZES.map(d => row(`drawImage source-over ${d}px`, r['sourceover_' + d], 'µs/회')).join('')}
+${row('setTransform + rotate + drawImage 85px', r.transform_85, 'µs/회')}
+</table>
+
+<table>
+<tr><th>비용 분해 — 호출 비용이 어디서 오나</th><th>중앙값</th><th>p95</th><th>최소</th><th>최대</th><th></th></tr>
+${row('JS 루프만 (그리기 없음)', r.loopOnly, 'µs/회')}
+${row('1×1 스프라이트 — 순수 호출 고정비', r.tiny, 'µs/회')}
+${row('85px 한 자리 — + fill', r.sameSpot_85, 'µs/회')}
+${row('85px 흩뿌림 — + 프레임버퍼 산포', r.lighter_85, 'µs/회')}
+<tr><td colspan="6" style="padding-top:8px;color:#9aa3b2">
+  호출 고정비 <b>${(r.tiny.median / r.lighter_85.median * 100).toFixed(0)}%</b> ·
+  fill <b>${((r.sameSpot_85.median - r.tiny.median) / r.lighter_85.median * 100).toFixed(0)}%</b> ·
+  산포 <b>${((r.lighter_85.median - r.sameSpot_85.median) / r.lighter_85.median * 100).toFixed(0)}%</b>
+  &nbsp;— 고정비가 지배적이면 픽셀을 줄이는 최적화는 값을 하지 않는다
+</tr>
+${row('합성 모드 왕복 (탄환당 2회 전환)', r.alternating_85, 'µs/쌍')}
+${row('두 패스 (전환 2회 총합)', r.twopass_85, 'µs/쌍')}
+${row('fillRect 전체화면', r.fill, 'µs/회')}
+</table>
+
+<table>
+<tr><th>flush 오염 검사 — 측정값 = d + R/N</th><th>µs/회</th></tr>
+${v.sweep.map(s => `<tr><td>N = ${s.n.toLocaleString()}</td><td class="n">${s.us.toFixed(3)}</td></tr>`).join('')}
+<tr><td>flush(<code>getImageData</code>) 1회</td><td class="n">${v.flushCost.toFixed(2)} ms</td></tr>
+<tr><td colspan="2" style="padding-top:8px;color:#9aa3b2">
+  N 을 키울수록 값이 <b>줄면</b> 그 감소분이 flush 를 나눠 본 것이고, 지금까지 "호출 고정비" 라 부른 값에
+  섞여 있다. <b>수렴하면</b> 남는 값이 진짜 호출 비용이다.
+  차이를 보는 항목(setTransform, 합성 전환)은 flush 가 상쇄되므로 이 오염과 무관하다.
+</td></tr>
+</table>
+
+<table>
+<tr><th>도출</th><th>값</th></tr>
+<tr><td>프레임당 드로우 콜 상한 (16,670 ÷ t<sub>p95</sub>)</td><td class="n"><b>${v.ceiling.toLocaleString()}</b></td></tr>
+<tr><td>기획안 추정 상한 (미측정)</td><td class="n">2,500</td></tr>
+<tr><td>기획안 예산 합계 (06 §3.5)</td><td class="n">2,616</td></tr>
+<tr><td>전체화면 fill 1회</td><td class="n">${v.fillMs.toFixed(3)} ms</td></tr>
+<tr><td>fill-rate</td><td class="n">${Math.round(v.mpxPerSec).toLocaleString()} Mpx/s</td></tr>
+<tr><td>기획안 fill 예산 (06 §3.6, 10.1M px @60fps)</td><td class="n">605 Mpx/s 필요</td></tr>
+<tr><td>합성 모드 전환 1회 비용</td><td class="n">${switchCost >= 0 ? switchCost.toFixed(3) : '측정 불가(음수)'} µs</td></tr>
+<tr><td>E-14 두 패스로 절약되는 프레임당 시간 (전환 1,038회)</td><td class="n">${switchCost >= 0 ? (switchCost * 1038 / 1000).toFixed(2) + ' ms' : '—'}</td></tr>
+</table>`;
+}
+
+requestAnimationFrame(() => requestAnimationFrame(run));
+</script>
+</body>
+</html>
