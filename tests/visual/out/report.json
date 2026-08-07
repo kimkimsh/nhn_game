@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-07T23:48:41.921Z",
+  "generatedAt": "2026-08-07T23:49:57.891Z",
   "driver": "playwright chromium 151.0.7922.34",
   "tolerance": {
     "channelDelta": 2,
@@ -25,7 +25,7 @@
         "zones": 0,
         "telegraphs": 0,
         "popups": 1,
-        "particles": 13,
+        "particles": 14,
         "hudPresent": true,
         "maxLife": 4,
         "traumaAtCapture": 0,
@@ -34,91 +34,91 @@
       "masks": {
         "countByKind": {
           "text": 8,
-          "ruling": 14,
+          "ruling": 15,
           "new-element": 1
         },
-        "coverageRatio": 0.07312403549382716
+        "coverageRatio": 0.07340856481481481
       },
       "repeat": {
         "widthPx": 1080,
         "heightPx": 1920,
         "comparedPixels": 2073600,
         "maskedPixels": 0,
-        "diffPixels": 1244,
-        "diffRatio": 0.0005999228395061728,
-        "maxChannelDelta": 87,
+        "diffPixels": 1320,
+        "diffRatio": 0.0006365740740740741,
+        "maxChannelDelta": 102,
         "worstCells": [
-          {
-            "xU": 360,
-            "yU": 720,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 195,
-            "maxChannelDelta": 61
-          },
-          {
-            "xU": 480,
-            "yU": 600,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 176,
-            "maxChannelDelta": 65
-          },
-          {
-            "xU": 360,
-            "yU": 600,
-            "widthU": 120,
-            "heightU": 120,
-            "diffPixels": 161,
-            "maxChannelDelta": 77
-          },
           {
             "xU": 120,
             "yU": 600,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 154,
-            "maxChannelDelta": 87
+            "diffPixels": 202,
+            "maxChannelDelta": 93
           },
           {
             "xU": 240,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 145,
-            "maxChannelDelta": 76
+            "diffPixels": 179,
+            "maxChannelDelta": 102
           },
           {
-            "xU": 120,
+            "xU": 360,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 98,
-            "maxChannelDelta": 48
+            "diffPixels": 176,
+            "maxChannelDelta": 79
           },
           {
-            "xU": 120,
+            "xU": 240,
             "yU": 720,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 62,
-            "maxChannelDelta": 87
+            "diffPixels": 147,
+            "maxChannelDelta": 77
           },
           {
-            "xU": 0,
+            "xU": 120,
             "yU": 480,
             "widthU": 120,
             "heightU": 120,
-            "diffPixels": 56,
-            "maxChannelDelta": 14
+            "diffPixels": 140,
+            "maxChannelDelta": 38
+          },
+          {
+            "xU": 240,
+            "yU": 840,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 140,
+            "maxChannelDelta": 59
+          },
+          {
+            "xU": 240,
+            "yU": 600,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 98,
+            "maxChannelDelta": 29
+          },
+          {
+            "xU": 360,
+            "yU": 720,
+            "widthU": 120,
+            "heightU": 120,
+            "diffPixels": 98,
+            "maxChannelDelta": 82
           }
         ]
       },
       "repeatIgnoringParticles": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 2057988,
-        "maskedPixels": 15612,
+        "comparedPixels": 2057094,
+        "maskedPixels": 16506,
         "diffPixels": 0,
         "diffRatio": 0,
         "maxChannelDelta": 0,
@@ -127,10 +127,10 @@
       "compare": {
         "widthPx": 1080,
         "heightPx": 1920,
-        "comparedPixels": 1921970,
-        "maskedPixels": 151630,
-        "diffPixels": 34623,
-        "diffRatio": 0.018014329047799912,
+        "comparedPixels": 1921380,
+        "maskedPixels": 152220,
+        "diffPixels": 34946,
+        "diffRatio": 0.018187969063901986,
         "maxChannelDelta": 234,
         "worstCells": [
           {
