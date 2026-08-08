@@ -1,9 +1,9 @@
 /**
  * B1 조총 방진 대장 — 스펙 §10.2
  *
- * HP 967 / 2페이즈 / 목표 격파 24초. hp와 발수·간격은 difficulty.ts 헤더의 난이도 조정을 받은
- * 값이고 주석의 § 뒤 숫자가 원값이다. §14.4 검산표의 여유 −4%는 그 원값 위에서 나온 것이라
- * 지금 이 파일의 근거가 아니다.
+ * HP 600 / 2페이즈 / 목표 격파 24초. hp와 발수·간격은 체감으로 다시 세운 값이다 — 주석의
+ * 「원값」이 스펙 숫자이고 둘을 잇는 배율은 없다(difficulty.ts 헤더). §14.4 검산표의 여유
+ * −4%는 그 원값 위에서 나온 것이라 지금 이 파일의 근거가 아니다.
  *
  * 설계 의도(§10.2): 궤적 예고 없이 직선탄만 쓴다. 탄이 어디서 나오는지는 예비동작으로
  * 알려주되 어디로 가는지는 탄 자체로만 읽게 해서 패리 타이밍의 기본형을 가르친다.
@@ -31,7 +31,7 @@ export const B1_GUNNER_LINE_SPAN_U = 720;   // §10.2 (u)
 export const BOSS_1 = {
   id: 'B1',
   name: '조총 방진 대장',
-  hp: 600,                      // §10.2 · §10.7 요약표 원값 1450 × 2/3
+  hp: 600,                      // §10.2 · §10.7 요약표 원값 1450
   targetKillSec: 24,            // §10.2 목표 격파 시간 (s). §14.4 검산의 기준값이다
   shape: 'commander',           // §10.2 render/boss.ts의 실루엣 키
   hitBox: { wU: 470, hU: 290 }, // §10.2 목업 02_boss1_johongbangjin/scene.js:14 실측 (u). 원이 아니라 사각형이다
@@ -51,9 +51,9 @@ export const BOSS_1 = {
           // 두 패턴을 가르는 축이 그 대비다. 목업 scene.js:27은 5발을 모두 조준으로 쐈지만
           // 스펙 문장이 이긴다.
           // 4발은 5기 라인 위에서 240u 간격이다 — 발수와 실루엣 수는 원래 묶여 있지 않다.
-          kind: 'volley', bullet: 'P2', count: 5,   // §10.2 원값 5발 × 0.7
+          kind: 'volley', bullet: 'P2', count: 5,   // §10.2 원값 5발
           tellSec: 0.9,           // §10.2 발사 예비동작 (s). 스펙이 이 패턴에 직접 준 값이다
-          intervalSec: 1.2,      // 반복 사이 간격 (s). §10.2 원값 1.4 × 1.4
+          intervalSec: 1.2,      // 반복 사이 간격 (s). §10.2 원값 1.4
           repeat: 2,              // §10.2 2회 반복
           aim: 'down',
           sourceSpread: B1_GUNNER_LINE_SPAN_U,
@@ -73,8 +73,8 @@ export const BOSS_1 = {
           // §14.1의 스테이지 1 값을 읽는다(10_스펙_목업_불일치.md A15). 그리고 이 값은 연사
           // 전체 앞에 한 번이지 repeat마다 다시 붙지 않는다(types-content.ts의 tellSec 계약 ①).
           tellSec: 0.95,          // §14.1 S1 단발 직선 발사 예비동작 (s)
-          intervalSec: 0.3,      // 연사 간격 (s). §10.2 원값 0.35 × 1.4
-          repeat: 10,              // 연사 발수. §10.2 원값 3 × 0.7
+          intervalSec: 0.3,      // 연사 간격 (s). §10.2 원값 0.35
+          repeat: 10,              // 연사 발수. §10.2 원값 3
           aim: 'player',
           sourceSpread: 0,        // §10.2 본체 한 점에서 나간다 (u)
           from: 'boss',
@@ -94,9 +94,9 @@ export const BOSS_1 = {
           // §10.2 예비동작 0.6초, 탄속 ×1.1. 반복 횟수와 간격은 스펙이 다시 적지 않았으므로
           // 페이즈 1의 일제사격을 그대로 물려받는다 — "강화"가 바꾼 것은 적힌 셋뿐이다.
           // 발사원 폭도 같은 라인이다. 5발이면 총구는 라인 위에서 180u 간격이 된다.
-          kind: 'volley', bullet: 'P2', count: 7,   // §10.2 원값 7발 × 0.7
+          kind: 'volley', bullet: 'P2', count: 7,   // §10.2 원값 7발
           tellSec: 0.6,           // §10.2 발사 예비동작 (s)
-          intervalSec: 1.2,      // 페이즈 1과 같은 반복 간격 (s). §10.2 원값 1.4 × 1.4
+          intervalSec: 1.2,      // 페이즈 1과 같은 반복 간격 (s). §10.2 원값 1.4
           repeat: 2,              // §10.2 페이즈 1과 같은 반복 횟수
           aim: 'down',
           sourceSpread: B1_GUNNER_LINE_SPAN_U,
@@ -116,8 +116,8 @@ export const BOSS_1 = {
           name: '난사',
           // §10.2 무작위 각도 확산 발사. 발사원은 본체다 —
           // 상단 전역 낙하는 §10.5 불화살 비 쪽이고 그것만 origin이 'topSpan'이다.
-          kind: 'barrage', bullet: 'P2', count: 20,  // §10.2 원값 20발 × 0.7
-          durationSec: 1.3,       // 확산에 걸리는 시간 (s). §10.2 원값 1.5 × 1.4
+          kind: 'barrage', bullet: 'P2', count: 20,  // §10.2 원값 20발
+          durationSec: 1.3,       // 확산에 걸리는 시간 (s). §10.2 원값 1.5
           speedUPerSec: 550,      // §10.2 이 패턴 전용 탄속 (u/s). P2 기본 760이 아니다
           origin: 'boss',
         },

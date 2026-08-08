@@ -1,10 +1,10 @@
 /**
  * B5 왜 수군 총대장 기함 — 스펙 §10.6
  *
- * HP 3400 / 4페이즈 / 목표 격파 시간 37초. 앞선 네 보스의 대표 패턴을 순서대로 재구성한 복합
+ * HP 800 / 4페이즈 / 목표 격파 시간 37초. 앞선 네 보스의 대표 패턴을 순서대로 재구성한 복합
  * 보스이고 새 규칙은 하나도 도입하지 않는다 — 페이즈가 조총 · 함포 · 백병 · 전부 순이다.
  *
- * hp와 발수·간격은 difficulty.ts 헤더의 난이도 조정을 받은 값이고 § 뒤 숫자가 원값이다.
+ * hp와 발수·간격은 체감으로 다시 세운 값이다 — 주석의 「원값」이 스펙 숫자이고 둘을 잇는 배율은 없다(difficulty.ts 헤더).
  * 페이즈 4의 `lance`는 조정 대상이 아니다 — P12는 패리 불가라 「탄약」이 아니고, 그 간격은
  * §10.6 3패턴 순환의 1/3 빈도에서 유도한 값이라 발사 주기와 다른 근거 위에 서 있다.
  *
@@ -28,7 +28,7 @@ import {
 export const BOSS_5 = {
   id: 'B5',
   name: '왜 수군 총대장 기함',
-  hp: 800,                     // §10.6 · §14.1 보스 HP 원값 5100 × 2/3
+  hp: 800,                     // §10.6 · §14.1 보스 HP 원값 5100
   targetKillSec: 37,            // §10.6 목표 격파 시간 (s)
   shape: 'warship',             // render/boss.ts의 실루엣 키. B3 아타케부네와 같은 키를 쓴다
   hitBox: { wU: 900, hU: 260 }, // §10.6 선체 (u). 목업 10_boss5_flagship/scene.js:13
@@ -46,7 +46,7 @@ export const BOSS_5 = {
           // §10.2 B1 일제사격의 재구성이므로 aim은 'down'이다 — 스펙이 여기서는 「직선」이라고만
           // 적었고, 조준을 요구한 자리(§10.5 대통 직사, §10.4 화공선)와 표현이 다르다.
           kind: 'volley', bullet: 'P2',
-          count: 10,               // 발. §10.6 원값 9 × 0.7
+          count: 10,               // 발. §10.6 원값 9
           tellSec: 0.5,           // §10.6 발사 예비동작 (s). 스펙이 이 패턴에 직접 준 값이다
           intervalSec: 1.2,      // 반복 간격 (s). §10.6이 침묵해 세운 1.2 × 1.4. B1의 1.96보다 짧다
           repeat: 2,              // §10.6 2회 반복
@@ -60,8 +60,8 @@ export const BOSS_5 = {
           // 「강화」가 올리는 것은 발수뿐이다(§10.6 원값 20 → 30). 탄속까지 올리면 §14.2의
           // 축 1과 축 3을 한 패턴에서 같이 미는 셈이 된다.
           kind: 'barrage', bullet: 'P2',
-          count: 35,              // 발. §10.6 원값 30 × 0.7
-          durationSec: 1.5,       // 확산에 걸리는 시간 (s). §10.6 원값 1.5 × 1.4
+          count: 35,              // 발. §10.6 원값 30
+          durationSec: 1.5,       // 확산에 걸리는 시간 (s). §10.6 원값 1.5
           speedUPerSec: 550,      // §10.2 B1 난사가 준 속도 (u/s)
           origin: 'boss',         // §10.6 발사원은 본체다
         },
@@ -79,7 +79,7 @@ export const BOSS_5 = {
           // 커튼으로 내려와도 읽히고, 전부 한 점에 모으면 §5.5 원형 거울 반사의 출발 각도가
           // 전부 같아져 어느 방향으로 되돌릴지가 사라진다.
           kind: 'volley', bullet: 'P6',
-          count: 10,               // 발. §10.6 원값 6 × 0.7
+          count: 10,               // 발. §10.6 원값 6
           tellSec: 0.6,           // §10.6 발사 예비동작 (s). 스펙이 이 패턴에 직접 준 값이다
           intervalSec: 0,         // §10.6 「동시」 (s)
           repeat: 1,              // §10.6 연사가 아니다
@@ -116,7 +116,7 @@ export const BOSS_5 = {
           name: '총대장 등판',
           // §10.6 총대장 본체가 갑판으로 나와 참격파 연발 좌우 교차.
           kind: 'arc', bullet: 'P5',
-          count: 10,               // 연발 (발). §10.6 원값 5 × 0.7
+          count: 10,               // 연발 (발). §10.6 원값 5
           backswingSec: PATTERN_ARC_BACKSWING_SEC, // §6.2 참격파의 백스윙은 스테이지와 무관하게 고정이다
           intervalSec: 0.3,      // 연발 간격 (s). §10.6이 침묵해 세운 0.35 × 1.4
           alternate: true,        // §10.6 좌우 교차
@@ -137,7 +137,7 @@ export const BOSS_5 = {
           onEnd: {
             name: '돌진 종료 링',
             kind: 'ring', bullet: 'P4',
-            count: 20,            // 종료 지점의 링 (발). §10.6 원값 16 × 0.7
+            count: 20,            // 종료 지점의 링 (발). §10.6 원값 16
             tellSec: PATTERN_SPREAD_TELL_SEC,            // §6.2 링의 예비동작은 스테이지와 무관하게 고정이다
             startAngleDeg: PATTERN_RING_START_ANGLE_DEG, // 스펙이 정하지 않은 자리. patterns.ts의 규약을 따른다
           },
@@ -162,14 +162,14 @@ export const BOSS_5 = {
             {
               name: '링 탄막',
               kind: 'ring', bullet: 'P4',
-              count: 25,          // 링 (발). §10.6 원값 20 × 0.7
+              count: 25,          // 링 (발). §10.6 원값 20
               tellSec: 0.5,       // 목업 10_boss5_flagship/scene.js:25의 tell (s). 자식 셋이 같아야 한다
               startAngleDeg: PATTERN_RING_START_ANGLE_DEG, // 스펙이 정하지 않은 자리. patterns.ts의 규약을 따른다
             },
             {
               name: '조총 일제',
               kind: 'volley', bullet: 'P2',
-              count: 10,           // 조총 일제 (발). §10.6 원값 7 × 0.7
+              count: 10,           // 조총 일제 (발). §10.6 원값 7
               tellSec: 0.5,       // 목업 scene.js:25의 tell (s). 자식 셋이 같아야 「동시」가 된다
               intervalSec: 0,     // §10.6 「동시」 (s)
               repeat: 1,          // §10.6 연사가 아니다
@@ -180,7 +180,7 @@ export const BOSS_5 = {
             {
               name: '함포 일제',
               kind: 'volley', bullet: 'P6',
-              count: 8,           // 함포탄 (발). §10.6 원값 4 × 0.7
+              count: 8,           // 함포탄 (발). §10.6 원값 4
               tellSec: 0.5,       // 목업 scene.js:25의 tell (s). 자식 셋이 같아야 「동시」가 된다
               intervalSec: 0,     // §10.6 「동시」 (s)
               repeat: 1,          // §10.6 연사가 아니다
@@ -199,7 +199,7 @@ export const BOSS_5 = {
               name: '집중 곡사',
               // §10.6이 링을 붙이지 않았으므로 장판만 남는다.
               kind: 'mortar',
-              count: 8,           // 예고 원 (개). §10.6 원값 5 × 0.7
+              count: 8,           // 예고 원 (개). §10.6 원값 5
               telegraphSec: PATTERN_MORTAR_TELEGRAPH_SEC, // §6.2 곡사 착탄 예고 원은 고정이다
               radiusU: 90,        // §6.1 P9 화염 장판 반경에 맞춘 예고 원 반경 (u)
               sequentialSec: 0.2, // 원을 하나씩 띄우는 간격 (s). 목업 scene.js:41의 0.12 × 1.4
@@ -210,7 +210,7 @@ export const BOSS_5 = {
             {
               name: '불화살 비',
               kind: 'barrage', bullet: 'P8',
-              count: 30,          // 불화살 비 (발). §10.6 원값 15 × 0.7
+              count: 30,          // 불화살 비 (발). §10.6 원값 15
               durationSec: 3,  // 11발 × 0.34초 간격 (s). 목업 scene.js:36에서 유도한 2.7 × 1.4
               speedUPerSec: 480,  // §6.1 P8 기본 속도 (u/s)
               origin: 'topSpan',  // §10.5 불화살 비는 상단 전역에서 낙하한다

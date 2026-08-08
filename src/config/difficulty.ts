@@ -21,27 +21,26 @@
  *
  * ── 이 표는 §14.1의 값이 아니다 ────────────────────────────────────────────────
  *
- * 소유자가 체감 난이도를 낮추기로 정해 §14.1 표 위에 일괄 배율을 얹었다. 실제로 쓰이는 값은
- * 이 파일이고 §14.1은 그 유래다 — 주석의 § 뒤에 적힌 숫자가 배율을 먹이기 전의 원값이다.
+ * 소유자가 체감 난이도로 다시 세운 값이다. 실제로 쓰이는 것은 이 파일이고 §14.1은 그 유래이며,
+ * 주석의 「원값」이 §14.1이 적어 둔 숫자다. **둘을 잇는 일괄 배율은 없다** — 한 축씩 손으로
+ * 맞췄으므로 어느 칸도 다른 칸에서 유도되지 않는다.
  *
- *   탄속 배율    §14.1 × 0.50
- *   적 HP 배율   §14.1 × 2/3
- *   발수         §8.1 · §10 × 0.7 (반올림, 최소 1)   — enemies.ts · bosses/*
- *   발사 간격    §8.1 · §10 × 1.4                    — enemies.ts · bosses/*
+ * 같은 성격의 값이 사는 다른 파일: enemies.ts(잡몹 발수·주기) · bosses/*(보스 HP·발수·간격) ·
+ * bullets.ts(탄속·BRP) · parry.ts(반경·등급 밴드) · player.ts(라이프·판정 반경) · feel.ts(흔들림).
  *
- * tellSec · maxEnemyBullets · waveCount · targetLengthSec · unparryable은 안 건드렸다.
- * 보스 HP도 이 표에 없으므로 bosses/*의 hp가 각자 × 2/3을 받았다.
+ * tellSec · maxEnemyBullets · waveCount · targetLengthSec · unparryable은 §14.1 그대로다.
  *
- * **§14.4 검산표는 이 배율을 반영하지 않은 상태다.** 그 표가 세운 보스 격파 시간과 T-03
- * 3발 이내 조건은 원값 위에서 계산된 것이라, 여기를 다시 만질 때 그 표를 근거로 쓰면 안 된다.
+ * **§14.4 검산표는 이 값들 위에 서 있지 않다.** 그 표가 세운 보스 격파 시간과 T-03의 「NOT BAD
+ * 3발 이내」는 원값으로 계산된 것이라, 여기를 다시 만질 때 그 표를 근거로 쓰면 안 된다.
+ * 차이표와 실측은 docs/work_log/05_난이도_조정.md에 있다.
  */
 import type { StageScaling } from './types';
 import type { StageId } from './ids';
 
 export const STAGE_SCALING = {
   1: {
-    enemyHpMul:      1.0,    // 배율. enemies.ts의 hp에 곱한다. §14.1 원값 1.00 × 2/3
-    bulletSpeedMul:  1.0,    // 배율. bullets.ts의 speedUPerSec에 곱한다. §14.1 원값 1.00 × 0.50
+    enemyHpMul:      1.0,    // 배율. enemies.ts의 hp에 곱한다. §14.1 원값 1.00
+    bulletSpeedMul:  1.0,    // 배율. bullets.ts의 speedUPerSec에 곱한다. §14.1 원값 1.00
     tellSec:         0.95,    // §14.1 초. 단발 직선(P1~P3)의 발사 예비동작
     maxEnemyBullets: 80,      // §14.1 발. 성능 방어선이지 난이도 목표치가 아니다
     waveCount:       3,       // §9.3 웨이브 수
@@ -49,8 +48,8 @@ export const STAGE_SCALING = {
     unparryable:     'none',  // §14.1 패리 불가 요소 없음
   },
   2: {
-    enemyHpMul:      1.2,    // 배율. §14.1 원값 1.35 × 2/3
-    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.08 × 0.50
+    enemyHpMul:      1.2,    // 배율. §14.1 원값 1.35
+    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.08
     tellSec:         0.85,    // §14.1 초
     maxEnemyBullets: 120,     // §14.1 발
     waveCount:       4,       // §9.4 웨이브 수
@@ -58,8 +57,8 @@ export const STAGE_SCALING = {
     unparryable:     'none',  // §14.1 패리 불가 요소 없음
   },
   3: {
-    enemyHpMul:      1.3,    // 배율. §14.1 원값 1.80 × 2/3
-    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.16 × 0.50
+    enemyHpMul:      1.3,    // 배율. §14.1 원값 1.80
+    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.16
     tellSec:         0.75,    // §14.1 초
     maxEnemyBullets: 170,     // §14.1 발
     waveCount:       4,       // §9.5 웨이브 수
@@ -67,8 +66,8 @@ export const STAGE_SCALING = {
     unparryable:     'none',  // §14.1 패리 불가 요소 없음
   },
   4: {
-    enemyHpMul:      1.4,    // 배율. §14.1 원값 2.40 × 2/3
-    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.24 × 0.50
+    enemyHpMul:      1.4,    // 배율. §14.1 원값 2.40
+    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.24
     tellSec:         0.65,    // §14.1 초
     maxEnemyBullets: 210,     // §14.1 발
     waveCount:       4,       // §9.6 웨이브 수
@@ -76,8 +75,8 @@ export const STAGE_SCALING = {
     unparryable:     'zone',  // §14.1 화염 장판(P9) 첫 등장. 동시 6개 상한은 §9.6이 갖는다
   },
   5: {
-    enemyHpMul:      1.5,    // 배율. §14.1 원값 3.10 × 2/3
-    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.34 × 0.50
+    enemyHpMul:      1.5,    // 배율. §14.1 원값 3.10
+    bulletSpeedMul:  1.0,    // 배율. §14.1 원값 1.34
     tellSec:         0.55,    // §14.1 초
     maxEnemyBullets: 280,     // §14.1 발. 잡몹 상한 20기로 발사원이 늘어난 만큼 올린 값이다
     waveCount:       5,       // §9.7 웨이브 수
