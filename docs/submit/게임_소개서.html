@@ -1,0 +1,964 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>환도 還刀 — 게임 소개서</title>
+<!--
+  글꼴은 fonts/ 안의 하위 집합 파일에서 온다. Google Fonts를 링크로 불러오면 인쇄 시점에
+  네트워크 요청이 끝나기 전에 PDF가 찍혀 본문이 대체 글꼴로 굳는다.
+-->
+<link rel="stylesheet" href="fonts.css">
+<style>
+/*
+ * 색은 전부 src/config/palette.ts의 게임 색이고 쓰이는 자리도 게임과 같다. 적색은 적에게만,
+ * 황색은 반사탄에만, 청색은 플레이어와 조작에만 붙는다 — 게임의 「색 하나에 규칙 하나」를
+ * 이 문서가 그대로 따른다. 한글 라벨에는 넓은 자간을 주지 않는다. 자모 간격이 벌어져
+ * 라틴 문자에서 얻는 효과가 한글에서는 반대로 나온다.
+ */
+:root {
+  --ink-900: #06070a;
+  --jeok: #e23c2e;
+  --hwang: #f5b324;
+  --cheong: #35b7e0;
+  --cheong-deep: #1a6a86;
+  --baek: #ede6d8;
+
+  /* 종이. 게임이 baek으로 선언한 지색을 문서의 바탕으로 올린 값이다 */
+  --paper: #f4f1e9;
+  --paper-sunk: #eae6dc;
+  --sumuk-900: #14161a;
+  --sumuk-700: #3b4048;
+  --sumuk-500: #71767f;
+  --sumuk-300: #b2b5ad;
+  --hairline: #d4d0c5;
+
+  --display: "Gowun Batang", "Nanum Myeongjo", "Noto Serif CJK KR", serif;
+  --body: "IBM Plex Sans KR", "Noto Sans CJK KR", -apple-system, sans-serif;
+  /* Plex Mono에는 한글이 없다. 한글 차례를 본문 글꼴로 넘겨 대체 글꼴로 떨어지지 않게 한다 */
+  --data: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--sumuk-700);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  font-family: var(--body);
+  font-size: 10pt;
+  line-height: 1.66;
+  color: var(--sumuk-900);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@page { size: A4 portrait; margin: 0; }
+
+.sheet {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding: 16mm 17mm 19mm;
+  background: var(--paper);
+  overflow: hidden;
+  break-after: page;
+}
+.sheet:last-child { break-after: auto; }
+
+@media screen {
+  body { padding: 10mm 0; }
+  .sheet { margin: 0 auto 8mm; box-shadow: 0 2mm 8mm rgba(0, 0, 0, .35); }
+}
+
+/* ── 좌측 레일 + 본문 ────────────────────────────────────────────────── */
+
+.grid {
+  display: grid;
+  grid-template-columns: 31mm 135mm;
+  column-gap: 10mm;
+  align-items: start;
+}
+
+.rail { padding-top: 1.4mm; }
+.rail-n {
+  font-family: var(--data);
+  font-weight: 500;
+  font-size: 16pt;
+  line-height: 1;
+  color: var(--sumuk-900);
+}
+.rail-t {
+  font-size: 8.6pt;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 2.4mm;
+  padding-top: 2.4mm;
+  border-top: 0.35mm solid var(--sumuk-900);
+}
+.rail p { font-size: 8.2pt; line-height: 1.6; color: var(--sumuk-500); margin-top: 3mm; }
+
+/* ── 머리글 ──────────────────────────────────────────────────────────── */
+
+.eyebrow {
+  font-family: var(--data);
+  font-size: 7.4pt;
+  letter-spacing: .17em;
+  color: var(--sumuk-500);
+}
+
+h1 { font-family: var(--display); font-weight: 700; letter-spacing: -0.005em; }
+h2 {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 17pt;
+  line-height: 1.25;
+  margin-bottom: 4mm;
+}
+
+h3 {
+  font-weight: 600;
+  font-size: 10pt;
+  margin-bottom: 1.8mm;
+  padding-left: 3.2mm;
+  border-left: 1.1mm solid var(--cheong);
+}
+h3.on-jeok { border-left-color: var(--jeok); }
+h3.on-hwang { border-left-color: var(--hwang); }
+h3.on-ink { border-left-color: var(--sumuk-300); }
+
+p + p { margin-top: 2.6mm; }
+.block + .block { margin-top: 6.4mm; }
+.lede { font-size: 11pt; line-height: 1.58; }
+.note { font-size: 8.7pt; line-height: 1.6; color: var(--sumuk-700); }
+strong { font-weight: 600; }
+em { font-style: normal; color: var(--jeok); font-weight: 600; }
+.two { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; align-items: start; }
+
+/* ── 표 ──────────────────────────────────────────────────────────────── */
+
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td {
+  text-align: left;
+  vertical-align: top;
+  padding: 1.6mm 2.6mm 1.6mm 0;
+  border-bottom: 0.2mm solid var(--hairline);
+}
+th {
+  font-size: 8pt;
+  font-weight: 600;
+  color: var(--sumuk-500);
+  border-bottom: 0.35mm solid var(--sumuk-900);
+  padding-bottom: 1.2mm;
+}
+td { font-size: 9.1pt; line-height: 1.5; }
+tr:last-child td { border-bottom: none; }
+.mono, td.mono { font-family: var(--data); font-size: 8.6pt; }
+.right { text-align: right; }
+/* 경로는 아무 자리에서나 끊기면 읽히지 않는다. 끊길 자리는 wbr로 직접 준다 */
+.paths td.mono { font-size: 8.1pt; overflow-wrap: normal; word-break: keep-all; }
+
+kbd {
+  font-family: var(--data);
+  font-size: 8.2pt;
+  font-weight: 500;
+  padding: 0.4mm 1.4mm;
+  border: 0.2mm solid var(--cheong-deep);
+  border-radius: 0.7mm;
+  color: var(--cheong-deep);
+  white-space: nowrap;
+}
+
+/* ── 목록. 표시는 인게임 라이프 pip과 같은 마름모다 ──────────────────── */
+
+ul { list-style: none; }
+ul li { position: relative; padding-left: 5mm; }
+ul li + li { margin-top: 2mm; }
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.4mm;
+  top: 1.9mm;
+  width: 1.7mm;
+  height: 1.7mm;
+  background: var(--cheong);
+  transform: rotate(45deg);
+}
+
+/* ── 인게임 화면 판 ──────────────────────────────────────────────────── */
+
+figure { break-inside: avoid; }
+figure img {
+  display: block;
+  width: 100%;
+  background: var(--ink-900);
+  border: 0.25mm solid var(--sumuk-300);
+}
+figcaption {
+  font-size: 7.8pt;
+  line-height: 1.5;
+  color: var(--sumuk-500);
+  margin-top: 1.8mm;
+}
+.plates { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6mm; }
+
+/* ── 표지 ────────────────────────────────────────────────────────────── */
+
+.cover { display: grid; grid-template-columns: 100mm 76mm; column-gap: 9mm; height: 262mm; }
+.cover-left { display: flex; flex-direction: column; justify-content: space-between; }
+.cover-mark { width: 33mm; height: 33mm; margin: 9mm 0 9mm; }
+.cover h1 { font-size: 50pt; line-height: 0.96; letter-spacing: 0.05em; }
+.cover-hanja {
+  font-family: var(--display);
+  font-size: 17pt;
+  letter-spacing: .3em;
+  color: var(--hwang);
+  margin-top: 3mm;
+}
+.cover-rule {
+  font-family: var(--display);
+  font-size: 14pt;
+  line-height: 1.62;
+  padding-top: 7mm;
+  border-top: 0.4mm solid var(--sumuk-900);
+}
+.cover-rule span { color: var(--jeok); }
+.cover-sub { font-size: 9.6pt; line-height: 1.65; color: var(--sumuk-700); margin-top: 5mm; }
+.cover-facts { margin-top: auto; padding-top: 6mm; border-top: 0.35mm solid var(--sumuk-900); }
+.cover-facts dl { display: grid; grid-template-columns: 1fr 1fr; column-gap: 6mm; row-gap: 4.2mm; }
+.cover-facts dt { font-size: 8pt; font-weight: 600; color: var(--sumuk-500); }
+.cover-facts dd { font-family: var(--data); font-size: 10.4pt; font-weight: 500; margin-top: 0.6mm; }
+.cover-right { display: flex; flex-direction: column; justify-content: space-between; }
+
+/* ── 도해 ────────────────────────────────────────────────────────────── */
+
+.diagram {
+  background: var(--ink-900);
+  border: 0.25mm solid var(--sumuk-300);
+  padding: 5mm 6mm 4mm;
+  break-inside: avoid;
+}
+.diagram svg { display: block; width: 100%; height: auto; }
+
+/* ── 패리 타이밍 띠 ──────────────────────────────────────────────────── */
+
+.timing { break-inside: avoid; }
+.timing-bar { display: flex; height: 7mm; }
+.timing-bar span {
+  display: flex;
+  align-items: center;
+  padding-left: 2mm;
+  font-family: var(--data);
+  font-size: 7.8pt;
+  color: var(--ink-900);
+  white-space: nowrap;
+}
+.t-active { flex: 0 0 62.5%; background: var(--cheong); }
+.t-lock { flex: 1 1 auto; background: var(--paper-sunk); color: var(--sumuk-700) !important; }
+.timing-ticks {
+  display: flex;
+  font-family: var(--data);
+  font-size: 7.4pt;
+  color: var(--sumuk-500);
+  margin-top: 1.4mm;
+}
+.timing-ticks span:first-child { flex: 0 0 62.5%; }
+
+/* ── 진행 흐름 띠 ────────────────────────────────────────────────────── */
+
+.flow { display: flex; align-items: center; break-inside: avoid; }
+.flow-node {
+  font-family: var(--data);
+  font-size: 8.4pt;
+  font-weight: 500;
+  padding: 1.5mm 2.5mm;
+  border: 0.25mm solid var(--sumuk-300);
+  background: var(--paper-sunk);
+  white-space: nowrap;
+}
+/* 본문 글꼴에는 600만 실어 두었다 — 500으로 두면 이 두 칸이 대체 글꼴로 떨어진다 */
+.flow-node.ko { font-family: var(--body); font-weight: 600; }
+.flow-node.stage { border-color: var(--sumuk-900); background: var(--paper); font-weight: 600; }
+.flow-line { flex: 1 1 auto; height: 0.25mm; background: var(--sumuk-300); }
+.flow-pip {
+  width: 2.4mm;
+  height: 2.4mm;
+  flex: 0 0 auto;
+  background: var(--cheong);
+  transform: rotate(45deg);
+  margin: 0 1.1mm;
+}
+.flow-legend { font-size: 8.2pt; color: var(--sumuk-500); margin-top: 2.8mm; }
+
+/* ── 터미널 ──────────────────────────────────────────────────────────── */
+
+.term {
+  font-family: var(--data);
+  font-size: 8.3pt;
+  line-height: 1.7;
+  background: var(--ink-900);
+  color: var(--baek);
+  padding: 2.6mm 4mm;
+  break-inside: avoid;
+  white-space: pre;
+}
+.term .cmt { color: var(--sumuk-500); }
+.term .ok { color: var(--cheong); }
+.step { display: grid; grid-template-columns: 6.5mm 1fr; }
+.step-n { font-family: var(--data); font-size: 11.5pt; font-weight: 600; line-height: 1.1; color: var(--jeok); }
+.step + .step { margin-top: 4mm; }
+.step h4 { font-weight: 600; font-size: 10pt; margin-bottom: 1.4mm; }
+.step .term { margin-top: 1.6mm; }
+
+/* ── 색 규칙 ─────────────────────────────────────────────────────────── */
+
+.legend { display: grid; row-gap: 2.2mm; }
+.legend-row { display: grid; grid-template-columns: 4.6mm 1fr; column-gap: 2.6mm; align-items: start; }
+.legend-chip { width: 4.2mm; height: 4.2mm; margin-top: 0.9mm; border-radius: 50%; }
+.legend-row p { font-size: 8.7pt; line-height: 1.5; }
+.legend-row b { font-weight: 600; }
+.legend-row span { color: var(--sumuk-700); }
+
+/* ── 꼬리말 ──────────────────────────────────────────────────────────── */
+
+.foot {
+  position: absolute;
+  left: 17mm;
+  right: 17mm;
+  bottom: 9mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.6pt;
+  color: var(--sumuk-500);
+  padding-top: 2mm;
+  border-top: 0.2mm solid var(--hairline);
+}
+.foot span:last-child { font-family: var(--data); }
+</style>
+</head>
+<body>
+
+<!-- ══ 1. 표지 ══════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="cover">
+    <div class="cover-left">
+      <div>
+        <div class="eyebrow">NHN NAN 2026 &nbsp;·&nbsp; 사전 과제 &nbsp;·&nbsp; 게임 소개서</div>
+
+        <!-- 등급 밴드 세 겹과 칼선. 게임의 로고이면서 판정 규칙 그 자체다 -->
+        <svg class="cover-mark" viewBox="-150 -150 300 300" role="img" aria-label="패리 등급 밴드 표식">
+          <circle r="120" fill="none" stroke="#b2b5ad" stroke-width="3"/>
+          <circle r="48" fill="none" stroke="#35b7e0" stroke-width="4"/>
+          <circle r="28" fill="none" stroke="#f5b324" stroke-width="5"/>
+          <circle r="9" fill="#14161a"/>
+          <path d="M-136 76 L136 -76" stroke="#14161a" stroke-width="6" stroke-linecap="round"/>
+        </svg>
+
+        <h1>환도</h1>
+        <div class="cover-hanja">還刀</div>
+      </div>
+
+      <div>
+        <p class="cover-rule">나에게는 무기가 없다.<br><span>적이 쏜 것만이 내 칼이다.</span></p>
+        <p class="cover-sub">
+          임진왜란을 배경으로 한 종스크롤 탄막 패리 액션.<br>
+          공격 버튼이 없고, 적의 탄환을 되받아친 반사탄만이 적을 죽인다.
+        </p>
+      </div>
+
+      <div class="cover-facts">
+        <dl>
+          <div><dt>분량</dt><dd>5 스테이지 · 보스 5기</dd></div>
+          <div><dt>한 판</dt><dd>약 7분 30초</dd></div>
+          <div><dt>플랫폼</dt><dd>PC 브라우저</dd></div>
+          <div><dt>외부 에셋</dt><dd>0개</dd></div>
+        </dl>
+      </div>
+    </div>
+
+    <div class="cover-right">
+      <figure>
+        <img src="images/01-title.png" alt="환도 타이틀 화면">
+        <figcaption>타이틀 화면. 로고 위에서 도는 것은 연출이 아니라 기록해 둔 입력을 되돌린 실제 플레이다.</figcaption>
+      </figure>
+      <figure>
+        <img src="images/07-detail.png" alt="반사탄 다섯 발이 위로 되돌아가는 순간">
+        <figcaption>청색이 플레이어, 황색이 되받아친 탄이다. 방금 나에게 날아온 다섯 발이 그대로 되돌아간다.</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot"><span>환도 還刀 — 게임 소개서</span><span>1</span></div>
+</section>
+
+<!-- ══ 2. 게임 개요 ══════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">01</div>
+      <div class="rail-t">게임 개요</div>
+      <p>탄막 슈팅의 화면에 공격 버튼이 없다. 적이 쏜 것을 되받아치는 것이 유일한 공격이다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>공격 버튼이 없는 탄막 슈팅</h2>
+        <p class="lede">위에서 적이 내려오고 탄환이 쏟아진다. 화면은 종스크롤 슈팅인데 쏘는 버튼이 없다.</p>
+        <p>
+          패리 버튼을 누르면 플레이어 주위에 원이 0.15초 동안 열린다. 그 안에 들어온 적 탄환은
+          소유권이 뒤집혀 <strong>반사탄</strong>이 되고, 튕겨나간 방향에 있는 적에게 피해를 준다.
+          적을 죽이는 방법은 이것뿐이다. 그래서 <em>적이 쏘지 않으면 이길 수 없고</em>, 탄막이
+          짙어질수록 쓸 수 있는 탄약이 많아진다.
+        </p>
+        <p>
+          모든 웨이브에 원거리 공격을 하는 적이 반드시 한 기 이상 들어가고, 적 탄환이 화면에서
+          사라진 상태가 2초를 넘지 않는다. 탄약 공급이 끊기는 구간을 규칙으로 막아 둔 것이다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>규칙은 셋뿐이다</h3>
+        <ul>
+          <li><strong>몸 위치가 조준이다.</strong> 탄환을 정면으로 받으면 쏜 적에게 그대로
+            되돌아가고, 가장자리로 스치게 받으면 크게 꺾여 옆으로 튄다.</li>
+          <li><strong>늦게 누를수록 좋다.</strong> 탄환 중심이 몸에 가까울 때 성립한 패리가 높은
+            등급을 받고, 등급이 오르면 반사탄의 데미지와 속도가 함께 오른다. 다만 그보다 늦으면
+            등급이 아니라 피격이다.</li>
+          <li><strong>되돌린 탄은 나에게도 유효하다.</strong> 반사탄은 언제나 나에게서 멀어지는
+            방향으로 출발하므로 가만히 있으면 맞지 않는다. 쫓아가면 맞는다.</li>
+        </ul>
+      </div>
+
+      <div class="block">
+        <h3 class="on-ink">배경 — 임진왜란, 실제 전장 다섯 곳</h3>
+        <p class="note">
+          1592년 부산진 앞바다에 왜선이 닿는 새벽에서 시작해 동래성 성곽, 한산도 앞바다,
+          행주산성 야전을 지나 노량 밤바다에서 끝난다. 사료에 남은 무기와 함선의 이름을 그대로
+          쓴다. 조총과 편전, 신기전과 대통, 아타케부네와 거북선이 각자 다른 탄환과 다른 대응을
+          가지고 나온다. 특정 작품이나 IP를 참조하지 않았다.
+        </p>
+      </div>
+
+      <div class="block" style="display:grid; grid-template-columns: 1fr 57mm; column-gap:8mm; align-items:start;">
+        <div>
+          <h3 class="on-ink">화면 읽는 법 — 색 하나에 규칙 하나</h3>
+          <div class="legend">
+            <div class="legend-row">
+              <span class="legend-chip" style="background:#e23c2e"></span>
+              <p><b>적색</b> — 적 탄환과 적 본체. <span>닿으면 라이프가 하나 줄어든다.</span></p>
+            </div>
+            <div class="legend-row">
+              <span class="legend-chip" style="background:#f5b324"></span>
+              <p><b>황색</b> — 반사탄. <span>내가 만든 데미지이면서 나에게도 유효하다.</span></p>
+            </div>
+            <div class="legend-row">
+              <span class="legend-chip" style="background:#35b7e0"></span>
+              <p><b>청색</b> — 플레이어와 패리. <span>가운데 흰 점이 실제 피격 판정이고 항상 보인다.</span></p>
+            </div>
+            <div class="legend-row">
+              <span class="legend-chip" style="background:#ede6d8; border:0.2mm solid #b2b5ad"></span>
+              <p><b>백색 점선</b> — 예고 표시. <span>착탄 원·관통선·돌진선 셋뿐이다.</span></p>
+            </div>
+            <div class="legend-row">
+              <span class="legend-chip" style="background:#7a2b1e"></span>
+              <p><b>사선 해칭</b> — 패리 불가. <span>색이 아니라 형태로 구분한다.</span></p>
+            </div>
+          </div>
+        </div>
+        <figure>
+          <img src="images/02-stage1.png" alt="스테이지 1 부산진 새벽 인게임 화면">
+          <figcaption>스테이지 1 부산진 새벽. 왼쪽 위가 라이프, 가운데 위가 진행도, 왼쪽 아래가 콤보다.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>게임 개요</span><span>2</span></div>
+</section>
+
+<!-- ══ 3. 조작과 등급 ════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">02</div>
+      <div class="rail-t">플레이 방법<br>조작과 등급</div>
+      <p>전투 중 쓰는 키는 이동과 패리 둘뿐이다. 나머지는 화면 전환과 정보 확인용이다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>이동과 패리, 두 개의 입력</h2>
+        <table>
+          <colgroup><col style="width:32%"><col style="width:42%"><col style="width:26%"></colgroup>
+          <thead>
+            <tr><th>전투 중</th><th>키보드</th><th>마우스</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>이동</td><td><kbd>W</kbd> <kbd>A</kbd> <kbd>S</kbd> <kbd>D</kbd> 또는 방향키</td><td>—</td></tr>
+            <tr><td>패리</td><td><kbd>Space</kbd> 또는 <kbd>J</kbd></td><td>좌클릭</td></tr>
+            <tr><td>보유 카드 보기</td><td><kbd>Tab</kbd> 누르고 있는 동안</td><td>—</td></tr>
+            <tr><td>음소거</td><td><kbd>M</kbd></td><td>—</td></tr>
+            <tr><td>일시정지</td><td><kbd>Esc</kbd></td><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:2.8mm;">
+          이동과 패리는 어떤 조합으로도 동시에 들어간다. 보유 카드를 보는 동안 게임은 멈추지
+          않는다. 카드 선택 화면은 <kbd>←</kbd> <kbd>→</kbd>로 고르고 <kbd>Enter</kbd>로 확정하며
+          <kbd>R</kbd>로 한 판에 한 번 다시 뽑을 수 있다. 키 리매핑은 없다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3 class="on-hwang">패리 등급 — 타이밍이 곧 거리다</h3>
+        <p>
+          패리가 성립한 순간 탄환 중심과 플레이어 중심 사이의 거리로 등급이 갈린다. 아래 도해의
+          단위 u는 화면 해상도와 무관한 게임 내부 좌표이고, 플레이필드 전체가 1080u × 1920u다.
+        </p>
+      </div>
+
+      <div class="diagram" style="margin-top:4mm;">
+        <svg viewBox="0 0 620 306" role="img"
+             aria-label="패리 원 안에서 거리에 따라 GREAT, GOOD, NOT BAD 등급이 갈리는 도해">
+          <defs>
+            <marker id="tipJeok" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" fill="#e23c2e"/>
+            </marker>
+            <marker id="tipHwang" viewBox="0 0 10 10" refX="9" refY="5"
+                    markerWidth="5" markerHeight="5" orient="auto">
+              <path d="M0 0 L10 5 L0 10 z" fill="#f5b324"/>
+            </marker>
+          </defs>
+
+          <!-- 반경 도해. 밴드 반경은 실제 값 그대로다 -->
+          <g transform="translate(148 152)">
+            <circle r="120" fill="none" stroke="#5d6675" stroke-width="2" stroke-dasharray="9 7"/>
+            <circle r="48" fill="none" stroke="#35b7e0" stroke-width="2.2"/>
+            <circle r="28" fill="none" stroke="#f5b324" stroke-width="2.8"/>
+            <circle r="20" fill="#ede6d8"/>
+
+            <!-- 들어오는 적 탄환 -->
+            <path d="M112 -60 L44 -26" stroke="#e23c2e" stroke-width="2.2"
+                  stroke-dasharray="6 5" marker-end="url(#tipJeok)"/>
+            <circle cx="112" cy="-60" r="7.5" fill="#e23c2e"/>
+
+            <!-- 되돌아 나가는 반사탄. v' = v − 2(v·n)n 을 실제로 푼 방향이다 -->
+            <path d="M36 -26 L108 -88" stroke="#f5b324" stroke-width="2.4"
+                  marker-end="url(#tipHwang)"/>
+            <circle cx="30" cy="-20" r="6" fill="#f5b324"/>
+
+            <text x="0" y="150" text-anchor="middle" font-family="IBM Plex Sans KR, sans-serif"
+                  font-size="15" fill="#9aa3b2">패리 원 반경 120u</text>
+          </g>
+
+          <!-- 같은 규칙을 거리 한 줄로. 반경에는 방향이 없다 -->
+          <g transform="translate(302 0)">
+            <text x="0" y="44" font-family="IBM Plex Sans KR, sans-serif" font-size="15" fill="#9aa3b2">
+              플레이어 중심에서의 거리
+            </text>
+
+            <rect x="0" y="62" width="66" height="16" fill="#f5b324"/>
+            <rect x="66" y="62" width="47" height="16" fill="#35b7e0"/>
+            <rect x="113" y="62" width="171" height="16" fill="#5d6675"/>
+
+            <g font-family="IBM Plex Mono, monospace" font-size="13" fill="#9aa3b2">
+              <text x="0" y="99">0</text>
+              <text x="66" y="99" text-anchor="middle">28</text>
+              <text x="113" y="99" text-anchor="middle">48</text>
+              <text x="284" y="99" text-anchor="end">120</text>
+            </g>
+
+            <g>
+              <text x="0" y="142" font-family="IBM Plex Mono, monospace" font-size="18"
+                    fill="#f5b324" letter-spacing="1.2">GREAT</text>
+              <text x="0" y="163" font-family="IBM Plex Sans KR, sans-serif" font-size="13.5"
+                    fill="#ede6d8">데미지 ×3.5 · 400점</text>
+
+              <text x="0" y="198" font-family="IBM Plex Mono, monospace" font-size="18"
+                    fill="#35b7e0" letter-spacing="1.2">GOOD</text>
+              <text x="0" y="219" font-family="IBM Plex Sans KR, sans-serif" font-size="13.5"
+                    fill="#ede6d8">데미지 ×2.0 · 150점</text>
+
+              <text x="0" y="254" font-family="IBM Plex Mono, monospace" font-size="18"
+                    fill="#ede6d8" letter-spacing="1.2">NOT BAD</text>
+              <text x="0" y="275" font-family="IBM Plex Sans KR, sans-serif" font-size="13.5"
+                    fill="#ede6d8">데미지 ×1.0 · 50점</text>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <p class="note" style="margin-top:3.4mm;">
+        피격 판정은 가운데 반경 20u 코어 한 점이므로 스프라이트가 스쳐도 맞지 않는다. 그래서
+        <strong>느리고 큰 탄환은 몸으로 받아내는 감각</strong>이 되고, <strong>작고 빠른 탄환은
+        스쳐 지나가기 직전에 쳐내는 감각</strong>이 된다.
+      </p>
+
+      <div class="block" style="margin-top:6.4mm;">
+        <h3>난사해도 되지만, 난사로는 살 수 없다</h3>
+        <p class="note" style="margin-bottom:3mm;">
+          패리 원은 0.15초 열려 있고 쿨다운은 0.24초다. 초당 네 번까지 누를 수 있으므로 사실상
+          난사가 가능하다. 그런데 <strong>무적은 패리가 성립했을 때만 0.14초 붙는다.</strong>
+          빈 패리에는 아무 보호가 없다. 탄환이 실제로 오는 자리에서 눌러야만 이득이 있다.
+        </p>
+        <div class="timing">
+          <div class="timing-bar">
+            <span class="t-active">패리 원 열림 0.15초</span>
+            <span class="t-lock">재입력 불가 0.09초</span>
+          </div>
+          <div class="timing-ticks">
+            <span>버튼을 누른 순간</span>
+            <span>0.24초 — 다시 누를 수 있다</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="block two">
+        <div>
+          <h3 class="on-jeok">맞으면 어떻게 되나</h3>
+          <p class="note">
+            라이프가 하나 줄고, 주위 반경 280u의 적 탄환이 함께 사라진다. 1.5초 무적이 붙어 그
+            동안 아무것도 나를 해치지 못하며 패리는 정상 동작한다. 콤보만 0으로 돌아간다.
+          </p>
+        </div>
+        <div>
+          <h3 class="on-hwang">되받아친 탄은 지워지지 않는다</h3>
+          <p class="note">
+            맞았을 때 지워지는 것은 적 탄환뿐이다. 반사탄은 내 자산이므로 그대로 남는다.
+            나를 맞힌 반사탄 하나만 사라진다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>플레이 방법 — 조작과 등급</span><span>3</span></div>
+</section>
+
+<!-- ══ 4. 되받아치기 ═════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">03</div>
+      <div class="rail-t">플레이 방법<br>되받아치기</div>
+      <p>정확히 받으면 곧게 돌아가고 데미지도 오른다. 두 보상이 같은 방향을 가리킨다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>되받아친 탄이 유일한 무기다</h2>
+        <div style="display:grid; grid-template-columns: 1fr 57mm; column-gap:8mm; align-items:start;">
+          <div>
+            <p>
+              반사 방향은 거울 반사와 같다. 탄환을 몸 정면으로 받으면 들어온 길을 그대로 되짚어
+              쏜 적에게 돌아가고, 원의 가장자리로 스치게 받으면 크게 꺾여 옆으로 날아간다.
+              조준은 버튼이 아니라 <strong>서 있는 자리</strong>가 한다.
+            </p>
+            <p>
+              정확할수록 곧게 돌아가고 정확할수록 데미지가 크므로, 위치를 잘 잡는 이유와
+              타이밍을 잘 맞추는 이유가 하나로 합쳐진다.
+            </p>
+            <h3 class="on-hwang" style="margin-top:5mm;">한 번에 여럿, 그리고 다시 한 번</h3>
+            <p>
+              원 안에 든 탄환은 전부 각자의 거리로 등급을 받는다. 다섯 발이 동시에 들어오면
+              다섯 발이 동시에 되돌아간다. 오른쪽 화면이 그 순간이다.
+            </p>
+            <p>
+              반사탄은 다시 패리할 수 있고 횟수 제한이 없다. 다시 칠 때마다 데미지와 속도가
+              누적된다. 다만 반사탄을 쫓는 동안 적 탄환은 방치되고, 반사탄 자체가 나를 죽일 수
+              있다.
+            </p>
+          </div>
+          <figure>
+            <img src="images/03-parry.png" alt="패리가 성립해 여러 발이 동시에 반사되는 순간">
+            <figcaption>패리 성립 순간. 청색 원 안의 적탄이 황색 반사탄으로 뒤집혀 위로 되돌아간다.</figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="block" style="display:grid; grid-template-columns: 1fr 57mm; column-gap:8mm; align-items:start;">
+        <div>
+          <h3 class="on-jeok">피할 것과 받아칠 것</h3>
+          <p>
+            패리로 해결할 수 없는 공격이 셋 있다. 화염 장판, 관통 대창, 그리고 적 본체다.
+            이 셋은 회피만이 답이고, <strong>그래서 이 셋에만 예고 도형이 붙는다.</strong>
+            일반 탄환에는 궤적선도 조준선도 그리지 않는다.
+          </p>
+          <p>
+            규칙은 한 문장으로 압축된다. <em>예고 도형이 보이면 피하고, 안 보이면 받아친다.</em>
+            화면 전체를 덮는 패리 불가 공격은 존재하지 않으므로 언제나 피할 자리가 남아 있다.
+          </p>
+
+          <h3 class="on-hwang" style="margin-top:5mm;">점수와 콤보</h3>
+          <table style="margin-top:1.8mm;">
+            <colgroup><col style="width:52%"><col style="width:48%"></colgroup>
+            <tbody>
+              <tr><td>패리 1발</td><td class="mono right">50 · 150 · 400</td></tr>
+              <tr><td>재패리</td><td class="right">등급 점수의 50%</td></tr>
+              <tr><td>보스 페이즈 전환</td><td class="mono right">2,000</td></tr>
+              <tr><td>보스 격파</td><td class="mono right">10,000</td></tr>
+              <tr><td>스테이지 클리어</td><td class="right">남은 라이프 × 2,000</td></tr>
+            </tbody>
+          </table>
+          <p class="note" style="margin-top:2.6mm;">
+            콤보는 10마다 배수가 0.1씩 올라 최대 ×3.0이 된다. 마지막 패리 후 3초가 지나거나
+            한 번 맞으면 0이 된다.
+          </p>
+        </div>
+        <figure>
+          <img src="images/06-stage5.png" alt="스테이지 5 노량 밤바다의 탄막 밀도">
+          <figcaption>스테이지 5 노량 밤바다. 세로 점선 두 줄은 관통 대창의 예고선이고 패리로 지울 수 없다.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>플레이 방법 — 되받아치기</span><span>4</span></div>
+</section>
+
+<!-- ══ 5. 한 판의 흐름 ═══════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">04</div>
+      <div class="rail-t">한 판의 흐름</div>
+      <p>다섯 스테이지, 보스 다섯, 카드 네 장. 죽으면 처음부터. 중간 저장은 없다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>한 판은 7분 30초에 끝난다</h2>
+        <div class="flow">
+          <span class="flow-node ko">타이틀</span>
+          <span class="flow-line"></span>
+          <span class="flow-node stage">1</span>
+          <span class="flow-pip"></span>
+          <span class="flow-node stage">2</span>
+          <span class="flow-pip"></span>
+          <span class="flow-node stage">3</span>
+          <span class="flow-pip"></span>
+          <span class="flow-node stage">4</span>
+          <span class="flow-pip"></span>
+          <span class="flow-node stage">5</span>
+          <span class="flow-line"></span>
+          <span class="flow-node ko">결과</span>
+        </div>
+        <div class="flow-legend">◆ = 카드 3장 중 1장 선택. 스테이지 1~4 클리어 직후, 모두 네 번</div>
+      </div>
+
+      <div class="block">
+        <table>
+          <colgroup><col style="width:7%"><col style="width:25%"><col style="width:12%"><col style="width:56%"></colgroup>
+          <thead>
+            <tr><th>#</th><th>스테이지</th><th>길이</th><th>이 스테이지가 가르치는 것</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">1</td><td>부산진 새벽</td><td class="mono">70초</td><td>패리 입력과 등급. 정면으로 받으면 되돌아간다</td></tr>
+            <tr><td class="mono">2</td><td>동래성 성곽</td><td class="mono">85초</td><td>방패병. 정면이 막히므로 각도를 튼다</td></tr>
+            <tr><td class="mono">3</td><td>한산도 앞바다</td><td class="mono">90초</td><td>느리고 큰 함포탄. 고등급 한 발이 여러 기를 정리한다</td></tr>
+            <tr><td class="mono">4</td><td>행주산성 야전</td><td class="mono">95초</td><td>화염 장판. 패리로 지울 수 없는 위협과 공간 관리</td></tr>
+            <tr><td class="mono">5</td><td>노량 밤바다</td><td class="mono">110초</td><td>앞의 넷을 동시에. 새로 배우는 것은 없다</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block plates">
+        <figure>
+          <img src="images/05-boss.png" alt="스테이지 4 보스 대통 포병 대장">
+          <figcaption>보스는 HP 구간마다 패턴이 통째로 바뀐다. 상단 바의 눈금이 전환 지점이다.</figcaption>
+        </figure>
+        <figure>
+          <img src="images/04-card.png" alt="카드 선택 화면">
+          <figcaption>카드 선택. 중첩되는 카드는 지금 값과 고른 뒤의 값을 함께 보여 준다.</figcaption>
+        </figure>
+      </div>
+
+      <div class="block two">
+        <div>
+          <h3 class="on-jeok">보스 다섯</h3>
+          <p class="note">
+            조총 방진 대장, 왜장 사무라이, 아타케부네 기함, 대통 포병 대장, 총대장 기함.
+            HP가 임계값에 닿으면 페이즈가 바뀌고 패턴 묶음이 통째로 교체된다. 아타케부네는
+            포문 네 기를 따로 부술 수 있어 무엇을 먼저 없앨지 고르게 된다.
+          </p>
+        </div>
+        <div>
+          <h3>카드와 라이프</h3>
+          <p class="note">
+            카드는 31종이고 노말·레어·에픽 세 등급이다. 반사탄의 데미지, 개수, 관통, 유도 같은
+            것을 바꾸며 겹쳐 쌓인다. 라이프는 5로 시작해 다섯 스테이지를 관통하고 클리어로
+            회복되지 않는다. 0이 되면 스테이지 1부터 다시 시작하고 카드는 전부 사라진다.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>한 판의 흐름</span><span>5</span></div>
+</section>
+
+<!-- ══ 6. 실행 방법 ══════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">05</div>
+      <div class="rail-t">실행 방법</div>
+      <p>설치할 것은 Node.js 하나다. 명령 두 개면 브라우저에서 열린다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>Node.js 하나면 된다</h2>
+        <table>
+          <colgroup><col style="width:22%"><col style="width:48%"><col style="width:30%"></colgroup>
+          <thead>
+            <tr><th>필요한 것</th><th>요구 사항</th><th>확인하는 방법</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Node.js</td><td><strong>20.19 이상</strong> 또는 <strong>22.12 이상</strong>. 22 LTS 권장</td><td class="mono">node -v</td></tr>
+            <tr><td>npm</td><td>Node.js를 설치하면 함께 깔린다</td><td class="mono">npm -v</td></tr>
+            <tr><td>브라우저</td><td>Chrome 또는 Firefox 최신 버전</td><td>—</td></tr>
+            <tr><td>입력 장치</td><td>키보드. 모바일·태블릿은 지원하지 않는다</td><td>—</td></tr>
+            <tr><td>디스크</td><td>약 90 MB</td><td>—</td></tr>
+            <tr><td>인터넷</td><td>처음 한 번만. 그 뒤로는 오프라인에서 돌아간다</td><td>—</td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:2.8mm;">
+          Node.js가 없으면 <strong>nodejs.org</strong>에서 LTS 버전을 받아 설치한다. 설치가 끝나면
+          터미널을 새로 열고 <span class="mono">node -v</span>를 실행한다.
+          <span class="mono">v22.14.0</span>처럼 숫자가 나오면 준비가 끝났다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>세 걸음</h3>
+        <div class="step" style="margin-top:3mm;">
+          <div class="step-n">1</div>
+          <div>
+            <h4>터미널에서 이 저장소 폴더로 들어가 개발 도구를 받는다</h4>
+            <div class="term">npm install    <span class="cmt"># 최초 1회, 1~2분</span></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n">2</div>
+          <div>
+            <h4>개발 서버를 띄운다</h4>
+            <div class="term">npm run dev
+  <span class="ok">➜  Local:   http://localhost:5173/</span></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-n">3</div>
+          <div>
+            <h4>찍힌 주소를 브라우저 주소창에 붙여 넣는다</h4>
+            <p class="note" style="margin-top:1.2mm;">
+              타이틀 화면이 뜬다. <kbd>Space</kbd>를 누르면 시작한다. 서버를 끌 때는 터미널에서
+              <kbd>Ctrl</kbd> + <kbd>C</kbd>를 누른다.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3 class="on-hwang">파일 하나로 만들어 넘기고 싶을 때</h3>
+        <div class="term" style="margin-top:2mm;">npm run build    <span class="cmt"># dist/index.html 한 장, 약 240 kB</span></div>
+        <p class="note" style="margin-top:2.2mm;">
+          코드와 그림이 전부 그 파일 안에 들어간다. <strong>서버 없이 더블클릭해서 열어도
+          돌아간다.</strong> 게임을 다른 사람에게 넘길 때 이 파일 하나만 보내면 된다.
+        </p>
+      </div>
+
+      <div class="block two">
+        <div>
+          <h3>후반부를 빨리 보고 싶을 때</h3>
+          <p class="note">
+            완주에 7분 30초가 걸린다. 그만큼 앉아 있기 어려우면 타이틀·일시정지·카드 선택
+            화면에서 <kbd>Shift</kbd> + <kbd>F9</kbd>를 누른다. 스테이지 1~5, 진입 지점,
+            라이프, 카드 31종을 직접 지정할 수 있다. 스테이지 5의 보스 직전으로 들어가면
+            최종 보스를 바로 볼 수 있다.
+          </p>
+        </div>
+        <div>
+          <h3 class="on-ink">직접 확인해 보려면</h3>
+          <p class="note">
+            전투 중에는 위 메뉴가 열리지 않는다. <kbd>Esc</kbd>로 멈춘 뒤 누른다. 한 번이라도
+            연 판은 <strong>오염된 런</strong>으로 표시되어 정상 플레이와 섞이지 않는다.
+          </p>
+          <p class="note" style="margin-top:2.6mm;">
+            빌드가 성한지 직접 확인하려면 아래 셋을 돌린다. 테스트는 511건이다.
+          </p>
+          <div class="term" style="margin-top:2mm; font-size:7.9pt;">npm run typecheck
+npm test
+npm run lint</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>실행 방법 — 설치와 실행</span><span>6</span></div>
+</section>
+
+<!-- ══ 7. 막힐 때와 저장소 ════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">06</div>
+      <div class="rail-t">막힐 때와<br>저장소</div>
+      <p>흔히 걸리는 다섯 가지와, 무엇이 어디에 있는지.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>막히면 여기를 본다</h2>
+        <table>
+          <colgroup><col style="width:31%"><col style="width:69%"></colgroup>
+          <thead>
+            <tr><th>증상</th><th>원인과 조치</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="mono">command not found</td><td>Node.js가 없거나 터미널이 옛 환경을 들고 있다. 설치한 뒤 터미널을 새로 연다</td></tr>
+            <tr><td class="mono">Port 5173 is already in use</td><td>다른 프로그램이 그 포트를 쓰고 있다. <span class="mono">npm run dev -- --port 5200</span>처럼 다른 번호를 준다</td></tr>
+            <tr><td>화면이 검다</td><td>브라우저를 새로 고친다. 그래도 검으면 <kbd>F12</kbd> 콘솔의 첫 줄을 확인한다</td></tr>
+            <tr><td>PC 브라우저에서 열어 주세요</td><td>정밀 포인터를 못 찾은 것이다. 그 화면에서 아무 키나 누르면 판정이 뒤집히고 시작된다</td></tr>
+            <tr><td>소리가 안 난다</td><td>브라우저 정책상 첫 입력 전에는 소리가 나지 않는다. <kbd>M</kbd>으로 음소거 상태를 확인한다</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block" style="display:grid; grid-template-columns: 1fr 57mm; column-gap:8mm; align-items:start;">
+        <div>
+          <h3 class="on-ink">무엇이 어디에 있나</h3>
+          <table class="paths" style="margin-top:1.8mm;">
+            <colgroup><col style="width:41%"><col style="width:59%"></colgroup>
+            <tbody>
+              <tr><td class="mono">src/</td><td>게임 코드 138파일. 스테이지·적·보스·카드의 수치는 전부 <span class="mono">config/</span>에 있다</td></tr>
+              <tr><td class="mono">tests/</td><td>단위 테스트 511건, 화면 회귀 비교, 성능 측정</td></tr>
+              <tr><td class="mono">docs/spec/</td><td>기능 명세서. 규칙과 수치의 원본</td></tr>
+              <tr><td class="mono">docs/<wbr>sample_image/</td><td>인게임 화면 15장. <span class="mono">index.html</span>을 브라우저로 열면 목록이 나온다</td></tr>
+              <tr><td class="mono">docs/plan/</td><td>구현 기획안 13종</td></tr>
+              <tr><td class="mono">docs/work_log/</td><td>실제로 만든 것과 남은 것의 기록</td></tr>
+              <tr><td class="mono">README.md</td><td>이 문서의 짧은 판과 명령 목록</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <figure>
+          <img src="images/08-boss2.png" alt="스테이지 2 보스 왜장 사무라이 대장">
+          <figcaption>스테이지 2 보스. 흰 선은 돌진 예고라 피해야 하고, 붉은 초승달은 참격파라 받아쳐야 한다.</figcaption>
+        </figure>
+      </div>
+
+      <div class="block">
+        <h3 class="on-hwang">게임 빌드에 들어 있지 않은 것</h3>
+        <ul>
+          <li><strong>이미지 파일 0개.</strong> 적과 보스 30종을 포함해 화면의 모든 그림이
+            실행 중에 도형으로 그려진다.</li>
+          <li><strong>음원 파일 0개.</strong> 효과음과 배경음을 브라우저의 소리 기능으로
+            그 자리에서 합성한다.</li>
+          <li><strong>런타임 의존성 0개.</strong> 설치되는 것은 전부 개발 도구이고 빌드
+            결과물에는 들어가지 않는다. 글꼴도 이름으로만 요청하고 없으면 시스템 글꼴로
+            대체한다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>막힐 때와 저장소</span><span>7</span></div>
+</section>
+
+</body>
+</html>
