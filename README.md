@@ -16,9 +16,10 @@ PC 브라우저에서 실행된다. 설치할 것은 Node.js 하나이고, 게�
 | 런타임 의존성 | 0개 |
 | 외부 에셋 | 0개 — 빌드에 이미지·음원·폰트 파일이 없다. 도형과 Web Audio 합성으로 전부 만든다 |
 
-> 제출 문서 두 종은 [`docs/submit/`](docs/submit/)에 있다 —
-> [게임 소개서](docs/submit/게임_소개서.pdf)(A4 7쪽, 개요·플레이 방법·실행 방법)와
-> [AI 활용 기술](docs/submit/AI_활용_기술.pdf)(A4 6쪽, 도구·지시·활용 내역·출처).
+> 제출 문서 세 종은 [`docs/submit/`](docs/submit/)에 있다 —
+> [게임 소개서](docs/submit/게임_소개서.pdf)(A4 7쪽, 개요·플레이 방법·실행 방법),
+> [AI 활용 기술](docs/submit/AI_활용_기술.pdf)(A4 6쪽, 도구·지시·활용 내역·출처),
+> [팀 소개](docs/submit/팀_소개.pdf)(A4 4쪽, 팀원별 역할과 담당 영역).
 
 ---
 
@@ -247,7 +248,7 @@ docs/
   sample_image/  인게임 화면 15장. 스펙을 실행해서 그린 그림이다
   plan/       구현 기획안 13종
   work_log/   실제로 만든 것과 남은 것의 기록
-  submit/     제출 문서 — 게임 소개서 · AI 활용 기술 (HTML · PDF)
+  submit/     제출 문서 — 게임 소개서 · AI 활용 기술 · 팀 소개 (HTML · PDF)
   research/   주제 선정 전에 한 조사
   ideation/   후보 아이디어와 탈락 기록
 ```
@@ -290,7 +291,7 @@ npm run typecheck && npm test && npm run lint
 - **런타임 의존성** — 없다. `package.json`의 의존성은 전부 개발 도구
   (Vite, Vitest, TypeScript, ESLint)이고 빌드 결과물에 들어가지 않는다.
 
-저장소 안에서 외부 파일을 가진 곳은 `docs/submit/fonts/` 하나다. 게임 소개서 PDF를 오프라인에서
+저장소 안에서 외부 파일을 가진 곳은 `docs/submit/fonts/` 하나다. 제출 PDF 세 종을 오프라인에서
 같은 모습으로 다시 만들기 위한 웹폰트 하위 집합이고, 세 글꼴 모두 SIL Open Font License 1.1이다.
 게임은 이 파일들을 읽지 않는다.
 
@@ -303,7 +304,7 @@ npm run typecheck && npm test && npm run lint
 
 | 문서 | 내용 |
 |---|---|
-| [`docs/submit/`](docs/submit/) | 제출 문서 두 종. 게임 소개서와 AI 활용 기술 |
+| [`docs/submit/`](docs/submit/) | 제출 문서 세 종. 게임 소개서 · AI 활용 기술 · 팀 소개 |
 | [`docs/spec/기능_명세서.md`](docs/spec/기능_명세서.md) | 규칙과 수치의 원본. 하드 규칙 9개, 탄환 12종, 적 9종, 보스 5기, 카드 31종 |
 | [`docs/sample_image/`](docs/sample_image/) | 인게임 화면 15장. `index.html`을 열면 목록이 나온다 |
 | [`docs/plan/`](docs/plan/) | 구현 기획안. 아키텍처, 밸런스 데이터, 렌더링, 오디오, 검증 전략 |
