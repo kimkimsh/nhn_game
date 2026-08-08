@@ -346,3 +346,16 @@ export function pendingSpawnCount(world: World): number {
   const runtime = runtimeOf(world);
   return runtime.queue.length - runtime.head;
 }
+
+/**
+ * 지금 나왔어야 하는 예약이 머리에 남아 있는가.
+ *
+ * `pendingSpawnCount`와 다르다 — 그쪽은 아직 시각이 안 된 예약까지 세므로 「상한에 막혔다」와
+ * 「아직 때가 아니다」를 구분하지 못한다. 큐가 시각순이라 머리 하나가 그 구분의 전부다.
+ * 잡몹 상한과 함께 보면 §9.7이 말한 지연 구간이 그 스텝에서 바로 확정된다.
+ */
+export function hasDueSpawn(world: World): boolean {
+  const runtime = runtimeOf(world);
+  const next = runtime.queue[runtime.head];
+  return next !== undefined && next.dueSec <= world.simTimeSec;
+}

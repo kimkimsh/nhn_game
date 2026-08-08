@@ -308,6 +308,13 @@ export function peaksVerdict(peaks: PeakMetrics, stageId: StageId): Verdict {
   if (stageId !== 5) {
     return 'pass';
   }
+  // **웨이브를 한 번도 안 돈 런은 밀도를 물을 대상이 아니다.** §18.3으로 보스 페이즈에 바로
+  // 들어간 시나리오가 그렇고, 거기서 잡몹이 0인 것은 「밀도가 모자랐다」가 아니라 「편성이
+  // 돌지 않았다」다. 한 기라도 나왔으면 웨이브가 돌았다는 뜻이라 그때부터는 정상 판정이다.
+  // 330줄의 「밟지 않은 스테이지는 줄이 없다」와 같은 이유가 한 단계 안쪽에서 다시 걸린다
+  if (peaks.enemies === 0) {
+    return 'no-band';
+  }
   const dense =
     peaks.enemies >= S5_MIN_PEAK_ENEMIES &&
     peaks.enemySpawnDeferrals >= S5_MIN_SPAWN_DEFERRALS;

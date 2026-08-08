@@ -35,7 +35,7 @@ import { PLAYFIELD } from '../config/playfield';
 import type { FeedbackBus, PlayerHitCause, Unsubscribe } from '../core/bus';
 import type { Projectile } from '../sim/bullets';
 import type { World } from '../sim/world';
-import { pendingSpawnCount, wavePhase } from '../sim/waves';
+import { hasDueSpawn, wavePhase } from '../sim/waves';
 
 /** 관측으로 가를 수 있는 HR-03 공백의 원인. 셋째는 가드의 ③ 면제와 같은 구간이지만 추정이다 */
 export type EmptySpanCause = 'lull' | 'bossDefeat' | 'unattributed';
@@ -197,9 +197,9 @@ export function createMetrics(bus: FeedbackBus): Metrics {
   let armed = false;
   /** 스테이지가 바뀌면 월드가 통째로 갈린다. 진입 공백을 스테이지마다 다시 건너뛰어야 한다 */
   let armedWorld: World | null = null;
-  /** 상한에 닿은 채로 예약이 남아 있던 직전 스텝의 상태. 확정은 예약이 실제로 줄 때 난다 */
+  /** 직전 스텝이 지연 구간이었는가. 한 구간을 스텝 수만큼 세지 않기 위한 값이다 */
   let deferralPending = false;
-  let previousPendingSpawns = 0;
+
 
   const offs: Unsubscribe[] = [
     bus.on('parry', (event) => {
@@ -312,22 +312,20 @@ export function createMetrics(bus: FeedbackBus): Metrics {
    * §9.7이 "신규 스폰이 지연되는 상황이 의도적으로 발생하는 유일한 구간"이라고 부른 그것.
    *
    * 상한에 닿은 것만으로는 지연이 아니다 — 아직 시각이 안 된 예약이 남아 있어도 같은 그림이
-   * 나온다. 상한이 풀리는 스텝에 예약이 실제로 줄어드는 것을 확인해야 「기다리고 있었다」가
-   * 확정된다. 그래서 세는 값은 상한에 닿은 횟수가 아니라 확정된 지연 구간의 수다.
+   * 나온다. 지연은 **나왔어야 하는 예약이 상한에 막혀 있는 것**이고, `hasDueSpawn`이 그 「나왔어야
+   * 하는」을 판정한다. 세는 값은 스텝 수가 아니라 그런 구간의 수다.
+   *
+   * 상한이 풀리는 것을 기다려 사후 확인하지 않는다. 밀집 구간은 플레이어가 죽는 자리이기도 해서
+   * 상한이 풀리기 전에 런이 끝나고, 그러면 실제로 일어난 지연이 한 건도 안 세어진다.
    */
   function trackSpawnDeferrals(world: World, stagePeaks: PeakMetrics): void {
-    const pending = pendingSpawnCount(world);
     const full = world.enemies.activeCount >= PLAYFIELD.maxEnemies;
-    if (full && pending > 0) {
-      deferralPending = true;
-    } else if (deferralPending) {
-      if (pending < previousPendingSpawns) {
-        data.peaks.enemySpawnDeferrals += 1;
-        stagePeaks.enemySpawnDeferrals += 1;
-      }
-      deferralPending = false;
+    const deferred = full && hasDueSpawn(world);
+    if (deferred && !deferralPending) {
+      data.peaks.enemySpawnDeferrals += 1;
+      stagePeaks.enemySpawnDeferrals += 1;
     }
-    previousPendingSpawns = pending;
+    deferralPending = deferred;
   }
 
   function peaksOfStage(stageId: StageId): PeakMetrics {
