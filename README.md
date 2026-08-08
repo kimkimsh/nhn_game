@@ -16,8 +16,9 @@ PC 브라우저에서 실행된다. 설치할 것은 Node.js 하나이고, 게�
 | 런타임 의존성 | 0개 |
 | 외부 에셋 | 0개 — 빌드에 이미지·음원·폰트 파일이 없다. 도형과 Web Audio 합성으로 전부 만든다 |
 
-> 게임 소개서(A4 7쪽 PDF)는 [`docs/submit/게임_소개서.pdf`](docs/submit/게임_소개서.pdf)에 있다.
-> 개요·플레이 방법·실행 방법을 화면과 함께 정리한 문서다.
+> 제출 문서 두 종은 [`docs/submit/`](docs/submit/)에 있다 —
+> [게임 소개서](docs/submit/게임_소개서.pdf)(A4 7쪽, 개요·플레이 방법·실행 방법)와
+> [AI 활용 기술](docs/submit/AI_활용_기술.pdf)(A4 6쪽, 도구·지시·활용 내역·출처).
 
 ---
 
@@ -246,7 +247,7 @@ docs/
   sample_image/  인게임 화면 15장. 스펙을 실행해서 그린 그림이다
   plan/       구현 기획안 13종
   work_log/   실제로 만든 것과 남은 것의 기록
-  submit/     제출용 게임 소개서 (HTML · PDF)
+  submit/     제출 문서 — 게임 소개서 · AI 활용 기술 (HTML · PDF)
   research/   주제 선정 전에 한 조사
   ideation/   후보 아이디어와 탈락 기록
 ```
@@ -302,7 +303,7 @@ npm run typecheck && npm test && npm run lint
 
 | 문서 | 내용 |
 |---|---|
-| [`docs/submit/`](docs/submit/) | 제출용 게임 소개서. 개요·플레이 방법·실행 방법 |
+| [`docs/submit/`](docs/submit/) | 제출 문서 두 종. 게임 소개서와 AI 활용 기술 |
 | [`docs/spec/기능_명세서.md`](docs/spec/기능_명세서.md) | 규칙과 수치의 원본. 하드 규칙 9개, 탄환 12종, 적 9종, 보스 5기, 카드 31종 |
 | [`docs/sample_image/`](docs/sample_image/) | 인게임 화면 15장. `index.html`을 열면 목록이 나온다 |
 | [`docs/plan/`](docs/plan/) | 구현 기획안. 아키텍처, 밸런스 데이터, 렌더링, 오디오, 검증 전략 |

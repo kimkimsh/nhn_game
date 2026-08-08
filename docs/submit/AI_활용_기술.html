@@ -1,0 +1,774 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>환도 還刀 — AI 활용 기술</title>
+<!--
+  글꼴은 fonts/ 안의 하위 집합에서 온다. 이 폴더의 두 문서가 같은 파일을 나눠 쓴다.
+  Google Fonts를 링크로 불러오면 인쇄 시점에 요청이 끝나기 전에 지면이 찍힌다.
+-->
+<link rel="stylesheet" href="fonts.css">
+<style>
+/*
+ * 지면의 색 규칙은 「게임_소개서」와 다르다. 그 문서는 게임의 색법(적·황·청)을 따랐고,
+ * 이 문서가 다루는 축은 하나다 — 무엇을 기계가 냈고 무엇을 사람이 정했는가.
+ * 그래서 두 색만 쓴다. 황색은 AI가 만든 것, 먹색은 사람이 정한 것.
+ */
+:root {
+  --ink-900: #06070a;
+  --hwang: #f5b324;
+  --hwang-deep: #a2740e;
+
+  --paper: #f4f1e9;
+  --paper-sunk: #eae6dc;
+  --sumuk-900: #14161a;
+  --sumuk-700: #3b4048;
+  --sumuk-500: #71767f;
+  --sumuk-300: #b2b5ad;
+  --hairline: #d4d0c5;
+
+  --display: "Gowun Batang", "Nanum Myeongjo", "Noto Serif CJK KR", serif;
+  --body: "IBM Plex Sans KR", "Noto Sans CJK KR", -apple-system, sans-serif;
+  --data: "IBM Plex Mono", "IBM Plex Sans KR", ui-monospace, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  background: var(--sumuk-700);
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
+}
+
+body {
+  font-family: var(--body);
+  font-size: 10pt;
+  line-height: 1.66;
+  color: var(--sumuk-900);
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
+@page { size: A4 portrait; margin: 0; }
+
+.sheet {
+  position: relative;
+  width: 210mm;
+  height: 297mm;
+  padding: 16mm 17mm 19mm;
+  background: var(--paper);
+  overflow: hidden;
+  break-after: page;
+}
+.sheet:last-child { break-after: auto; }
+
+@media screen {
+  body { padding: 10mm 0; }
+  .sheet { margin: 0 auto 8mm; box-shadow: 0 2mm 8mm rgba(0, 0, 0, .35); }
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 31mm 135mm;
+  column-gap: 10mm;
+  align-items: start;
+}
+
+.rail { padding-top: 1.4mm; }
+.rail-n { font-family: var(--data); font-weight: 500; font-size: 16pt; line-height: 1; }
+.rail-t {
+  font-size: 8.6pt;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 2.4mm;
+  padding-top: 2.4mm;
+  border-top: 0.35mm solid var(--sumuk-900);
+}
+.rail p { font-size: 8.2pt; line-height: 1.6; color: var(--sumuk-500); margin-top: 3mm; }
+
+.eyebrow { font-family: var(--data); font-size: 7.4pt; letter-spacing: .17em; color: var(--sumuk-500); }
+
+h1 { font-family: var(--display); font-weight: 700; letter-spacing: -0.005em; }
+h2 { font-family: var(--display); font-weight: 700; font-size: 17pt; line-height: 1.25; margin-bottom: 4mm; }
+
+h3 {
+  font-weight: 600;
+  font-size: 10pt;
+  margin-bottom: 1.8mm;
+  padding-left: 3.2mm;
+  border-left: 1.1mm solid var(--sumuk-900);
+}
+h3.by-ai { border-left-color: var(--hwang); }
+
+p + p { margin-top: 2.6mm; }
+.block + .block { margin-top: 6.4mm; }
+.lede { font-size: 11pt; line-height: 1.58; }
+.note { font-size: 8.7pt; line-height: 1.6; color: var(--sumuk-700); }
+strong { font-weight: 600; }
+.two { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; align-items: start; }
+
+table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+th, td { text-align: left; vertical-align: top; padding: 1.6mm 2.6mm 1.6mm 0; border-bottom: 0.2mm solid var(--hairline); }
+th {
+  font-size: 8pt;
+  font-weight: 600;
+  color: var(--sumuk-500);
+  border-bottom: 0.35mm solid var(--sumuk-900);
+  padding-bottom: 1.2mm;
+}
+td { font-size: 9.1pt; line-height: 1.5; }
+tr:last-child td { border-bottom: none; }
+.mono, td.mono { font-family: var(--data); font-size: 8.6pt; }
+.paths td.mono { font-size: 8.1pt; overflow-wrap: normal; word-break: keep-all; }
+.right { text-align: right; }
+
+/* 표시는 발상 도해의 pip과 같은 마름모다 — 같은 것을 뜻한다 */
+ul { list-style: none; }
+ul li { position: relative; padding-left: 5mm; }
+ul li + li { margin-top: 2mm; }
+ul li::before {
+  content: "";
+  position: absolute;
+  left: 0.4mm;
+  top: 1.9mm;
+  width: 1.7mm;
+  height: 1.7mm;
+  background: var(--hwang);
+  transform: rotate(45deg);
+}
+ul.by-human li::before { background: var(--sumuk-900); }
+
+/* ── 표지 ────────────────────────────────────────────────────────────── */
+
+.cover { display: flex; flex-direction: column; justify-content: space-between; height: 262mm; }
+.cover-mark { width: 122mm; height: 44mm; margin: 12mm 0 13mm; }
+.cover h1 { font-size: 40pt; line-height: 1.06; letter-spacing: 0.01em; }
+.cover-sub { font-family: var(--display); font-size: 15pt; line-height: 1.55; margin-top: 6mm; color: var(--sumuk-700); }
+.cover-rule {
+  font-size: 10.4pt;
+  line-height: 1.66;
+  max-width: 128mm;
+  margin-top: 9mm;
+  padding-top: 7mm;
+  border-top: 0.4mm solid var(--sumuk-900);
+}
+.cover-facts { padding-top: 7mm; border-top: 0.35mm solid var(--sumuk-900); }
+.cover-facts dl { display: grid; grid-template-columns: repeat(4, 1fr); column-gap: 6mm; }
+.cover-facts dt { font-size: 8pt; font-weight: 600; color: var(--sumuk-500); }
+.cover-facts dd { font-family: var(--data); font-size: 10.4pt; font-weight: 500; margin-top: 0.8mm; }
+.cover-toc { margin-top: 12mm; }
+.cover-toc div { display: grid; grid-template-columns: 9mm 1fr; padding: 1.9mm 0; border-bottom: 0.2mm solid var(--hairline); }
+.cover-toc b { font-family: var(--data); font-weight: 500; color: var(--sumuk-500); }
+
+/* ── 도해 ────────────────────────────────────────────────────────────── */
+
+.figure { break-inside: avoid; }
+.figure svg { display: block; width: 100%; height: auto; }
+.caption { font-size: 7.8pt; line-height: 1.5; color: var(--sumuk-500); margin-top: 2.2mm; }
+
+/* ── 사람이 손으로 쓴 것 ─────────────────────────────────────────────── */
+
+.quote {
+  border-left: 1.1mm solid var(--sumuk-900);
+  padding: 0.6mm 0 0.6mm 5mm;
+  break-inside: avoid;
+}
+.quote p { font-family: var(--display); font-size: 12.5pt; line-height: 1.72; }
+.quote cite { display: block; font-family: var(--data); font-size: 7.6pt; font-style: normal; color: var(--sumuk-500); margin-top: 2.6mm; }
+
+/* ── 지시 카드 ───────────────────────────────────────────────────────── */
+
+.rules { display: grid; row-gap: 3.4mm; }
+.rule { display: grid; grid-template-columns: 40mm 1fr; column-gap: 6mm; break-inside: avoid; }
+.rule b { font-size: 9.3pt; font-weight: 600; line-height: 1.45; }
+/* 자식 선택자여야 한다. 그냥 span으로 잡으면 오른쪽 문단의 인라인 mono가 블록이 된다 */
+.rule > div > span { display: block; font-family: var(--data); font-size: 7.4pt; color: var(--sumuk-500); margin-top: 1mm; }
+.rule p { font-size: 8.9pt; line-height: 1.58; }
+
+.term {
+  font-family: var(--data);
+  font-size: 8.2pt;
+  line-height: 1.7;
+  background: var(--ink-900);
+  color: #ede6d8;
+  padding: 2.8mm 4mm;
+  break-inside: avoid;
+  white-space: pre;
+}
+.term .cmt { color: var(--sumuk-500); }
+
+.foot {
+  position: absolute;
+  left: 17mm;
+  right: 17mm;
+  bottom: 9mm;
+  display: flex;
+  justify-content: space-between;
+  font-size: 7.6pt;
+  color: var(--sumuk-500);
+  padding-top: 2mm;
+  border-top: 0.2mm solid var(--hairline);
+}
+.foot span:last-child { font-family: var(--data); }
+</style>
+</head>
+<body>
+
+<!-- ══ 1. 표지 ══════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="cover">
+    <div>
+    <div class="eyebrow">NHN NAN 2026 &nbsp;·&nbsp; 사전 과제 &nbsp;·&nbsp; AI 활용 기술</div>
+
+    <!--
+      세 도구가 각각 스무 개를 냈고, 사람이 둘을 남기고 하나를 지었다.
+      황색이 기계가 낸 것, 먹색 테두리가 사람이 정한 자리다.
+    -->
+    <svg class="cover-mark" viewBox="0 0 560 226" role="img"
+         aria-label="세 도구가 낸 60개 후보가 2개를 거쳐 한 게임으로 좁혀지는 도해">
+      <g font-family="IBM Plex Sans KR, sans-serif" font-size="15" fill="#3b4048">
+        <text x="0" y="30">Claude Code</text>
+        <text x="0" y="98">Codex CLI</text>
+        <text x="0" y="166">Antigravity CLI</text>
+      </g>
+
+      <!-- pip 격자. 한 줄에 4묶음 × 5개 -->
+      <g fill="#f5b324">
+        <g transform="translate(126 25)">
+          <g><rect width="10" height="10" rx="1"/></g><g transform="translate(15)"><rect width="10" height="10" rx="1"/></g><g transform="translate(30)"><rect width="10" height="10" rx="1"/></g><g transform="translate(45)"><rect width="10" height="10" rx="1"/></g><g transform="translate(60)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(88)"><rect width="10" height="10" rx="1"/></g><g transform="translate(103)"><rect width="10" height="10" rx="1"/></g><g transform="translate(118)"><rect width="10" height="10" rx="1"/></g><g transform="translate(133)"><rect width="10" height="10" rx="1"/></g><g transform="translate(148)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(176)"><rect width="10" height="10" rx="1"/></g><g transform="translate(191)"><rect width="10" height="10" rx="1"/></g><g transform="translate(206)"><rect width="10" height="10" rx="1"/></g><g transform="translate(221)"><rect width="10" height="10" rx="1"/></g><g transform="translate(236)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(264)"><rect width="10" height="10" rx="1"/></g><g transform="translate(279)"><rect width="10" height="10" rx="1"/></g><g transform="translate(294)"><rect width="10" height="10" rx="1"/></g><g transform="translate(309)"><rect width="10" height="10" rx="1"/></g><g transform="translate(324)"><rect width="10" height="10" rx="1"/></g>
+        </g>
+        <g transform="translate(126 93)">
+          <g><rect width="10" height="10" rx="1"/></g><g transform="translate(15)"><rect width="10" height="10" rx="1"/></g><g transform="translate(30)"><rect width="10" height="10" rx="1"/></g><g transform="translate(45)"><rect width="10" height="10" rx="1"/></g><g transform="translate(60)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(88)"><rect width="10" height="10" rx="1"/></g><g transform="translate(103)"><rect width="10" height="10" rx="1"/></g><g transform="translate(118)"><rect width="10" height="10" rx="1"/></g><g transform="translate(133)"><rect width="10" height="10" rx="1"/></g><g transform="translate(148)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(176)"><rect width="10" height="10" rx="1"/></g><g transform="translate(191)"><rect width="10" height="10" rx="1"/></g><g transform="translate(206)"><rect width="10" height="10" rx="1"/></g><g transform="translate(221)"><rect width="10" height="10" rx="1"/></g><g transform="translate(236)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(264)"><rect width="10" height="10" rx="1"/></g><g transform="translate(279)"><rect width="10" height="10" rx="1"/></g><g transform="translate(294)"><rect width="10" height="10" rx="1"/></g><g transform="translate(309)"><rect width="10" height="10" rx="1"/></g><g transform="translate(324)"><rect width="10" height="10" rx="1"/></g>
+        </g>
+        <g transform="translate(126 161)">
+          <g><rect width="10" height="10" rx="1"/></g><g transform="translate(15)"><rect width="10" height="10" rx="1"/></g><g transform="translate(30)"><rect width="10" height="10" rx="1"/></g><g transform="translate(45)"><rect width="10" height="10" rx="1"/></g><g transform="translate(60)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(88)"><rect width="10" height="10" rx="1"/></g><g transform="translate(103)"><rect width="10" height="10" rx="1"/></g><g transform="translate(118)"><rect width="10" height="10" rx="1"/></g><g transform="translate(133)"><rect width="10" height="10" rx="1"/></g><g transform="translate(148)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(176)"><rect width="10" height="10" rx="1"/></g><g transform="translate(191)"><rect width="10" height="10" rx="1"/></g><g transform="translate(206)"><rect width="10" height="10" rx="1"/></g><g transform="translate(221)"><rect width="10" height="10" rx="1"/></g><g transform="translate(236)"><rect width="10" height="10" rx="1"/></g>
+          <g transform="translate(264)"><rect width="10" height="10" rx="1"/></g><g transform="translate(279)"><rect width="10" height="10" rx="1"/></g><g transform="translate(294)"><rect width="10" height="10" rx="1"/></g><g transform="translate(309)"><rect width="10" height="10" rx="1"/></g><g transform="translate(324)"><rect width="10" height="10" rx="1"/></g>
+        </g>
+      </g>
+
+      <!-- 후보 둘이 나온 자리는 셋째 줄뿐이다. 앞의 두 줄에는 이어지는 선이 없다 -->
+      <path d="M470 166 L498 166 L498 99 L516 99" fill="none" stroke="#14161a" stroke-width="1.8"/>
+      <rect x="516" y="86" width="26" height="26" fill="#f5b324" stroke="#14161a" stroke-width="2"/>
+      <text x="529" y="105" text-anchor="middle" font-family="IBM Plex Mono, monospace"
+            font-size="15" font-weight="600" fill="#14161a">1</text>
+      <text x="126" y="205" font-family="IBM Plex Sans KR, sans-serif" font-size="14" fill="#71767f">
+        컨셉 60개 — 각 칸이 하나
+      </text>
+      <text x="542" y="205" text-anchor="end" font-family="IBM Plex Sans KR, sans-serif"
+            font-size="14" fill="#71767f">환도</text>
+    </svg>
+
+    <h1>AI 활용 기술</h1>
+    <p class="cover-sub">환도 還刀 — 세 개의 CLI 에이전트로<br>주제를 고르고 만들고 감사한 기록</p>
+    </div>
+
+    <p class="cover-rule">
+      Claude Code · Codex CLI · Antigravity CLI를 같은 문제에 따로 붙여 서로 모르게 답을 내게 하고,
+      어긋난 자리를 사람이 판정했다. 게임 안에서 도는 AI는 없다. 이 문서는 어떤 도구에 무엇을
+      시켰고, 무엇을 받아썼고, 무엇을 사람이 되돌렸는지를 적는다.
+    </p>
+
+    <div>
+    <div class="cover-toc">
+      <div><b>01</b><span>도구와 역할, 그리고 런타임에 AI가 없는 이유</span></div>
+      <div><b>02</b><span>주제 — 60개에서 하나로</span></div>
+      <div><b>03</b><span>지시 — 무엇을 어떻게 시켰나</span></div>
+      <div><b>04</b><span>만든 과정</span></div>
+      <div><b>05</b><span>기계에 맡기지 않은 것 · 외부 자료 출처</span></div>
+    </div>
+
+    <div class="cover-facts">
+      <dl>
+        <div><dt>기간</dt><dd>07-22 ~ 08-09</dd></div>
+        <div><dt>커밋</dt><dd>39개</dd></div>
+        <div><dt>소스</dt><dd>33,867줄</dd></div>
+        <div><dt>런타임 AI</dt><dd>없음</dd></div>
+      </dl>
+    </div>
+    </div>
+  </div>
+  <div class="foot"><span>환도 還刀 — AI 활용 기술</span><span>1</span></div>
+</section>
+
+<!-- ══ 2. 도구와 역할 ════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">01</div>
+      <div class="rail-t">도구와 역할</div>
+      <p>세 도구를 같은 문제에 따로 붙였다. 합의가 아니라 불일치를 얻기 위해서다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>세 도구를 서로 모르게 굴렸다</h2>
+        <p class="lede">
+          한 도구에 같은 질문을 네 번 하면 네 번 비슷한 답이 온다. 세 도구에 한 번씩 하면
+          어긋난 자리가 남는다. 그 자리가 판단할 거리다.
+        </p>
+        <p>
+          그래서 리서치와 발상은 <strong>세 도구가 서로의 산출물을 보지 않는 상태로</strong>
+          네 라운드를 돌았다. 각 라운드의 결과는 도구 이름이 붙은 폴더에 그대로 남아 있다 —
+          <span class="mono">docs/research/</span>와 <span class="mono">docs/ideation/</span>의
+          <span class="mono">claude_*</span> · <span class="mono">codex_*</span> ·
+          <span class="mono">agy_*</span>가 그것이다. 고쳐 덮지 않고 라운드마다 새 폴더를 뒀다.
+        </p>
+      </div>
+
+      <div class="block">
+        <table>
+          <colgroup><col style="width:26%"><col style="width:36%"><col style="width:38%"></colgroup>
+          <thead>
+            <tr><th>도구</th><th>맡은 일</th><th>남은 자리</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Claude Code</strong></td>
+              <td>리서치·발상 4라운드, 기능 명세서, 화면 목업, 구현 기획안, 구현과 테스트 전부, 문서</td>
+              <td class="mono">claude_research/ · claude_ideation/<br>spec/ · plan/ · sample_image/<br>src/ · tests/ · work_log/</td>
+            </tr>
+            <tr>
+              <td><strong>Codex CLI</strong></td>
+              <td>리서치·발상 4라운드. 그리고 기획안과 코드에 대한 <strong>독립 감사</strong> — 짚은 것을 고치지 않고 목록으로만 냈다</td>
+              <td class="mono">codex_research/ · codex_ideation/<br>work_log/04 §3.1</td>
+            </tr>
+            <tr>
+              <td><strong>Antigravity CLI</strong></td>
+              <td>리서치·발상 4라운드. <strong>최종 후보 두 개가 모두 이 도구에서 나왔다</strong></td>
+              <td class="mono">agy_research/ · agy_ideation/<br>ideation/후보/</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:2.8mm;">
+          구현을 한 도구로 몬 것은 일관성 때문이다. 계층 규칙과 이름 규칙이 파일 138개에 걸쳐
+          있어서, 도구를 섞으면 규칙이 아니라 스타일이 섞인다. 대신 <strong>감사를 다른 도구에
+          맡겨</strong> 만든 쪽과 보는 쪽을 갈랐다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>감사를 나눈 것이 실제로 값을 했다</h3>
+        <p>
+          마지막 점검(P8)에서 Codex와 Claude Code 서브에이전트 둘을 같은 코드에 따로 붙였다.
+          <strong>두 갈래가 같은 결함을 독립으로 찾은 자리가 둘</strong>이고, 한쪽만 본 것도
+          있었다 — 카드 후광 색은 서브에이전트만, E04 자동 패리는 Codex만 봤다.
+          기록은 <span class="mono">docs/work_log/04_P8_점검과_수정.md §3</span>에 있다.
+        </p>
+        <table style="margin-top:3mm;">
+          <colgroup><col style="width:44%"><col style="width:28%"><col style="width:28%"></colgroup>
+          <thead><tr><th>감사 갈래</th><th>확정</th><th>반영</th></tr></thead>
+          <tbody>
+            <tr><td>Codex 독립 감사</td><td class="mono">12건</td><td class="mono">5건</td></tr>
+            <tr><td>서브에이전트 <span class="mono">ui-screens</span></td><td class="mono">11건</td><td class="mono">6건</td></tr>
+            <tr><td>서브에이전트 <span class="mono">render-motion</span></td><td class="mono">7건</td><td class="mono">4건</td></tr>
+          </tbody>
+        </table>
+        <p class="note" style="margin-top:2.6mm;">
+          반영이 확정보다 적은 것은 남은 것을 무시했다는 뜻이 아니다. 안 고친 항목은 이유를
+          하나씩 적어 같은 문서 §3.1과 §3.2에 남겼다. 예를 들어 Codex가 「잔존 잡몹 유예가
+          스펙과 다르다」고 짚은 건은, 그 충돌을 이미 판정해 둔 주석을 Codex가 못 본 경우였다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>게임 안에서 도는 AI는 없다</h3>
+        <p class="note">
+          제출물은 브라우저에서 도는 단일 파일이고, 모델도 API도 부르지 않는다. 런타임 의존성은
+          0개, 네트워크 요청도 0개다. AI는 <strong>만드는 동안에만</strong> 쓰였다. 게임의 「지능」에
+          해당하는 부분 — 적의 발사 주기, 보스 패턴 순환, 카드 추첨 — 은 전부 시드 난수와 표로
+          정해져 있고, 그래서 같은 시드에 같은 입력을 넣으면 같은 판이 재현된다. 타이틀 화면의
+          어트랙트 루프가 그 성질로 기록된 실제 플레이를 되돌린다.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>도구와 역할</span><span>2</span></div>
+</section>
+
+<!-- ══ 3. 주제 선정 ══════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">02</div>
+      <div class="rail-t">주제<br>60개에서 하나로</div>
+      <p>기계가 60개를 냈고, 게임의 규칙은 사람이 두 줄로 썼다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>60개를 받아 두 개를 남겼다</h2>
+        <p>
+          리서치 12라운드(77파일 · 20,926줄)를 먼저 돌리고, 그 위에서 발상 12라운드를 돌려
+          <strong>컨셉 60개</strong>를 받았다. 라운드마다 앞 라운드가 파지 않은 각도만 조사하라는
+          조건을 붙였고, 그 조건이 지켜졌는지는 각 라운드 README가 스스로 적는다 —
+          3차 리서치는 「직전 라운드에서 재미 평균이 44.3 대 61.0으로 갈렸다」는 실측을 근거로
+          무게중심을 옮겼다고 기록한다.
+        </p>
+        <p>
+          60개 중 사람이 남긴 것은 <span class="mono">docs/ideation/후보/</span>의 둘이고,
+          <strong>둘 다 Antigravity가 낸 것</strong>이다. 하나는 역콜센터, 하나는 핀볼 닌자였다.
+        </p>
+      </div>
+
+      <div class="block figure">
+        <svg viewBox="0 0 620 128" role="img" aria-label="세 도구가 낸 60개가 2개를 거쳐 1개로 좁혀진 흐름">
+          <g font-family="IBM Plex Sans KR, sans-serif" font-size="13" fill="#3b4048">
+            <text x="0" y="26">Claude Code</text>
+            <text x="0" y="62">Codex CLI</text>
+            <text x="0" y="98">Antigravity CLI</text>
+          </g>
+          <g font-family="IBM Plex Mono, monospace" font-size="11" fill="#b2b5ad">
+            <text x="94" y="12">1차</text><text x="166" y="12">2차</text>
+            <text x="238" y="12">3차</text><text x="310" y="12">4차</text>
+          </g>
+          <g fill="#f5b324">
+            <!-- 세 줄 × (4라운드 × 5개) -->
+            <g transform="translate(94 15)">
+              <rect width="9" height="9"/><rect x="13" width="9" height="9"/><rect x="26" width="9" height="9"/><rect x="39" width="9" height="9"/><rect x="52" width="9" height="9"/>
+              <rect x="72" width="9" height="9"/><rect x="85" width="9" height="9"/><rect x="98" width="9" height="9"/><rect x="111" width="9" height="9"/><rect x="124" width="9" height="9"/>
+              <rect x="144" width="9" height="9"/><rect x="157" width="9" height="9"/><rect x="170" width="9" height="9"/><rect x="183" width="9" height="9"/><rect x="196" width="9" height="9"/>
+              <rect x="216" width="9" height="9"/><rect x="229" width="9" height="9"/><rect x="242" width="9" height="9"/><rect x="255" width="9" height="9"/><rect x="268" width="9" height="9"/>
+            </g>
+            <g transform="translate(94 51)">
+              <rect width="9" height="9"/><rect x="13" width="9" height="9"/><rect x="26" width="9" height="9"/><rect x="39" width="9" height="9"/><rect x="52" width="9" height="9"/>
+              <rect x="72" width="9" height="9"/><rect x="85" width="9" height="9"/><rect x="98" width="9" height="9"/><rect x="111" width="9" height="9"/><rect x="124" width="9" height="9"/>
+              <rect x="144" width="9" height="9"/><rect x="157" width="9" height="9"/><rect x="170" width="9" height="9"/><rect x="183" width="9" height="9"/><rect x="196" width="9" height="9"/>
+              <rect x="216" width="9" height="9"/><rect x="229" width="9" height="9"/><rect x="242" width="9" height="9"/><rect x="255" width="9" height="9"/><rect x="268" width="9" height="9"/>
+            </g>
+            <g transform="translate(94 87)">
+              <rect width="9" height="9"/><rect x="13" width="9" height="9"/><rect x="26" width="9" height="9"/><rect x="39" width="9" height="9"/><rect x="52" width="9" height="9"/>
+              <rect x="72" width="9" height="9"/><rect x="85" width="9" height="9"/><rect x="98" width="9" height="9"/><rect x="111" width="9" height="9"/><rect x="124" width="9" height="9"/>
+              <rect x="144" width="9" height="9"/><rect x="157" width="9" height="9"/><rect x="170" width="9" height="9"/><rect x="183" width="9" height="9"/><rect x="196" width="9" height="9"/>
+              <rect x="216" width="9" height="9"/><rect x="229" width="9" height="9"/><rect x="242" width="9" height="9"/><rect x="255" width="9" height="9"/><rect x="268" width="9" height="9"/>
+            </g>
+          </g>
+
+          <!-- 후보 둘이 나온 자리는 셋째 줄뿐이다. 앞의 두 줄에는 이어지는 선이 없다 -->
+          <path d="M382 91 L404 91 L404 56 L416 56" fill="none" stroke="#14161a" stroke-width="1.6"/>
+          <rect x="418" y="43" width="46" height="26" fill="#f5b324" stroke="#14161a" stroke-width="1.6"/>
+          <text x="441" y="61" text-anchor="middle" font-family="IBM Plex Sans KR, sans-serif"
+                font-size="13" font-weight="600" fill="#14161a">후보 2</text>
+          <path d="M464 56 L497 56" fill="none" stroke="#14161a" stroke-width="1.6"/>
+          <path d="M500 56 l-10 -4.5 0 9 z" fill="#14161a"/>
+          <rect x="504" y="43" width="46" height="26" fill="#f5b324" stroke="#14161a" stroke-width="1.6"/>
+          <text x="527" y="61" text-anchor="middle" font-family="IBM Plex Sans KR, sans-serif"
+                font-size="13" font-weight="600" fill="#14161a">환도</text>
+
+          <g font-family="IBM Plex Sans KR, sans-serif" font-size="11.5" fill="#71767f">
+            <text x="94" y="124">각 칸이 컨셉 하나. 도구별 20개, 합쳐 60개</text>
+            <text x="404" y="124">사람이 고른 자리</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="block">
+        <h3>규칙을 정한 두 줄</h3>
+        <p>
+          핀볼 닌자는 원래 「핀볼 테이블에서 볼을 패리로 반사하는 초고속 액션」이었다.
+          거기에 사람이 손으로 파일 하나를 얹었다.
+          <span class="mono">docs/ideation/후보/02_parry_pinball_ninja/추가 아이디어.txt</span>다.
+        </p>
+        <div class="quote" style="margin-top:4mm;">
+          <p>“무조건 적의 공격을 패링 해서만<br>공격할 수 있는 비행 슈팅 게임”</p>
+          <cite>추가 아이디어.txt — 소유자가 직접 적은 여섯 줄 중 마지막 두 줄</cite>
+        </div>
+        <p style="margin-top:4mm;">
+          지금 게임의 한 줄 규칙이 그것이다. <strong>공격 버튼을 없앤다는 결정은 어느 도구도
+          내지 않았다.</strong> 세 도구가 낸 60개 중 「공격 수단이 아예 없는」 안은 하나도 없었고,
+          핀볼 닌자에도 칼과 대시가 있었다. 그 하나를 빼는 결정이 장르를 바꾸고, 뒤따라 임진왜란
+          배경과 5스테이지 구성과 카드 성장이 붙었다.
+        </p>
+      </div>
+
+      <div class="block">
+        <h3>고르기 전에 세워 둔 문턱</h3>
+        <p class="note" style="margin-bottom:2.6mm;">
+          60개를 다 읽고 고른 것이 아니다. 공식 요건을 다시 확인해 통과 조건 다섯 개를 먼저 적고
+          (<span class="mono">research/codex_research_4/01_공식요건_재검증.md</span>), 거기에
+          걸리는 안을 먼저 버렸다.
+        </p>
+        <ul class="by-human">
+          <li>핵심 규칙을 한 문장으로 설명할 수 있어야 한다.</li>
+          <li>설명 없이 <strong>실제 플레이 화면만으로</strong> 입력과 결과가 읽혀야 한다.</li>
+          <li>AI를 게임 소재나 런타임 기능으로 억지로 넣지 않는다.</li>
+          <li>외부 IP·타인의 캐릭터·패러디에 기대지 않고 혼자 서야 한다.</li>
+          <li>영상용 연출과 실제 조작 규칙이 같아야 한다.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>주제 — 60개에서 하나로</span><span>3</span></div>
+</section>
+
+<!-- ══ 4. 지시 ═══════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">03</div>
+      <div class="rail-t">지시</div>
+      <p>매번 새로 쓰는 프롬프트보다, 항상 켜져 있는 규칙이 결과를 더 많이 정했다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>같은 지시를 매번 다시 쓰지 않았다</h2>
+        <p class="lede">
+          긴 프롬프트를 그때그때 쓰는 대신, <strong>지켜야 할 것을 파일로 만들어 항상 물려 두고</strong>
+          매 요청은 짧게 했다. 그래서 이 항목에 적을 「주요 프롬프트」는 문장 묶음이 아니라 규칙
+          묶음이다. 아래 여섯 개가 산출물에 눈으로 확인되는 자리를 함께 적는다.
+        </p>
+      </div>
+
+      <div class="block rules">
+        <div class="rule">
+          <div>
+            <b>계약에 우선순위를 못 박는다</b>
+            <span>work_log/00 · plan/12</span>
+          </div>
+          <p>
+            기능 명세서가 규칙과 수치를 이기고, 목업이 외형을 이긴다. 둘이 침묵하거나 기획안끼리
+            어긋나면 <span class="mono">plan/12_통합_계약.md</span>가 판정한다. 어느 문서를 믿을지
+            매번 묻지 않게 만든 장치다.
+          </p>
+        </div>
+        <div class="rule">
+          <div>
+            <b>수치는 표에만, 로직은 표 밖에만</b>
+            <span>src/config/ · eslint.config.js</span>
+          </div>
+          <p>
+            게임의 모든 숫자가 <span class="mono">src/config/</span> 41파일에 단위와 명세 절 번호가
+            붙은 주석과 함께 있고, 그 폴더는 폴더 밖을 import하지 못한다. 어기면 경고가 아니라
+            빌드 실패다.
+          </p>
+        </div>
+        <div class="rule">
+          <div>
+            <b>고침은 원인까지 간다</b>
+            <span>work_log/04 · 05</span>
+          </div>
+          <p>
+            증상이 사라진 자리가 아니라 증상을 만든 기계장치를 바꾼다. 그래서 각 수정 기록이
+            「증상 → 기계장치 → 고침」 세 단락으로 되어 있다. 원인을 못 짚었으면 그 사실을 적고
+            남긴다.
+          </p>
+        </div>
+        <div class="rule">
+          <div>
+            <b>못 잰 것을 못 쟀다고 적는다</b>
+            <span>work_log/03 §5</span>
+          </div>
+          <p>
+            검토 기록의 첫 문단이 이 지시를 그대로 적고 있다 — <strong>「침묵은 통과했다로
+            읽힌다」.</strong> 그래서 표의 「못 잼」은 값이 나쁘다는 뜻이 아니라 값이 없다는 뜻이고,
+            측정하지 못한 축은 따로 모아 뒀다.
+          </p>
+        </div>
+        <div class="rule">
+          <div>
+            <b>주석은 코드가 못 하는 말만</b>
+            <span>src/ 전체</span>
+          </div>
+          <p>
+            계약·소유권·비자명한 제약·구조의 이유 네 가지 중 하나를 말하지 않는 주석은 지운다.
+            날짜·티켓·변경 이력은 git이 갖는다. 그래서 소스에 「AI가 요약한 설명문」투가 남지 않았다.
+          </p>
+        </div>
+        <div class="rule">
+          <div>
+            <b>테스트는 좁게 돌리고 끝에 전체</b>
+            <span>tests/ 511건</span>
+          </div>
+          <p>
+            작업 중에는 방금 건드린 것만, 보고 직전에 전체를 한 번. 통과를 보고할 때는 실행 결과를
+            함께 적고, 실패를 우회해 초록불을 만들지 않는다.
+          </p>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>말이 아니라 장치로 강제한 것</h3>
+        <p class="note">
+          코드 33,867줄을 한 줄씩 읽는 것은 가능하지 않다. 그래서 위 규칙 중 기계가 검사할 수
+          있는 것은 어기면 실패하는 장치로 바꿔 두었다.
+        </p>
+        <table style="margin-top:2.6mm;">
+          <colgroup><col style="width:28%"><col style="width:72%"></colgroup>
+          <tbody>
+            <tr><td>계층 규칙</td><td>폴더 사이의 import 방향을 ESLint 규칙 10개로 강제한다. <span class="mono">sim/</span>은 <span class="mono">window</span>·<span class="mono">performance</span>·<span class="mono">requestAnimationFrame</span>을 아예 못 만진다</td></tr>
+            <tr><td>결정론</td><td>시드 난수만 쓴다. 같은 시드 + 같은 입력 = 같은 판. 회귀를 말이 아니라 재생으로 확인한다</td></tr>
+            <tr><td>단위 테스트</td><td>511건. 규칙·상한·카드 합산·진행·반사 계산을 값으로 못 박는다</td></tr>
+            <tr><td>헤드리스 밸런스</td><td>봇이 시드 5개 × 시나리오 9종을 완주하며 하드 규칙 위반을 센다</td></tr>
+            <tr><td>화면 회귀</td><td>승인된 목업 6장과 게임이 그린 프레임을 픽셀로 대조한다</td></tr>
+            <tr><td>타입·린트</td><td>TypeScript strict. 둘 다 통과가 커밋의 조건이다</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block">
+        <h3 class="by-ai">라운드마다 붙인 조건</h3>
+        <p class="note">
+          리서치와 발상에는 라운드별 조건을 하나씩 더 얹었다. <strong>앞 라운드가 조사한 각도를
+          다시 조사하지 말 것</strong>, 다섯 개가 한 아이디어의 다섯 껍데기가 되지 말 것,
+          선행작 검증에서 <strong>검색 건수를 근거로 쓰지 말 것.</strong> 마지막 조건이 실제로
+          초안을 철회시켰다 — 「검색 공간이 비어 있다」던 문장을 스스로 지웠다.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>지시</span><span>4</span></div>
+</section>
+
+<!-- ══ 5. 과정 ═══════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">04</div>
+      <div class="rail-t">만든 과정</div>
+      <p>커밋 39개가 18일에 걸쳐 있고, 32개에 AI 공동작성 표시가 붙어 있다.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>18일, 커밋 39개</h2>
+        <table>
+          <colgroup><col style="width:15%"><col style="width:23%"><col style="width:44%"><col style="width:18%"></colgroup>
+          <thead><tr><th>날짜</th><th>단계</th><th>산출물</th><th>커밋</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">07-22<br>~ 07-31</td><td>리서치·발상</td><td>세 도구 × 4라운드. 리서치 77파일 20,926줄, 컨셉 60개 128파일 9,647줄</td><td class="mono">2225d04<br>~ ac470f5</td></tr>
+            <tr><td class="mono">08-05</td><td>후보 확정</td><td>60개에서 2개. <span class="mono">추가 아이디어.txt</span>로 「공격 수단 없음」 확정</td><td class="mono">37a8039</td></tr>
+            <tr><td class="mono">08-06</td><td>기능 명세서</td><td>1,566줄. 하드 규칙 9개, 탄환 12종, 적 9종, 보스 5기, 카드 31종</td><td class="mono">b917caf<br>cd0749e</td></tr>
+            <tr><td class="mono">08-07</td><td>목업과 기획안</td><td>화면 15장을 명세서를 실행해 렌더. 기획안 13문서 10,182줄, 성능 실측</td><td class="mono">8f03fa5<br>25b9457</td></tr>
+            <tr><td class="mono">08-08</td><td>구현</td><td>P0에서 P8까지. 소스 138파일 33,867줄, 테스트 511건, 단일 파일 빌드 242 kB</td><td class="mono">adc598d<br>~ 6cff2e3</td></tr>
+            <tr><td class="mono">08-09</td><td>제출 문서</td><td>게임 소개서와 이 문서</td><td class="mono">fad093f<br>72d06f2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block two">
+        <div>
+          <h3 class="by-ai">기계가 낸 양</h3>
+          <table style="margin-top:1.8mm;">
+            <colgroup><col style="width:62%"><col style="width:38%"></colgroup>
+            <tbody>
+              <tr><td>리서치 문서</td><td class="mono right">20,926줄</td></tr>
+              <tr><td>발상 문서</td><td class="mono right">9,647줄</td></tr>
+              <tr><td>기능 명세서</td><td class="mono right">1,566줄</td></tr>
+              <tr><td>구현 기획안</td><td class="mono right">10,182줄</td></tr>
+              <tr><td>화면 목업</td><td class="mono right">3,937줄</td></tr>
+              <tr><td>소스</td><td class="mono right">33,867줄</td></tr>
+              <tr><td>테스트</td><td class="mono right">7,522줄</td></tr>
+              <tr><td>작업 기록</td><td class="mono right">1,532줄</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <h3>병렬로 돌린 규모</h3>
+          <p class="note">
+            한 라운드가 한 번의 요청이 아니다. 각 라운드는 여러 하위 에이전트를 병렬로 띄워
+            서로 다른 각도를 맡기고, 그 결과를 심사 역할이 다시 걸렀다. 라운드 README가 스스로
+            적은 값이 근거다.
+          </p>
+          <table style="margin-top:2.4mm;">
+            <colgroup><col style="width:56%"><col style="width:44%"></colgroup>
+            <tbody>
+              <tr><td>3차 리서치</td><td class="mono right">8명 · 477회</td></tr>
+              <tr><td>4차 발상</td><td class="mono right">23명 · 600회+</td></tr>
+              <tr><td>기획안 정합성</td><td class="mono right">3명 + Codex</td></tr>
+              <tr><td>P8 감사</td><td class="mono right">Codex + 2명</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="block">
+        <h3>기획안이 코드가 되기 전에 네 방향에서 읽혔다</h3>
+        <p class="note">
+          기획안 13문서는 공학·개발 경험·디자인·적대 네 각도의 리뷰를 거쳤고, 리뷰가 실제 결함을
+          찾았다. 가장 무거웠던 것은 <strong>D-09의 머니샷이 규칙상 성립 불가였다는 것</strong>이다 —
+          「반사탄 한 발이 무리를 지운다」는 카드 없이 확률이 0이었다. 관통이 없기 때문이다.
+          정의를 「한 번의 패리가 반경 안의 모든 탄을 되받아친다」로 바꿨고, 그것은 명세서가 이미
+          허용하고 목업 12번 화면이 이미 그려 둔 장면이었다. 판정 기록은
+          <span class="mono">plan/12_통합_계약.md</span>에 전부 남아 있다.
+        </p>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>만든 과정</span><span>5</span></div>
+</section>
+
+<!-- ══ 6. 사람의 자리와 출처 ═════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="grid">
+    <div class="rail">
+      <div class="rail-n">05</div>
+      <div class="rail-t">기계에 맡기지<br>않은 것</div>
+      <p>되돌린 판정과 되돌리지 않은 실패. 그리고 외부 자료 출처.</p>
+    </div>
+
+    <div>
+      <div class="block">
+        <h2>AI의 판정을 되돌린 자리</h2>
+        <p>받아쓰지 않은 것을 적는 편이 무엇을 시켰는지보다 정확하다. 아래는 전부 커밋이나 작업 기록에 근거가 남아 있다.</p>
+        <ul class="by-human" style="margin-top:3.4mm;">
+          <li><strong>기획안의 판정 둘을 뒤집었다.</strong> 보스 원시 동작 하나를 지우고 예고
+            훅으로 옮긴 판정은, 훅이 되면 페이즈마다 한 번만 나가고 순환에서 빠져 되살렸다.
+            「발사 예비동작에 수렴선 셋을 그린다」는 판정도 되돌렸다 — 명세서가 선과 화살표를
+            명시적으로 금지한다. <span class="mono">0e0d239</span></li>
+          <li><strong>Codex가 짚은 12건 중 7건은 고치지 않았다.</strong> 하나는 이미 판정된
+            충돌을 Codex가 못 본 경우였고, 나머지는 고침의 파급이 남은 시간을 넘었다. 각각 이유를
+            적어 남겼다.</li>
+          <li><strong>난이도 수치는 사람이 직접 플레이하며 다시 세웠다.</strong> 명세서 §14.1을
+            일괄 배율로 곱하지 않았다. 축마다 따로 맞춘 값이라 어느 칸도 다른 칸에서 유도되지
+            않으며, 차이표를 <span class="mono">work_log/05</span>에 표로 남겼다.</li>
+          <li><strong>봇이 낸 수치로 목표를 고치지 않았다.</strong> 헤드리스 봇이 스테이지 3을
+            목표보다 15.6% 느리게 돌았지만, 그것은 봇이 약해서다. 목표를 봇에 맞추면 봇의 약함이
+            명세서에 박힌다. 반대 방향의 실패 하나도 같은 이유로 남겼다.</li>
+          <li><strong>8밀리초 초과를 남겼다.</strong> 「적 탄환 없는 구간 2.0초 이하」 규칙이
+            웨이브 경계에서 2.008초로 어긋난다. 근본 고침은 전 스테이지의 웨이브 등장 시각을
+            앞당기는 것이고, 8밀리초에 치를 대가가 아니라고 판단해 원인만 확정해 두었다.</li>
+        </ul>
+      </div>
+
+      <div class="block">
+        <h3>외부 자료와 출처</h3>
+        <table class="paths" style="margin-top:1.8mm;">
+          <colgroup><col style="width:30%"><col style="width:70%"></colgroup>
+          <tbody>
+            <tr><td>이미지·음원·라이브러리</td><td><strong>없다.</strong> 화면의 모든 그림이 실행 중에 도형으로 그려지고 소리는 Web Audio로 합성한다. 게임 프레임워크도 쓰지 않는다</td></tr>
+            <tr><td>개발 도구</td><td>Vite · Vitest · TypeScript · ESLint(+typescript-eslint). 전부 MIT 또는 Apache-2.0이며 빌드 결과물에 들어가지 않는다</td></tr>
+            <tr><td>글꼴</td><td>Gowun Batang · IBM Plex Sans KR · IBM Plex Mono, SIL Open Font License 1.1. 게임은 이름으로만 요청한다. 제출 문서용 하위 집합만 <span class="mono">docs/submit/fonts/</span>에 둔다</td></tr>
+            <tr><td>역사 소재</td><td>임진왜란(1592~1598)은 실제 역사이고 등장하는 함선·무기 이름은 사료에 있는 일반 명사다. 특정 작품이나 IP를 참조하지 않았다</td></tr>
+            <tr><td>AI 산출물</td><td>세 도구의 출력이 전부 저장소 안에 원본으로 남아 있다. 리서치·발상은 도구 이름이 붙은 폴더에, 구현은 커밋 39개에 — 그중 32개가 공동작성 표시를 단다</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="block">
+        <h3 class="on-ink" style="border-left-color:#b2b5ad;">요건과 이 문서의 대응</h3>
+        <table style="margin-top:1.8mm;">
+          <colgroup><col style="width:36%"><col style="width:64%"></colgroup>
+          <tbody>
+            <tr><td>사용한 AI 도구</td><td>01 — 도구 셋과 각자 맡은 일</td></tr>
+            <tr><td>기술 구조</td><td>01 — 런타임에 AI가 없는 이유, 결정론 구조</td></tr>
+            <tr><td>주요 프롬프트와 지시 사항</td><td>03 — 규칙 여섯 개, 라운드별 조건, 강제 장치</td></tr>
+            <tr><td>실제 활용 내역</td><td>02 · 04 — 60개에서 하나로, 18일의 산출물</td></tr>
+            <tr><td>외부 에셋·오픈소스 출처</td><td>05 — 위 표</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>기계에 맡기지 않은 것</span><span>6</span></div>
+</section>
+
+</body>
+</html>
