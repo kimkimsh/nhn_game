@@ -34,8 +34,8 @@ export const PARRY_LOCKOUT_SEC = PARRY.cooldownSec - PARRY.activeSec;
  * 판정이 "거리 d를 덮는 첫 밴드"를 고르므로 배열 순서가 곧 판정 우선순위다.
  *
  * 마지막 밴드의 maxDistU는 null이고 "패리 반경까지"를 뜻한다. sim/stats.ts가 스냅샷을 만들 때
- * 실효 parryRadiusU로 채운다. 70을 적어 두면 반경을 키우는 카드에서 등급 없는 고리가 생긴다 —
- * N03 3중첩(+18u)과 R09(+18u)로 반경이 106u가 되면 70 < d ≤ 106 구간이 C1은 통과하는데 어느
+ * 실효 parryRadiusU로 채운다. 숫자를 적어 두면 반경을 키우는 카드에서 등급 없는 고리가 생긴다 —
+ * N03 3중첩(+18u)과 R09(+18u)로 반경이 156u가 되면 적어 둔 값과 156 사이가 C1은 통과하는데 어느
  * 밴드에도 안 걸리고, 등급이 없으면 데미지 배수·히트스톱·점수·무적이 전부 미정의다
  * (12_통합_계약.md §10 E-06).
  */
@@ -68,7 +68,9 @@ export const INV_1_MARGIN_E07_SEC = 0.04;  // §11.5 E07만 이 값을 쓴다. I
  */
 export const HARD_LIMITS = {
   cooldownMinSec:         0.15,  // §11.6 쿨다운 하한 (s). 다만 실효 하한은 대개 INV-1이 먼저 정한다
-  parryRadiusMaxU:        150,   // §11.6 패리 반경 상한 (u)
+  // 카드 최대치 156(기본 120 + N03 3중첩 18 + R09 18) 위에 24u를 남긴 값이다. 반경 카드가
+  // 하나 더 붙거나 N03의 maxStack이 오르면 여기를 다시 세운다
+  parryRadiusMaxU:        180,   // §11.6 패리 반경 상한 (u)
   moveSpeedMaxUPerSec:    900,   // §11.6 이동 속도 상한 (u/s)
   // §7.1 반사탄 속도 상한 (u/s)
   reflectSpeedMaxUPerSec: REFLECT.speedMaxUPerSec,

@@ -114,9 +114,9 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     const boss = createBossState('B3');
     const seen = watchPhases();
 
-    // B3 본체 HP 1333(§10.4 원값 2000 × 2/3), 페이즈 진입 비율 0.60 / 0.35.
-    // 1066을 깎으면 둘 다 아래로 지나고 HP는 267 남아 격파에는 닿지 않는다
-    applyBossDamage(world, boss, null, 1066);
+    // B3 본체 HP 800(§10.4 원값 2000), 페이즈 진입 비율 0.60 / 0.35 → 480 · 280.
+    // 640을 깎으면 둘 다 아래로 지나고 HP는 160 남아 격파에는 닿지 않는다
+    applyBossDamage(world, boss, null, 640);
     world.bus.flush();
 
     expect(seen).toEqual([2]);
@@ -130,15 +130,15 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     const boss = createBossState('B3');
     const seen = watchPhases();
 
-    // 포문 HP 200 × 4(§10.4 원값 300 × 2/3). 하나를 부순 시점에는 어느 조건도 성립하지 않는다
+    // 포문 HP 200 × 4(§10.4 원값 300). 하나를 부순 시점에는 어느 조건도 성립하지 않는다
     applyBossDamage(world, boss, boss.parts[0]!, 200);
     world.bus.flush();
     expect(seen).toEqual([]);
     expect(boss.phaseIndex).toBe(0);
 
     // 「선착」 두 트리거가 같은 호출에서 함께 참이 되는 상태를 만든다 —
-    // HP는 이미 0.60 아래(1333 × 0.60 = 800)이고, 그 호출이 두 번째 포문을 부숴 파괴 수가 2에 닿는다
-    boss.hp = 667;
+    // HP는 이미 0.60 아래(800 × 0.60 = 480)이고, 그 호출이 두 번째 포문을 부숴 파괴 수가 2에 닿는다
+    boss.hp = 400;
     applyBossDamage(world, boss, boss.parts[1]!, 200);
     world.bus.flush();
 
@@ -149,7 +149,7 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     applyBossDamage(world, boss, null, 900);
     world.bus.flush();
     expect(seen).toEqual([2]);
-    expect(boss.hp).toBe(667);
+    expect(boss.hp).toBe(400);
   });
 });
 
@@ -202,10 +202,10 @@ describe('05 §8.3 B3 — 부위가 본체보다 먼저 판정된다', () => {
     launchReflect(world, port.xU, port.yU, 100);
     resolveBossHits(world, boss);
 
-    // 포문 HP 200, 본체 HP 1333 (§10.4 원값 300 · 2000 × 2/3)
+    // 포문 HP 200, 본체 HP 800 (§10.4 원값 300 · 2000)
     expect(port.hp).toBe(100);
     expect(port.destroyed).toBe(false);
-    expect(boss.hp).toBe(1333);
+    expect(boss.hp).toBe(800);
     expect(world.reflectBullets.activeCount).toBe(0);
   });
 
@@ -218,7 +218,7 @@ describe('05 §8.3 B3 — 부위가 본체보다 먼저 판정된다', () => {
     launchReflect(world, port.xU, port.yU, 100);
     resolveBossHits(world, boss);
 
-    expect(boss.hp).toBe(1233);
+    expect(boss.hp).toBe(700);
   });
 });
 

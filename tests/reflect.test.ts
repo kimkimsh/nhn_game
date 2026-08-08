@@ -14,6 +14,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { BULLETS } from '../src/config/bullets';
 import type { BulletId } from '../src/config/ids';
+import { PLAYFIELD } from '../src/config/playfield';
 import type { BulletDef } from '../src/config/types';
 import { bus } from '../src/core/bus';
 import { createInput, type Input } from '../src/core/input';
@@ -184,9 +185,9 @@ describe('§5.5 반사 공식', () => {
 describe('§7.1 반사탄의 일생', () => {
   it('속도 상한 2400 u/s에서 잘린다 — 편전 P3 · S5 탄속 · GREAT · N06 3중첩', () => {
     const { world, input } = setup(5);
-    // 880 × 0.67 × 2.6 × 1.6 = 2453. 상한이 없으면 이 값이 그대로 나온다.
-    // N06(§11.3 반사탄 속도 +20%, maxStack 3)이 있어야 상한에 닿는다 — 탄속 배율이
-    // 낮아진 뒤로는 카드 없는 최고속 조합(1533 u/s)이 2400에 못 미친다
+    // 900 × 1.0 × 2.6 × 1.6 = 3744. 상한이 없으면 이 값이 그대로 나온다.
+    // N06(§11.3 반사탄 속도 +20%, maxStack 3)이 있어야 상한에 닿는다 —
+    // 카드 없는 최고속 조합은 2340 u/s로 2400에 못 미친다
     world.stats = computeStats([{ id: 'N06', stack: 3 }]);
     placeApproaching(world, 'P3', 0, -20);
     parryNow(world, input);
@@ -198,8 +199,12 @@ describe('§7.1 반사탄의 일생', () => {
 
   it('수명 3.0초가 지나면 소멸한다', () => {
     const { world, input } = setup();
-    // 함포탄 P6를 NOT BAD로 받으면 390 u/s다. 3.0초 동안 소멸 경계에 닿지 못하므로
-    // 사라지는 원인이 수명 하나로 좁혀진다
+    // 반사탄은 언제나 플레이어에게서 멀어지므로(§5.5) 위로 나가고, 위로 갈 거리는 플레이어가
+    // 서 있는 자리가 정한다. 기본 스폰 y=1225에서는 경계까지 1315u뿐이라 함포탄 P6의
+    // NOT BAD 반사(520 u/s)가 2.53초에 화면을 벗어나고, 그러면 이 케이스가 재는 것이 수명이
+    // 아니게 된다. §3.1 이동 영역의 맨 아래로 내려 1920u를 확보하면 3.69초가 되어 수명이 이긴다
+    world.player.yU = PLAYFIELD.playerBounds.maxYU;
+    world.player.prevYU = world.player.yU;
     placeIncoming(world, 'P6', 0, -60);
     press(input);
     step(world, input, 1);
@@ -293,39 +298,39 @@ describe('§7.2 데미지 계산 순서', () => {
     placeApproaching(world, 'P2', 0, -20);
     parryNow(world, input);
 
-    // 14 × 3.5 × 1.45 × 1.5 = 106.575 → 6단계에서 내림
-    expect(onlyReflect(world).damage).toBe(106);
+    // 20 × 3.5 × 1.45 × 1.5 = 152.25 → 6단계에서 내림
+    expect(onlyReflect(world).damage).toBe(152);
   });
 
-  it('예시 2 — 함포탄 NOT BAD 55, GREAT로 재패리해도 누적이 아니라 192', () => {
+  it('예시 2 — 함포탄 NOT BAD 30, GREAT로 재패리해도 누적이 아니라 105', () => {
     const { world, input } = setup();
     placeApproaching(world, 'P6', 0, -60);
     parryNow(world, input);
     const reflected = onlyReflect(world);
     expect(reflected.lastGrade).toBe('NOT_BAD');
-    expect(reflected.damage).toBe(55);
+    expect(reflected.damage).toBe(30);
 
     turnBack(world, reflected, 20);
     elapse(world, input, 0.16);
     parryNow(world, input);
 
     expect(reflected.lastGrade).toBe('GREAT');
-    expect(reflected.damage).toBe(192);
+    expect(reflected.damage).toBe(105);
   });
 
-  it('기준값은 언제나 BRP다 — GOOD 110을 GREAT로 재패리해도 385가 아니라 192다', () => {
+  it('기준값은 언제나 BRP다 — GOOD 60을 GREAT로 재패리해도 210이 아니라 105다', () => {
     const { world, input } = setup();
     placeApproaching(world, 'P6', 0, -40);
     parryNow(world, input);
     const reflected = onlyReflect(world);
     expect(reflected.lastGrade).toBe('GOOD');
-    expect(reflected.damage).toBe(110);
+    expect(reflected.damage).toBe(60);
 
     turnBack(world, reflected, 20);
     elapse(world, input, 0.16);
     parryNow(world, input);
 
-    // 직전 데미지 110에 3.5를 다시 곱하면 385가 나온다. 스펙 §7.2의 1번이 막는 자리다
-    expect(reflected.damage).toBe(192);
+    // 직전 데미지 60에 3.5를 다시 곱하면 210이 나온다. 스펙 §7.2의 1번이 막는 자리다
+    expect(reflected.damage).toBe(105);
   });
 });

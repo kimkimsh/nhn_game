@@ -14,12 +14,41 @@
  * 다른 넷은 묻지 않는 결정으로 들어온다. 원형 거울 반사로 좌우 포문을 노리려면 몸을 그쪽으로
  * 옮겨야 하므로, 포문 넷의 `offsetU`를 좁히면 이 보스의 유일한 새 축이 사라진다.
  */
-import type { BossDef } from '../types';
+import type { BossDef, BossPattern } from '../types';
 import {
   PATTERN_CHARGE_TELEGRAPH_SEC,
   PATTERN_RING_START_ANGLE_DEG,
   PATTERN_SPREAD_TELL_SEC,
 } from './patterns';
+
+/**
+ * §10.4 갑판 조총 사격 — 페이즈 1과 2가 같은 것을 쓴다
+ *
+ * **페이즈 2에 이것이 있는 이유는 §10.4가 아니라 HR-03이다.** 그 페이즈의 스펙 패턴은 충각
+ * 돌진과 교차 포격 둘인데 교차 포격이 `from: 'partsAlternating'`이라, 포문 4기가 전부 부서지면
+ * `sim/boss-shots.ts`가 한 발도 내지 않는다 — 그 침묵이 예비동작 0.75초 + 15연사 × 0.5초 +
+ * 패턴 간격 0.8초로 9초가 되어 적 탄환 공백 2.0초를 깬다. HR-01상 적 탄환이 유일한 탄약이라
+ * 그 9초는 데미지를 넣을 수단이 없는 구간이기도 하다.
+ *
+ * 본체 발사원을 하나 더 두는 쪽을 골랐다 — 교차 포격이 포문을 잃으면 조용해지는 것 자체는
+ * §10.4가 「본체가 대신 쏘지 않는다」로 못 박은 규칙이고, 그것을 뒤집으면 포문 파괴의 보상이
+ * 사라진다. 두 페이즈가 한 벌을 공유하는 것은 두 벌로 적으면 한쪽만 늙기 때문이다.
+ */
+const DECK_MATCHLOCK_VOLLEY = {
+  name: '갑판 조총 사격',
+  // §10.4 갑판 조총병 실루엣에서 소형 고속탄 산발. 발수를 담은 열이 count가 아니라 repeat다.
+  // tellSec은 연사 전체 앞에 한 번이고 repeat마다 다시 붙지 않는다
+  // (types-content.ts의 tellSec 계약 ①). 스펙이 이 패턴의 예비동작을 직접 주지 않았고
+  // 단발 직선이므로 §14.1의 스테이지 값을 읽는다(계약 ③).
+  kind: 'volley', bullet: 'P2',
+  count: 1,               // §10.4 한 번에 한 발씩 흘린다
+  tellSec: 0.75,          // §14.1 S3 단발 직선 발사 예비동작 (s)
+  intervalSec: 0.2,       // §10.4 산발 간격 (s)
+  repeat: 10,             // §10.4 발수
+  aim: 'player',          // §10.4가 침묵하는 자리. 목업 scene.js:41이 aimAt을 쓴다
+  sourceSpread: 630,      // §10.4 갑판 발사원 폭 (u). 목업 x 240~870 — scene.js:41
+  from: 'boss',
+} as const satisfies BossPattern;
 
 export const BOSS_3 = {
   id: 'B3',
@@ -70,21 +99,7 @@ export const BOSS_3 = {
           sourceSpread: 0,        // §10.4 발사원 위치는 parts의 offsetU가 이미 정한다 (u)
           from: 'parts',
         },
-        {
-          name: '갑판 조총 사격',
-          // §10.4 갑판 조총병 실루엣에서 소형 고속탄 산발. 발수를 담은 열이 count가 아니라 repeat다.
-          // tellSec은 연사 전체 앞에 한 번이고 repeat마다 다시 붙지 않는다
-          // (types-content.ts의 tellSec 계약 ①). 스펙이 이 패턴의 예비동작을 직접 주지 않았고
-          // 단발 직선이므로 §14.1의 스테이지 값을 읽는다(계약 ③).
-          kind: 'volley', bullet: 'P2',
-          count: 1,               // §10.4 한 번에 한 발씩 흘린다
-          tellSec: 0.75,          // §14.1 S3 단발 직선 발사 예비동작 (s)
-          intervalSec: 0.2,      // 산발 간격 (s). §10.4 원값 0.15 × 1.4
-          repeat: 10,              // 발수. §10.4 원값 8 × 0.7
-          aim: 'player',          // §10.4가 침묵하는 자리. 목업 scene.js:41이 aimAt을 쓴다
-          sourceSpread: 630,      // 목업의 갑판 발사원 x 240~870 (u) — scene.js:41
-          from: 'boss',
-        },
+        DECK_MATCHLOCK_VOLLEY,
       ],
     },
     {
@@ -112,6 +127,11 @@ export const BOSS_3 = {
           targetYU: 1100,         // §10.4 도달 목표 y (u)
           holdSec: 3.0,           // §10.4 유지 시간 (s)
           returnToStart: true,    // §10.4 복귀한다. HR-08의 상단 정위치로 돌아간다
+          // 하강 1.48초 + 유지 3.0초 + 복귀 1.48초 동안 이 보스는 다른 발사원이 없다. 그 6초는
+          // HR-03(적 탄환 공백 2.0초)을 깨고, HR-01상 적 탄환이 유일한 탄약이므로 동시에
+          // 「데미지를 넣을 수단이 없는 6초」다. §10.4가 이 패턴에 발사를 주지 않았으므로
+          // 스펙에 없는 값이고, 함포탄인 것은 이 보스의 나머지 발사가 전부 P6이기 때문이다
+          duringInterval: { bullet: 'P6', intervalSec: 0.8 }, // 흘리는 간격 (s)
           onEnd: null,            // §10.4 종료 시 추가 발사가 없다
         },
         {
@@ -127,6 +147,8 @@ export const BOSS_3 = {
           sourceSpread: 0,        // §10.4 발사원 위치는 parts의 offsetU가 정한다 (u)
           from: 'partsAlternating',
         },
+        // §10.4의 페이즈 2 목록에 없다. 위 상수 주석의 HR-03이 이 한 줄의 근거다
+        DECK_MATCHLOCK_VOLLEY,
       ],
     },
     {

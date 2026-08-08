@@ -101,8 +101,8 @@ describe('HR-09 — 최소 비행 시간 0.45초', () => {
     BULLETS.P2.speedUPerSec * STAGE_SCALING[STAGE_ID].bulletSpeedMul * TELEGRAPH.minFlightSec,
   );
 
-  it('S5 조총탄의 억제 거리는 229u다 (§6.2 최악 조건 검산 458u × 탄속 조정 0.50)', () => {
-    expect(suppressU).toBe(229);
+  it('S5 조총탄의 억제 거리는 360u다 (§6.2 최악 조건 검산 458u는 조정 전 값이다)', () => {
+    expect(suppressU).toBe(360);
   });
 
   it.each([
@@ -227,8 +227,8 @@ describe('단일 소스 — 값 사이의 관계', () => {
     expect((STAGE_SCALING[1] as Record<string, unknown>).bossHp).toBeUndefined();
   });
 
-  it('보스 HP의 단일 소스는 BossDef다 (§10.7 요약표 1450 × 체력 조정 2/3)', () => {
-    expect(BOSSES.B1.hp).toBe(967);
+  it('보스 HP의 단일 소스는 BossDef다 (§10.7 요약표 1450은 조정 전 값이다)', () => {
+    expect(BOSSES.B1.hp).toBe(600);
   });
 
   it('격파 연출은 BOSS_COMMON으로 옮겨졌다 (12 §8)', () => {
@@ -248,10 +248,16 @@ describe('단일 소스 — 값 사이의 관계', () => {
       .toBeLessThanOrEqual(HITSTOP_BUDGET_PER_SEC);
   });
 
-  it('E07 빌드는 상한을 넘어선다 — 그게 상한의 존재 이유다 (§5.3)', () => {
+  /**
+   * 예전에는 이 자리가 「E07 빌드는 상한을 넘어선다 — 그게 상한의 존재 이유다」였다.
+   * 등급 히트스톱이 셋 다 0.02초로 내려가면서 가장 빠른 빌드도 상한의 절반에 못 닿는다.
+   * **§3.2의 상한이 지금 죽은 값이라는 뜻이고, 그 사실을 단언으로 박아 둔다** — 등급 표를
+   * 올려 상한이 다시 물기 시작하면 여기가 먼저 빨간불이 되고 그때 절단 경로가 살아난다.
+   */
+  it('가장 빠른 E07 빌드조차 §3.2의 상한에 닿지 못한다 (§5.3)', () => {
     const cooldownSec = computeStats([{ id: 'E07', stack: 1 }]).cooldownSecFor('hit');
     expect(cooldownSec).toBeCloseTo(0.19, 6);
-    expect((1 / cooldownSec) * PARRY_BANDS[0].hitstopSec).toBeGreaterThan(HITSTOP_BUDGET_PER_SEC);
+    expect((1 / cooldownSec) * PARRY_BANDS[0].hitstopSec).toBeLessThan(HITSTOP_BUDGET_PER_SEC);
   });
 });
 

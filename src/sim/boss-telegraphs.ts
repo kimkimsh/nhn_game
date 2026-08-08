@@ -111,7 +111,16 @@ export function chargeDurationSec(pattern: ChargePattern, run: ChargeRun): numbe
   return pattern.telegraphSec + run.travelSec + pattern.holdSec + run.returnSec;
 }
 
-/** §10.3 페이즈 3 「돌진 중 0.2초 간격으로 수리검을 흘리며 이동」. 조준하지 않고 흘린다 */
+/**
+ * §10.3 페이즈 3 「돌진 중 0.2초 간격으로 수리검을 흘리며 이동」. 조준하지 않고 흘린다.
+ *
+ * **패턴이 시작한 순간부터 복귀가 끝날 때까지 계속 흘린다 — 이동 구간만이 아니다.** 돌진 패턴은
+ * 예고 1.0초 + 하강 + 유지 + 복귀로 7초를 넘기는데, 그 사이 보스가 한 발도 내지 않으면
+ * HR-03(적 탄환 공백 2.0초)이 깨진다. 그리고 HR-01상 적 탄환이 플레이어의 유일한 탄약이므로
+ * 그 공백은 곧 「보스에게 데미지를 넣을 수단이 없는 7초」다 — 규칙 위반이기 전에 구멍이다.
+ * 흘리는 간격을 주지 않은 패턴은 여기서 그냥 빠져나가므로 이 확장은 duringInterval을 가진
+ * 돌진에만 걸린다.
+ */
 function fireChargeTrail(
   world: ZoneWorld,
   boss: BossState,
@@ -143,6 +152,10 @@ export function stepCharge(
   const travelEndSec = pattern.telegraphSec + run.travelSec;
   const holdEndSec = travelEndSec + pattern.holdSec;
 
+  // 예고 구간도 덮는다. 앞 패턴 간격 0.8초와 예고 1.0초가 이어지면 그것만으로 1.8초이고,
+  // 남은 탄을 플레이어가 패리로 걷어내면 그 자리에서 2.0초를 넘긴다
+  fireChargeTrail(world, boss, pattern, run, elapsedSec);
+
   if (elapsedSec < pattern.telegraphSec) {
     if (run.telegraph !== null) {
       run.telegraph.ageSec += dtSec;
@@ -158,7 +171,6 @@ export function stepCharge(
     const t = run.travelSec > 0 ? (elapsedSec - pattern.telegraphSec) / run.travelSec : 1;
     boss.xU = run.startXU + (run.targetXU - run.startXU) * t;
     boss.yU = run.startYU + (run.targetYU - run.startYU) * t;
-    fireChargeTrail(world, boss, pattern, run, elapsedSec - pattern.telegraphSec);
     return null;
   }
 

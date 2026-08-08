@@ -97,6 +97,9 @@ export const BOSS_5 = {
           targetYU: 1200,         // §10.6 도달 목표 y (u)
           holdSec: 2.5,           // §10.6 유지 시간 (s)
           returnToStart: true,    // HR-08 보스는 상단 영역에 머문다. 돌진이 그 예외이므로 되돌아간다
+          // B3 충각 돌진과 같은 이유다 — 이 패턴이 도는 동안 다른 발사원이 없어 HR-03이 깨지고
+          // 그 구간이 곧 탄약 공백이 된다. 페이즈 2가 함포 계열이라 흘리는 탄도 P6다
+          duringInterval: { bullet: 'P6', intervalSec: 0.8 }, // 흘리는 간격 (s)
           onEnd: null,            // §10.6 종료 시 추가 발사가 없다
         },
       ],

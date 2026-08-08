@@ -99,6 +99,34 @@ function applyEntryPosition(enemy: Enemy, runtime: EnemyRuntime): void {
 }
 
 /**
+ * 분대의 첫 발이 퍼지는 구간의 아래쪽 끝 — 발사 주기 대비 비율.
+ *
+ * 0을 쓰면 맨 앞 개체가 진입하자마자 쏘고, 1을 쓰면 분대 전체가 한 주기를 통째로 기다린다.
+ * 0.35는 가장 짧은 주기(E-A 3.08초)에서도 첫 발 앞에 1.07초가 남아 §14.1의 가장 긴 예비동작
+ * 0.95초가 들어갈 자리를 보장하는 값이다.
+ */
+const FIRST_SHOT_MIN_RATIO = 0.35;
+
+/**
+ * 분대원마다 다른 첫 발 시각 (s).
+ *
+ * **모두에게 같은 `fireCycleSec`를 주면 분대가 한 몸처럼 쏜다.** 함께 진입한 개체들의 타이머가
+ * 맞물려 일제사격 뒤 한 주기를 통째로 쉬고, 플레이어가 그 일제를 받아치면 다음 주기까지 화면에
+ * 적 탄환이 하나도 없다 — HR-03의 2.0초를 넘기는 실제 경로가 이것이고, HR-01상 그 구간은
+ * 곧 탄약이 끊긴 구간이다.
+ *
+ * 난수가 아니라 분대 안의 자리로 나누는 것은 고르게 퍼지기 때문이다. 난수는 같은 기댓값에서도
+ * 뭉치는 표본을 내고, 뭉치면 그 자리에 다시 공백이 생긴다.
+ */
+function firstShotSec(cycleSec: number, memberIndex: number, memberCount: number): number {
+  if (memberCount <= 1) {
+    return cycleSec;
+  }
+  const spread = memberIndex / (memberCount - 1);
+  return cycleSec * (FIRST_SHOT_MIN_RATIO + (1 - FIRST_SHOT_MIN_RATIO) * spread);
+}
+
+/**
  * 한 기를 세운다. absorbEntryDelay가 참이면 진입 지연을 시간이 아니라 거리로 소화한다 —
  * 경로 위에서 그만큼 뒤로 물러난 자리, 즉 활동 영역 밖에서 출발한다.
  */
@@ -124,7 +152,7 @@ function spawnPlaced(world: World, spawn: EnemySpawn, absorbEntryDelay: boolean)
     phase: 'entering',
     entry,
     traveledU: absorbEntryDelay ? -entry.delaySec * def.moveSpeedUPerSec : 0,
-    fireTimerSec: def.fireCycleSec,
+    fireTimerSec: firstShotSec(def.fireCycleSec, spawn.memberIndex, spawn.memberCount),
     windupRemainingSec: 0,
     windupTotalSec: 0,
     aimXU: 0,

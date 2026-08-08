@@ -143,9 +143,9 @@ describe('§5.3 등급 밴드 경계', () => {
     [48.0, 'GOOD'],
     [48.001, 'NOT_BAD'],
     [48.01, 'NOT_BAD'],
-    [70.0, 'NOT_BAD'],
-    [70.001, null],
-    [70.01, null],
+    [120.0, 'NOT_BAD'],
+    [120.001, null],
+    [120.01, null],
   ];
 
   it.each(BAND_CASES)('d = %f → %s', (distU, expected) => {
@@ -162,7 +162,7 @@ describe('§5.2 성립 조건', () => {
   it('C1 — 반경 밖은 아무 일도 일어나지 않는다', () => {
     const { world, input } = setup();
     const parries = record('parry');
-    placeApproaching(world, 'P2', 0, -70.01);
+    placeApproaching(world, 'P2', 0, -120.01);
     parryNow(world, input);
 
     expect(world.enemyBullets.activeCount).toBe(1);
@@ -285,8 +285,8 @@ describe('§5.3 다중 패리 — 한 번의 패리가 여러 발을 동시에 �
     expect(grades).toEqual(['GREAT', 'GOOD', 'NOT_BAD']);
     expect(launches.map((event) => event.grade)).toEqual(['GREAT', 'GOOD', 'NOT_BAD']);
 
-    // 세 등급의 합 0.145가 아니라 GREAT 1회다
-    expect(world.clock.budgetUsedSec(world.simTimeSec)).toBeCloseTo(0.075, 6);
+    // 세 등급의 합 0.06이 아니라 GREAT 1회다
+    expect(world.clock.budgetUsedSec(world.simTimeSec)).toBeCloseTo(0.02, 6);
     // 400 + 150 + 50 = 600이 아니라 GREAT 1회다
     expect(world.run.score).toBe(400);
     // §12.2 — 콤보만 처리한 발사체 개수만큼 오른다

@@ -66,9 +66,14 @@ describe('sweep — 상대 변위로 재야 마주 보고 움직일 때 안 뚫�
     expect(sweepHeadOn(0, -reachU - 1)).toBe(NO_HIT);
   });
   it('최근접이 스텝 중간에 생겨도 잡는다 — 양 끝만 보면 뚫린다', () => {
-    // 가로로 어긋난 채 스쳐 지나간다. 아래 세 단언이 "양 끝은 밖, 가운데는 안"을 확인한다
-    const offsetXU = 12;
+    // 가로로 어긋난 채 스쳐 지나간다. 아래 세 단언이 "양 끝은 밖, 가운데는 안"을 확인한다.
+    //
+    // 어긋남을 리터럴로 적으면 PLAYER.hitRadiusU가 움직일 때마다 그 세 단언이 무너진다 —
+    // 반경 합이 커지면 같은 어긋남으로도 양 끝이 원 안에 들어와 버린다. 성립 구간의 하한이
+    // 시작점에서 원을 만나는 반현이고 상한이 반경 합이므로, 그 한가운데를 고른다.
     const startYU = -CLOSING_STEP_U / 2;
+    const halfChordU = Math.sqrt(HIT_SUM_U ** 2 - startYU ** 2);
+    const offsetXU = (halfChordU + HIT_SUM_U) / 2;
     expect(Math.hypot(offsetXU, startYU)).toBeGreaterThan(HIT_SUM_U);
     expect(Math.hypot(offsetXU, startYU + CLOSING_STEP_U)).toBeGreaterThan(HIT_SUM_U);
     expect(offsetXU).toBeLessThan(HIT_SUM_U);
@@ -140,28 +145,46 @@ const E07_COOLDOWN_SEC = PARRY.activeSec + INV_1_MARGIN_E07_SEC;
 /** §11.4 R10은 성립한 패리에서 쿨다운을 지우고 이 간격만 남긴다 */
 const R10_MIN_GAP_SEC = RARE_CARDS.R10.effects[0].minGapSec;
 
-/** 간격 gapSec마다 GREAT 정지를 요청하며 sim 1초를 채운다. 요청 총량과 승인 총량을 낸다 */
-function fillOneSimSecond(gapSec: number): { requestedSec: number; grantedSec: number } {
+/** 간격 gapSec마다 durationSec 정지를 요청하며 sim 1초를 채운다. 요청 총량과 승인 총량을 낸다 */
+function fillOneSimSecond(gapSec: number, durationSec: number): {
+  requestedSec: number; grantedSec: number;
+} {
   const clock = createClock(HITSTOP_BUDGET_PER_SEC);
   let requestedSec = 0;
   let grantedSec = 0;
   for (let atSimSec = 0; atSimSec < 1; atSimSec += gapSec) {
-    requestedSec += GREAT_HITSTOP_SEC;
-    grantedSec += clock.requestHitstop(GREAT_HITSTOP_SEC, atSimSec);
+    requestedSec += durationSec;
+    grantedSec += clock.requestHitstop(durationSec, atSimSec);
   }
   return { requestedSec, grantedSec };
 }
 
 describe('clock — 히트스톱 누적 상한의 초과분이 잘려 나간다', () => {
-  it('E07 빌드는 상한을 넘게 요청하고, 승인은 상한에서 멈춘다', () => {
-    const filled = fillOneSimSecond(E07_COOLDOWN_SEC);
+  /**
+   * 절단을 재려면 요청이 상한을 넘어야 하는데 **지금 등급 표로는 어떤 카드 조합도 못 넘긴다** —
+   * 세 등급이 전부 0.02초라 가장 빠른 R10 빌드도 초당 0.167초다. 그래서 정지 길이를 카드에서
+   * 끌어오지 않고 직접 세운다. 여기가 재는 것은 밸런스가 아니라 `requestHitstop`의 산술이고,
+   * 「현재 표가 상한에 닿는가」는 guards.test.ts가 따로 감시한다.
+   */
+  const OVERSIZED_STOP_SEC = 0.2;
+
+  it('상한을 넘게 요청하면 승인은 상한에서 멈춘다', () => {
+    const filled = fillOneSimSecond(0.25, OVERSIZED_STOP_SEC);
     expect(filled.requestedSec).toBeGreaterThan(HITSTOP_BUDGET_PER_SEC);
     expect(filled.grantedSec).toBeCloseTo(HITSTOP_BUDGET_PER_SEC, SEC_DIGITS);
   });
-  it('R10 빌드도 같다 — 최소 간격만 남은 쪽이 더 크게 넘는다', () => {
-    const r10 = fillOneSimSecond(R10_MIN_GAP_SEC);
-    expect(r10.requestedSec).toBeGreaterThan(fillOneSimSecond(E07_COOLDOWN_SEC).requestedSec);
-    expect(r10.grantedSec).toBeCloseTo(HITSTOP_BUDGET_PER_SEC, SEC_DIGITS);
+  it('더 자주 요청해도 승인 총량은 같은 상한에서 멈춘다', () => {
+    const dense = fillOneSimSecond(0.1, OVERSIZED_STOP_SEC);
+    expect(dense.requestedSec)
+      .toBeGreaterThan(fillOneSimSecond(0.25, OVERSIZED_STOP_SEC).requestedSec);
+    expect(dense.grantedSec).toBeCloseTo(HITSTOP_BUDGET_PER_SEC, SEC_DIGITS);
+  });
+  it('카드가 가장 빡빡한 R10 빌드도 상한에 닿지 못한다 — E07보다 더 자주 온다', () => {
+    const r10 = fillOneSimSecond(R10_MIN_GAP_SEC, GREAT_HITSTOP_SEC);
+    const e07 = fillOneSimSecond(E07_COOLDOWN_SEC, GREAT_HITSTOP_SEC);
+    expect(r10.requestedSec).toBeGreaterThan(e07.requestedSec);
+    expect(r10.grantedSec).toBeCloseTo(r10.requestedSec, SEC_DIGITS);
+    expect(r10.requestedSec).toBeLessThan(HITSTOP_BUDGET_PER_SEC);
   });
   it('창은 sim 초로 민다 — 실시간으로 밀면 상한이 사실상 안 걸린다', () => {
     const clock = createClock(HITSTOP_BUDGET_PER_SEC);
