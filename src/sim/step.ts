@@ -24,11 +24,10 @@ import { applyPlayerHit, resolvePlayerHits, resolveReflectHits } from './collisi
 import { stepEnemies, stepEnemySpawns } from './enemies';
 import { checkStep, guardStateOf, GUARDS_ENABLED } from './guards';
 import { resolveLanceHits } from './lance';
-import { consumeParryInput, resolveParry } from './parry';
+import { autoParryOnBossEnter, consumeParryInput, resolveParry } from './parry';
 import { announceInvulnEnd, isPlayerInvulnerable, movePlayer } from './player';
-import { reflectProjectile } from './reflect';
 import { flushReflectHitEffects } from './reflect-effects';
-import { addCombo, settleCombo } from './score';
+import { settleCombo } from './score';
 import { stepWaves, wavePhase } from './waves';
 import type { World } from './world';
 import { decayZones, resolveZones } from './zones';
@@ -40,45 +39,6 @@ export interface StepFrame {
    * 해상도가 고정 스텝이 아니라 프레임 간격이 된다.
    */
   readonly untilMs: number;
-}
-
-/**
- * §11.5 E04 「각 보스전 진입 시 화면 내 모든 적 탄환을 자동 GREAT 패리」.
- *
- * 보스를 세우는 자리가 하나뿐이라 「각 보스전」이 여기 한 줄로 표현된다. 등급을 거리로 매기지
- * 않고 카드가 정한 등급을 그대로 먹이는 것이 이 카드의 내용이고, 그래서 §5.2의 C1~C5 중
- * 거리 조건(C1)과 접근 조건(C2)을 지나지 않는다 — 화면 **전부**가 대상이다.
- */
-export function autoParryOnBossEnter(world: World): void {
-  const gradeId = world.stats.autoParryGradeOnBossEnter;
-  if (gradeId === null || world.enemyBullets.activeCount === 0) {
-    return;
-  }
-  const band = world.stats.bands.find((entry) => entry.id === gradeId);
-  if (band === undefined) {
-    return;
-  }
-  world.parry.sessionId += 1;
-  let count = 0;
-  // convertToReflect가 활성 목록에서 원소를 빼므로 사본을 훑는다
-  for (const projectile of [...world.enemyBullets.active]) {
-    if (!projectile.isParryable) {
-      continue;
-    }
-    const result = reflectProjectile(world, projectile, band);
-    count += 1;
-    world.bus.emit({
-      kind: 'reflectLaunched',
-      grade: band.id,
-      xU: result.projectile.xU,
-      yU: result.projectile.yU,
-    });
-  }
-  if (count === 0) {
-    return;
-  }
-  addCombo(world, count);
-  world.clock.requestHitstop(band.hitstopSec, world.simTimeSec);
 }
 
 /**

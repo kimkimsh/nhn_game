@@ -257,6 +257,27 @@ describe('§7.4 재패리', () => {
     expect(reflected.graceRemainingSec).toBe(0.15);
     expect(world.run.score - scoreAfterFirst).toBe(200);
   });
+
+  /**
+   * §15.1 `재N` 라벨의 근거값. render는 배치의 이 칸만 읽으므로, 여기가 안 오르면 라벨이
+   * 코드에는 있는데 화면에는 영원히 안 나온다.
+   */
+  it('적 탄환에서 온 첫 반사는 0이고 다시 쳐낼 때마다 1씩 오른다', () => {
+    const { world, input } = setup();
+    placeIncoming(world, 'P6', 0, -60);
+    press(input);
+    step(world, input, 1);
+    const reflected = onlyReflect(world);
+    expect(reflected.reparryCount).toBe(0);
+
+    for (const expected of [1, 2]) {
+      step(world, input, 30);
+      turnBack(world, reflected, 20);
+      press(input);
+      step(world, input, 1);
+      expect(reflected.reparryCount).toBe(expected);
+    }
+  });
 });
 
 describe('§7.2 데미지 계산 순서', () => {

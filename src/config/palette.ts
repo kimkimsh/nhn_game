@@ -55,8 +55,13 @@ export const PALETTE = {
  * 오류를 낸다 — 전투 중 첫 등장 시점에 256×256 radial gradient fill이 한 번 들어가면 그
  * 프레임이 튀고, 그 프레임이 패리 프레임이면 판정 실패로 나타난다.
  *
- * 앞의 7종은 PALETTE를 참조한다. 뒤의 6종은 배경 전용이라 게임 규칙을 나르지 않아 PALETTE에
+ * 앞의 10종은 PALETTE를 참조한다. 뒤의 6종은 배경 전용이라 게임 규칙을 나르지 않아 PALETTE에
  * 자리가 없고, 그래서 여기가 그 색들이 사는 유일한 자리다.
+ *
+ * **등급색 셋도 여기 있어야 한다.** 전투 화면이 아니라 카드 선택 화면이 쓰는데
+ * (`screens/card-select-card.ts`의 고른 카드 후광), 목록에 없으면 첫 ← → 나 첫 마우스 이동에서
+ * dev는 던지고 릴리스는 1×1 빈 장을 돌려준다. 던지는 자리가 층 12라 그 프레임의 나머지가
+ * 통째로 안 그려지고 `ctx.save()` 둘이 짝을 잃는다.
  */
 export const GLOW_BAKE_COLORS = [
   PALETTE.hwang, // §17 반사탄
@@ -66,6 +71,9 @@ export const GLOW_BAKE_COLORS = [
   PALETTE.cheong, // §15.1 라이프 pip · 코어 · 패리 원
   PALETTE.baek, // §4.6 집중선 · §15.1 점수 글로우
   PALETTE.takjeok, // §4.3 장판
+  PALETTE.rarityNormal, // §15.2 카드 선택 — 고른 카드의 후광
+  PALETTE.rarityRare, // §15.2
+  PALETTE.rarityEpic, // §15.2
   '#e2762e', // §9.2 S1 부산진 일출
   '#000000', // §9.2 S2 동래성 그을음. lighter 합성에서 검정은 0을 더하므로 실제로는 아무것도 안 그린다
   '#2f7fa8', // §9.2 S3 한산도 상단 수면광

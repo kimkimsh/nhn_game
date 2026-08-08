@@ -254,10 +254,13 @@ export function createPlayScreen(spec: PlaySpec): PlayScreen {
     },
 
     render(ctx: CanvasRenderingContext2D, realDtSec: number, overlay: ScenePaint | null): void {
-      backgroundTimeSec += realDtSec;
       if (reading) {
         // camera.reset()이 문서로 지목한 자리가 여기다. trauma를 0으로 내리고 킥을 버린다
         camera.reset();
+      } else {
+        // 읽는 화면 뒤에서는 배경도 선다. §13.4의 약속이 「모든 타이머 정지」이고 일시정지
+        // 부제가 그 문장을 그대로 적는데(pause.ts), 시차 배경만 계속 흐르면 그 줄이 거짓말이 된다
+        backgroundTimeSec += realDtSec;
       }
       if (phase === 'entering') {
         enterRemainSec -= realDtSec;

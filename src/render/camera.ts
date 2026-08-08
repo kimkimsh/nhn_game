@@ -277,11 +277,17 @@ export function createCamera(deps: CameraDeps): Camera {
       if (kick.ageSec >= kick.decaySec) {
         continue;
       }
-      kick.ageSec += realDtSec;
-      // easeOut을 1에서 빼면 시작이 가파르고 끝이 완만하다 — 착탄의 모양이 그것이다
+      // easeOut을 1에서 빼면 시작이 가파르고 끝이 완만하다 — 착탄의 모양이 그것이다.
+      //
+      // **값을 먼저 읽고 나이를 뒤에 더한다.** 사건은 sim 스텝의 끝(`bus.flush`)에 오고 이 함수는
+      // 그리기 직전에 도므로, 순서가 뒤집혀 있으면 킥의 첫 프레임이 이미 한 프레임만큼 삭은 채로
+      // 그려진다. 그 삭는 양이 realDtSec이라 **최대 진폭이 프레임률의 함수가 된다** — 12u짜리 킥이
+      // 60Hz에서 7.7u, 144Hz에서 10.0u, 30Hz에서 4.5u로 나가고 어디서도 12u에 안 닿는다.
+      // 06 §4.7이 금지한 자리이고 §4.1의 "진폭은 시작이 크고"도 그때 성립하지 않는다
       const remaining = 1 - easeOutCubic(clamp01(kick.ageSec / kick.decaySec));
       kickXU += kick.dirX * kick.magnitudeU * remaining;
       kickYU += kick.dirY * kick.magnitudeU * remaining;
+      kick.ageSec += realDtSec;
     }
 
     if (reducedMotion) {

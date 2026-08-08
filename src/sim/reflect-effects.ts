@@ -18,7 +18,7 @@
  * 적 탄환 풀로 보내면 HR-07이 그 자리에서 던진다.
  */
 import { BULLETS } from '../config/bullets';
-import type { BulletId } from '../config/ids';
+import type { BulletId, ParryGradeId } from '../config/ids';
 import type { BulletDef } from '../config/types';
 import { acquireReflectSlot } from './caps';
 import type { Projectile } from './bullets';
@@ -187,6 +187,13 @@ interface PendingHit {
   isParryable: boolean;
   damage: number;
   speedUPerSec: number;
+  /**
+   * 원본이 마지막으로 받은 등급과 재패리 횟수. 파편이 이어받는다 — 안 이어받으면 파편을 다시
+   * 쳐냈을 때 `previousGrade`가 null이라 §7.4의 `reparry` 사건이 안 나가고, §12.3 결과 화면의
+   * 재패리 횟수와 §17이 요구한 전용 신호가 통째로 빠진다.
+   */
+  lastGrade: ParryGradeId | null;
+  reparryCount: number;
 }
 
 const pendingHits: PendingHit[] = [];
@@ -213,6 +220,8 @@ export function noteReflectHit(
     isParryable: projectile.isParryable,
     damage: projectile.damage,
     speedUPerSec: speedOf(projectile),
+    lastGrade: projectile.lastGrade,
+    reparryCount: projectile.reparryCount,
   });
 }
 
@@ -237,7 +246,8 @@ function spawnShards(world: World, hit: PendingHit, count: number, damageRatio: 
     piece.lifeRemainingSec = world.stats.reflectLifetimeSec;
     piece.graceRemainingSec = world.stats.reflectGraceSec;
     piece.parriedSessionId = world.parry.sessionId;
-    piece.lastGrade = null;
+    piece.lastGrade = hit.lastGrade;
+    piece.reparryCount = hit.reparryCount;
     piece.damage = damage;
     // 파편이 또 파편을 낳으면 한 번의 명중이 무한히 갈라진다. 관통을 0으로 두어 한 기만 때린다
     piece.pierceRemaining = 0;

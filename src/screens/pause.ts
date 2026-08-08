@@ -58,6 +58,11 @@ const ROW_ID_PX = 22;
 const ROW_NAME_PX = 32;
 const ROW_EFFECT_PX = 26;
 
+/** 이름 열과 효과 열 사이에 반드시 남기는 빈 폭 (u) */
+const COLUMN_GAP_U = 24;
+/** 효과 열이 이보다 좁아지지는 않는다 (u). 이름이 아무리 길어도 문장이 한 점으로 눌리면 안 된다 */
+const EFFECT_MIN_WIDTH_U = 360;
+
 /** 목업 14_pause/scene.js:84 '보유 카드 n' (px). weight 500 / data */
 const HEADER_PX = 24;
 /** 목업 14_pause/scene.js:107-116 머리말 세 줄 (px) */
@@ -198,10 +203,15 @@ function drawHeldList(
     ctx.fillStyle = PALETTE.baek;
     ctx.font = `600 ${ROW_NAME_PX}px ${FONTS.body}`;
     ctx.fillText(row.name, ROW_TEXT_XU, yU + ROW_NAME_OFFSET_YU);
+    // 이름과 효과가 같은 줄의 양 끝이라 열 경계가 없으면 겹친다. 웹폰트 대체 상태의 E03
+    // (「피격을 무효화하는 보호막 최대 3중 · 스테이지 시작 시 1중 충전」)이 실제로 이름을
+    // 49u 파고든다 — 12 §3.1이 폰트 없이도 layout이 서야 한다고 못 박은 자리다
+    const nameRightXU = ROW_TEXT_XU + ctx.measureText(row.name).width;
     ctx.textAlign = 'right';
     ctx.fillStyle = PALETTE.baekMute;
     ctx.font = `400 ${ROW_EFFECT_PX}px ${FONTS.body}`;
-    ctx.fillText(row.effect, HELD_RIGHT_XU, yU + ROW_EFFECT_OFFSET_YU);
+    const effectRoomU = Math.max(EFFECT_MIN_WIDTH_U, HELD_RIGHT_XU - nameRightXU - COLUMN_GAP_U);
+    ctx.fillText(row.effect, HELD_RIGHT_XU, yU + ROW_EFFECT_OFFSET_YU, effectRoomU);
     ctx.textAlign = 'left';
   }
 }
@@ -238,7 +248,7 @@ export function createPauseScreen(host: ScreenHost): Screen {
   /** 확정 패널을 열고 닫을 때마다 커서를 되돌린다. 08 §4.5의 「기본 커서는 아니오」가 그것이다 */
   function setConfirming(next: boolean): void {
     confirming = next;
-    resetMenuState(state);
+    resetMenuState(state, host.input.pointer);
   }
 
   function execute(index: number): void {

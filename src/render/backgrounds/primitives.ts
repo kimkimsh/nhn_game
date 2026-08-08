@@ -17,7 +17,7 @@
 import { PALETTE } from '../../config/palette';
 import { PLAYFIELD } from '../../config/playfield';
 import type { Rng } from '../../core/rng';
-import { glow, hexA, poly } from '../primitives';
+import { glow, hexA, poly, type GlowBakeColor } from '../primitives';
 
 /**
  * §3.1 논리 해상도 (u). 아래 거의 모든 함수가 화면 폭·높이 전체를 훑으므로 먼저 이름을 준다.
@@ -418,7 +418,7 @@ export function wakoShipGlow(
   cxU: number,
   yU: number,
   widthU: number,
-  color: string,
+  color: GlowBakeColor,
   amount: number,
 ): void {
   glow(ctx, cxU, yU, widthU * SHIP_GLOW_RADIUS_SCALE, color, amount);

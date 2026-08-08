@@ -82,7 +82,15 @@ const BANNER_WEIGHT = 600;
 
 const BANNER_TEXT = '치트 모드 — 이 런은 오염된 것으로 기록된다';
 const HINT_TEXT = '↑ ↓ 항목    ← → 값    Enter 적용    Esc 닫기    Shift+F9 열고 닫기';
-const NO_RUN_TEXT = '런이 없다 — Enter로 스테이지에 들어가면 카드와 라이프가 살아난다';
+/**
+ * 우열의 폭은 `cheat-table.ts`의 표와 같은 560~1000u다. 한 줄로 두면 20px 전각 33자가
+ * 660u를 먹어 활동 영역 오른쪽 끝(1080u) 밖으로 나가 잘린다 — 그래서 두 줄이다.
+ */
+const NO_RUN_LINES: readonly string[] = [
+  '런이 없다 — Enter로 스테이지에 들어가면',
+  '카드와 라이프가 살아난다',
+];
+const NO_RUN_LINE_STEP_U = 32;
 const EMPTY_LABEL = '—';
 
 function stackOf(run: Run | null, id: CardId): number {
@@ -242,7 +250,10 @@ export function createCheatMenu(host: CheatHost): CheatScreen {
       drawMenuLines(ctx, ITEM_LINES[cursor], viewOf(run));
 
       if (run === null) {
-        drawText(ctx, NO_RUN_TEXT, NO_RUN_X_U, NO_RUN_BASELINE_YU, NOTICE_PX, TEXT_WEIGHT, PALETTE.baekMute);
+        NO_RUN_LINES.forEach((line, index) => {
+          const yU = NO_RUN_BASELINE_YU + index * NO_RUN_LINE_STEP_U;
+          drawText(ctx, line, NO_RUN_X_U, yU, NOTICE_PX, TEXT_WEIGHT, PALETTE.baekMute);
+        });
       } else {
         drawStatPanel(ctx, {
           stats: run.world.stats,

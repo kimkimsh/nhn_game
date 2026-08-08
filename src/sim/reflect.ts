@@ -50,8 +50,13 @@ export function reflectProjectile(
     player.yU,
   );
 
+  const wasReparry = source.owner === 'player';
   const projectile = source.owner === 'enemy' ? convertToReflect(world, source) : source;
   const previousGrade = projectile.lastGrade;
+  // §15.1 라벨의 유일한 증가 자리. 적 탄환에서 온 첫 반사는 재패리가 아니므로 0에서 시작한다
+  if (wasReparry) {
+    projectile.reparryCount += 1;
+  }
 
   // N06은 등급 배수 위에 다시 곱한다. 자르는 자리는 여기 하나이고 REFLECT-SPEED 가드가 그 뒤를 본다
   const speedUPerSec = clamp(

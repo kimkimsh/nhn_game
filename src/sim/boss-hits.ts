@@ -30,7 +30,15 @@ import { GUARDS_ENABLED, checkHR01 } from './guards';
 import { noteReflectHit } from './reflect-effects';
 import type { World } from './world';
 
-function sweepPart(projectile: Projectile, part: BossPart): number {
+/**
+ * N12의 배수가 걸리는 반경 (u). 스펙 §11.3은 "적에게 명중하는 판정에만" 적용한다고 적었고,
+ * 보스의 부위와 본체도 적이다 — 부하 원형 판정에만 걸면 카드가 보스전에서 절반만 듣는다.
+ */
+function hitRadiusU(projectile: Projectile, reflectRadiusMul: number): number {
+  return projectile.radiusU * reflectRadiusMul;
+}
+
+function sweepPart(projectile: Projectile, part: BossPart, reflectRadiusMul: number): number {
   return sweepRelativeBox(
     projectile.prevXU,
     projectile.prevYU,
@@ -42,11 +50,11 @@ function sweepPart(projectile: Projectile, part: BossPart): number {
     part.yU,
     part.def.hitBox.wU / 2,
     part.def.hitBox.hU / 2,
-    projectile.radiusU,
+    hitRadiusU(projectile, reflectRadiusMul),
   );
 }
 
-function sweepBody(projectile: Projectile, boss: BossState): number {
+function sweepBody(projectile: Projectile, boss: BossState, reflectRadiusMul: number): number {
   return sweepRelativeBox(
     projectile.prevXU,
     projectile.prevYU,
@@ -58,7 +66,7 @@ function sweepBody(projectile: Projectile, boss: BossState): number {
     boss.yU,
     boss.def.hitBox.wU / 2,
     boss.def.hitBox.hU / 2,
-    projectile.radiusU,
+    hitRadiusU(projectile, reflectRadiusMul),
   );
 }
 
@@ -72,14 +80,14 @@ function consumePierce(projectile: Projectile): boolean {
 }
 
 /** 겹친 부위 중 가장 먼저 닿는 하나. 없으면 null이고 그때만 부하와 본체를 본다 */
-function nearestPart(projectile: Projectile, boss: BossState): BossPart | null {
+function nearestPart(projectile: Projectile, boss: BossState, reflectRadiusMul: number): BossPart | null {
   let best: BossPart | null = null;
   let bestT = Number.POSITIVE_INFINITY;
   for (const part of boss.parts) {
     if (part.destroyed) {
       continue;
     }
-    const entryT = sweepPart(projectile, part);
+    const entryT = sweepPart(projectile, part, reflectRadiusMul);
     if (entryT !== NO_HIT && entryT < bestT) {
       bestT = entryT;
       best = part;
@@ -97,7 +105,7 @@ export function resolveBossHits(world: World, boss: BossState): void {
     if (GUARDS_ENABLED) {
       checkHR01(world, projectile);
     }
-    const part = nearestPart(projectile, boss);
+    const part = nearestPart(projectile, boss, reflectRadiusMul);
     if (part !== null) {
       applyBossDamage(world, boss, part, projectile.damage);
       noteReflectHit(world, projectile, projectile.xU, projectile.yU);
@@ -126,7 +134,7 @@ export function resolveBossHits(world: World, boss: BossState): void {
       return consumePierce(projectile);
     }
 
-    if (sweepBody(projectile, boss) === NO_HIT) {
+    if (sweepBody(projectile, boss, reflectRadiusMul) === NO_HIT) {
       return false;
     }
     applyBossDamage(world, boss, null, projectile.damage);

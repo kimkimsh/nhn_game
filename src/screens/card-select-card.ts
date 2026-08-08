@@ -184,7 +184,14 @@ export function drawOfferedCard(
   if (card.delta !== null && !card.delta.changed) {
     setFont(ctx, 400, BLOCKED_PX, FONTS.body);
     ctx.fillStyle = PALETTE.baekMute;
-    ctx.fillText(blockedNote(card.delta), leftXU, rect.yU + rect.heightU - BLOCKED_BASELINE_UP_U);
+    // 같은 함수의 이름 줄(위)은 maxWidth를 주는데 여기만 빠져 있었다. 「밴드 순서에 막혀…」가
+    // 22px에서 404u라 열 폭 268u를 136u 넘고, 카드 사이 여백이 30u뿐이라 옆 카드 위로 올라간다
+    ctx.fillText(
+      blockedNote(card.delta),
+      leftXU,
+      rect.yU + rect.heightU - BLOCKED_BASELINE_UP_U,
+      rightXU - leftXU,
+    );
   }
 
   setFont(ctx, 500, STACK_PX, FONTS.data);

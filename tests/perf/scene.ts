@@ -180,9 +180,13 @@ export interface StressOptions {
   readonly telegraphCount?: number;
   /** false면 연쇄를 발행하지 않는다 — 파티클·집중선·팝업이 통째로 빠진다 */
   readonly chain?: boolean;
-  /** false면 배경 동적 레이어를 안 그린다. 정적 굽기 한 장은 남는다 */
-  readonly background?: boolean;
 }
+
+/**
+ * 배경 동적 층을 끄는 손잡이는 **여기 없다.** `FrameView.backgroundId`가 nullable이 아니라
+ * 층을 건너뛸 통로가 render 쪽에 없고, 있는 척하는 칸을 두면 그것을 넘긴 측정이 배경을 포함한
+ * 채로 나와도 아무도 모른다. 필요해지면 render에 통로를 먼저 내고 여기에 칸을 만든다.
+ */
 
 export function createStressScene(options: StressOptions = {}): StressScene {
   const enemyBulletCount = options.enemyBulletCount ?? ENEMY_BULLET_COUNT;

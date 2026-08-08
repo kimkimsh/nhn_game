@@ -196,11 +196,17 @@ export function createMenuState(): MenuState {
   return { cursor: 0, pointerXU: Number.NaN, pointerYU: Number.NaN };
 }
 
-/** 항목 수가 바뀌는 자리(메뉴 ↔ 확정 패널)와 화면을 다시 열 때 부른다 */
-export function resetMenuState(state: MenuState): void {
+/**
+ * 항목 수가 바뀌는 자리(메뉴 ↔ 확정 패널)와 화면을 다시 열 때 부른다.
+ *
+ * **지금 커서 자리를 같이 받는다.** NaN으로 두면 `NaN === NaN`이 거짓이라 다음 프레임의
+ * `applyMenuHover`가 「움직였다」로 읽고 가만히 놓인 마우스 아래 항목을 집는다. 08 §4.3이
+ * 「언제나 계속하기에서 연다」고 했는데 마우스로 패리하던 사람은 음소거나 런 포기에서 열린다.
+ */
+export function resetMenuState(state: MenuState, pointer: PointerState): void {
   state.cursor = 0;
-  state.pointerXU = Number.NaN;
-  state.pointerYU = Number.NaN;
+  state.pointerXU = pointer.seen ? pointer.xU : Number.NaN;
+  state.pointerYU = pointer.seen ? pointer.yU : Number.NaN;
 }
 
 /**

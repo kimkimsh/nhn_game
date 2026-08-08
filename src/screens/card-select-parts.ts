@@ -15,6 +15,7 @@
 
 import type { CardId, CardRarity } from '../config/ids';
 import { PALETTE } from '../config/palette';
+import type { GlowBakeColor } from '../render/primitives';
 import { PLAYFIELD } from '../config/playfield';
 import { UI } from '../config/ui';
 import type { CardRound } from '../sim/cards';
@@ -37,7 +38,7 @@ export const RARITY_LABELS: Readonly<Record<CardRarity, string>> = {
 };
 
 /** §11.2가 고정한 세 색. 여기서 만들지 않고 palette.ts에서 읽는다 — 다시 칠하지 않는다 */
-export const RARITY_COLORS: Readonly<Record<CardRarity, string>> = {
+export const RARITY_COLORS: Readonly<Record<CardRarity, GlowBakeColor>> = {
   NORMAL: PALETTE.rarityNormal,
   RARE: PALETTE.rarityRare,
   EPIC: PALETTE.rarityEpic,
@@ -145,12 +146,22 @@ export function ruleLine(
  */
 const wrapCache = new Map<string, readonly string[]>();
 
+/**
+ * 열쇠에 글꼴과 폭이 들어가야 한다. 같은 문장을 카드 열(268u·27px)과 보유 카드 상세
+ * 오버레이(420u·26px)가 둘 다 감싸므로, 문장만으로 접으면 먼저 계산한 쪽의 줄나눔이 다른
+ * 쪽에 그대로 나가 좁은 열에서 152u까지 넘친다.
+ */
+function wrapKey(ctx: CanvasRenderingContext2D, text: string, maxWidthU: number): string {
+  return `${ctx.font}|${maxWidthU}|${text}`;
+}
+
 export function wrapText(
   ctx: CanvasRenderingContext2D,
   text: string,
   maxWidthU: number,
 ): readonly string[] {
-  const cached = wrapCache.get(text);
+  const key = wrapKey(ctx, text, maxWidthU);
+  const cached = wrapCache.get(key);
   if (cached !== undefined) {
     return cached;
   }
@@ -168,6 +179,6 @@ export function wrapText(
   if (current !== '') {
     lines.push(current);
   }
-  wrapCache.set(text, lines);
+  wrapCache.set(key, lines);
   return lines;
 }

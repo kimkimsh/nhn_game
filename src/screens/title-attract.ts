@@ -14,11 +14,14 @@
  *
  * 녹화는 이 파일에 **리터럴로 박는다.** 외부 파일을 읽으면 D-03의 단일 파일 빌드가 깨진다.
  *
- * ── 지금은 비어 있다 ───────────────────────────────────────────────────────────
+ * ── 녹화를 만드는 자리 ─────────────────────────────────────────────────────────
  *
- * **녹화 자체는 P7에서 만든다** (08 §6.2.1 표 「녹화 시점」). 그전까지 `ATTRACT_RECORDING`이
- * 비어 있고 `createAttractLoop`는 null을 내며, 타이틀은 정적 화면으로 선다 — 어트랙트 루프가
- * 없는 것이 잘못된 어트랙트 루프보다 낫다. **같은 녹화가 제출 영상의 소스다.**
+ * `tests/attract/record.ts`다. `src/dev/`에 못 두는 것은 eslint가 `dev/ → screens/`를 막기
+ * 때문이고(03 §5), `tests/perf`·`tests/visual`이 같은 이유로 같은 자리에 산다. 규칙이나 §14.1의
+ * 수치가 바뀌면 그 파일을 다시 돌려 아래 리터럴을 갈아 끼운다. **같은 녹화가 제출 영상의 소스다.**
+ *
+ * `ATTRACT_RECORDING`이 비면 `createAttractLoop`는 null을 내고 타이틀은 정적 화면으로 선다 —
+ * 어트랙트 루프가 없는 것이 잘못된 어트랙트 루프보다 낫다.
  *
  * ── 스텝 누산을 여기서 또 하는 이유 ────────────────────────────────────────────
  *
@@ -50,6 +53,7 @@ import { createImpactLayer, type ImpactLayer } from '../render/impact';
 import { createParticleLayer, type ParticleLayer } from '../render/particles';
 import { createPlayerFx, notifyPlayerFx, type PlayerFxState } from '../render/player';
 import { createRun, disposeRun, stepRun, type Run } from '../sim/run';
+import type { StageEntry } from '../sim/waves';
 import { buildFrameView, createBatch, stageBakeSpecs, type MutableBatch } from './play-view';
 
 const MS_PER_SEC = 1000;
@@ -69,6 +73,21 @@ export const ATTRACT_SEED = 0x48_57_41_4e;
  * 하늘이 바뀐다.
  */
 export const ATTRACT_STAGE_ID: StageId = 1;
+
+/**
+ * 어트랙트가 들어가는 지점 — S1의 **둘째 웨이브**(0:13)다. 0:00이 아닌 이유가 하나 있고
+ * 그것은 취향이 아니라 규칙의 결과다.
+ *
+ * 위 `TITLE_PLAYER_DRAW_YU`의 구도가 플레이어를 이동 영역의 위쪽 끝(620u)에 세우는데, 그
+ * 자리는 W1의 궁수들이 내려오는 길과 가까워 §6.2의 HR-09가 그 발사원을 계속 억제한다. 그래서
+ * W1 13초 동안 패리할 탄이 **한 발도 안 나온다** — 규칙대로 동작한 결과이고, 첫 화면에서
+ * 13초 동안 아무 일도 안 일어난다는 뜻이기도 하다. 08 §6.2가 어트랙트에 요구한 것은
+ * 「이 게임이 무엇인지 보여 주는 것」이므로 그 13초를 보여 줄 이유가 없다.
+ *
+ * 진입 지점을 옮기는 것은 `waves.ts`의 `applyStageEntry` 한 곳이고 규칙은 하나도 안 바뀐다.
+ * **녹화와 한 쌍이다** — 값을 바꾸면 `tests/attract/record.ts`를 다시 돌려야 한다.
+ */
+export const ATTRACT_ENTRY: StageEntry = { kind: 'wave', waveIndex: 1 };
 
 /** 08 §6.2.1 재생 길이. 끝에 닿으면 같은 시드로 처음부터 다시 돈다 */
 export const ATTRACT_LENGTH_SEC = 30;
@@ -92,12 +111,333 @@ export interface AttractKeyframe {
 }
 
 /**
- * **P7이 채운다.** 지금은 비어 있고, 비어 있는 동안 타이틀은 정적 화면이다(08 §6.2.1).
+ * `tests/attract/record.ts`가 낸 리터럴이다. **손으로 고치지 않는다** — 한 줄만 바꿔도 그
+ * 뒤가 전부 다른 판이 되고, 다시 만들 방법은 그 파일을 다시 돌리는 것뿐이다.
  *
- * 채울 때의 계약은 위 `AttractKeyframe` 주석 그대로다. 마지막 키프레임 뒤로도 재생은
- * `ATTRACT_LENGTH_SEC`까지 이어지므로, 끝에서 손을 떼려면 `codes: []` 프레임을 하나 넣는다.
+ * 이 녹화가 담은 판: 29.7초 · 패리 30회(GREAT 29 · GOOD 1) · 빈 패리 0 · 잡몹 6기 처치 ·
+ * 점수 13,474 · 가드 위반 0건. 끝에서 라이프가 0이 되고 그 자리에서 다음 바퀴가 시작한다.
+ * 규칙이나 §14.1의 수치가 바뀌면 낡으므로 다시 돌린다.
+ *
+ * 마지막 키프레임 뒤로도 재생은 `ATTRACT_LENGTH_SEC`까지 이어지고, 끝에 닿으면 `restart`가
+ * `input.reset()`으로 눌린 키를 전부 놓으므로 마지막 줄에 키가 남아 있어도 다음 바퀴로 안 샌다.
  */
-export const ATTRACT_RECORDING: readonly AttractKeyframe[] = [];
+export const ATTRACT_RECORDING: readonly AttractKeyframe[] = [
+  { step: 0, codes: ['KeyW'] },
+  { step: 135, codes: [] },
+  { step: 474, codes: ['KeyA'] },
+  { step: 513, codes: [] },
+  { step: 515, codes: ['KeyD'] },
+  { step: 546, codes: ['KeyD', 'KeyJ'] },
+  { step: 547, codes: ['KeyD'] },
+  { step: 566, codes: ['KeyA'] },
+  { step: 576, codes: ['KeyD'] },
+  { step: 583, codes: [] },
+  { step: 584, codes: ['KeyA'] },
+  { step: 622, codes: [] },
+  { step: 625, codes: ['KeyD'] },
+  { step: 668, codes: ['KeyD', 'KeyJ'] },
+  { step: 669, codes: ['KeyD'] },
+  { step: 688, codes: ['KeyA'] },
+  { step: 698, codes: ['KeyD'] },
+  { step: 714, codes: [] },
+  { step: 716, codes: ['KeyJ'] },
+  { step: 717, codes: ['KeyA'] },
+  { step: 754, codes: ['KeyD'] },
+  { step: 784, codes: [] },
+  { step: 787, codes: ['KeyA'] },
+  { step: 811, codes: ['KeyJ'] },
+  { step: 812, codes: ['KeyA'] },
+  { step: 831, codes: ['KeyD'] },
+  { step: 841, codes: ['KeyA'] },
+  { step: 848, codes: [] },
+  { step: 900, codes: ['KeyD'] },
+  { step: 934, codes: ['KeyD', 'KeyJ'] },
+  { step: 935, codes: [] },
+  { step: 964, codes: ['KeyD'] },
+  { step: 986, codes: [] },
+  { step: 999, codes: ['KeyA'] },
+  { step: 1000, codes: [] },
+  { step: 1002, codes: ['KeyA'] },
+  { step: 1003, codes: [] },
+  { step: 1004, codes: ['KeyJ'] },
+  { step: 1005, codes: ['KeyA'] },
+  { step: 1039, codes: [] },
+  { step: 1045, codes: ['KeyD'] },
+  { step: 1050, codes: ['KeyA'] },
+  { step: 1067, codes: [] },
+  { step: 1070, codes: ['KeyD'] },
+  { step: 1076, codes: ['KeyA'] },
+  { step: 1103, codes: [] },
+  { step: 1212, codes: ['KeyD'] },
+  { step: 1283, codes: [] },
+  { step: 1286, codes: ['KeyD'] },
+  { step: 1319, codes: [] },
+  { step: 1324, codes: ['KeyA'] },
+  { step: 1325, codes: [] },
+  { step: 1326, codes: ['KeyA'] },
+  { step: 1328, codes: [] },
+  { step: 1329, codes: ['KeyA'] },
+  { step: 1332, codes: [] },
+  { step: 1333, codes: ['KeyA'] },
+  { step: 1335, codes: ['KeyJ'] },
+  { step: 1336, codes: ['KeyA'] },
+  { step: 1393, codes: [] },
+  { step: 1395, codes: ['KeyA'] },
+  { step: 1405, codes: [] },
+  { step: 1524, codes: ['KeyD'] },
+  { step: 1550, codes: ['KeyD', 'KeyJ'] },
+  { step: 1551, codes: ['KeyD'] },
+  { step: 1562, codes: [] },
+  { step: 1566, codes: ['KeyA'] },
+  { step: 1581, codes: ['KeyD'] },
+  { step: 1603, codes: [] },
+  { step: 1622, codes: ['KeyA'] },
+  { step: 1623, codes: [] },
+  { step: 1627, codes: ['KeyA', 'KeyJ'] },
+  { step: 1628, codes: ['KeyA'] },
+  { step: 1658, codes: ['KeyA', 'KeyJ'] },
+  { step: 1659, codes: ['KeyA'] },
+  { step: 1664, codes: ['KeyD'] },
+  { step: 1678, codes: ['KeyA'] },
+  { step: 1680, codes: [] },
+  { step: 1794, codes: ['KeyD'] },
+  { step: 1822, codes: [] },
+  { step: 1825, codes: ['KeyA'] },
+  { step: 1841, codes: ['KeyD'] },
+  { step: 1866, codes: ['KeyD', 'KeyJ'] },
+  { step: 1867, codes: ['KeyA'] },
+  { step: 1886, codes: [] },
+  { step: 1896, codes: ['KeyD'] },
+  { step: 1926, codes: [] },
+  { step: 1934, codes: ['KeyA'] },
+  { step: 1935, codes: [] },
+  { step: 1936, codes: ['KeyA'] },
+  { step: 1937, codes: [] },
+  { step: 1938, codes: ['KeyA'] },
+  { step: 1939, codes: [] },
+  { step: 1940, codes: ['KeyA'] },
+  { step: 1941, codes: [] },
+  { step: 1942, codes: ['KeyA'] },
+  { step: 1943, codes: [] },
+  { step: 1944, codes: ['KeyA'] },
+  { step: 1945, codes: ['KeyJ'] },
+  { step: 1946, codes: ['KeyA'] },
+  { step: 1965, codes: [] },
+  { step: 1975, codes: ['KeyA'] },
+  { step: 2010, codes: [] },
+  { step: 2014, codes: ['KeyD'] },
+  { step: 2017, codes: [] },
+  { step: 2058, codes: ['KeyD'] },
+  { step: 2089, codes: [] },
+  { step: 2092, codes: ['KeyA'] },
+  { step: 2133, codes: ['KeyJ'] },
+  { step: 2134, codes: ['KeyA'] },
+  { step: 2151, codes: ['KeyD'] },
+  { step: 2153, codes: [] },
+  { step: 2163, codes: ['KeyD'] },
+  { step: 2237, codes: [] },
+  { step: 2244, codes: ['KeyA'] },
+  { step: 2246, codes: [] },
+  { step: 2247, codes: ['KeyA'] },
+  { step: 2248, codes: [] },
+  { step: 2249, codes: ['KeyA'] },
+  { step: 2250, codes: [] },
+  { step: 2251, codes: ['KeyA'] },
+  { step: 2252, codes: [] },
+  { step: 2253, codes: ['KeyA'] },
+  { step: 2254, codes: [] },
+  { step: 2255, codes: ['KeyA'] },
+  { step: 2256, codes: [] },
+  { step: 2257, codes: ['KeyA'] },
+  { step: 2258, codes: [] },
+  { step: 2259, codes: ['KeyA', 'KeyJ'] },
+  { step: 2260, codes: ['KeyA'] },
+  { step: 2279, codes: [] },
+  { step: 2289, codes: ['KeyA'] },
+  { step: 2315, codes: [] },
+  { step: 2319, codes: ['KeyD'] },
+  { step: 2332, codes: ['KeyA'] },
+  { step: 2376, codes: [] },
+  { step: 2380, codes: ['KeyD'] },
+  { step: 2386, codes: [] },
+  { step: 2401, codes: ['KeyD'] },
+  { step: 2426, codes: [] },
+  { step: 2427, codes: ['KeyA'] },
+  { step: 2435, codes: [] },
+  { step: 2458, codes: ['KeyD'] },
+  { step: 2459, codes: [] },
+  { step: 2460, codes: ['KeyJ'] },
+  { step: 2461, codes: ['KeyA'] },
+  { step: 2464, codes: [] },
+  { step: 2469, codes: ['KeyA'] },
+  { step: 2475, codes: ['KeyD'] },
+  { step: 2480, codes: ['KeyA'] },
+  { step: 2485, codes: ['KeyD'] },
+  { step: 2486, codes: ['KeyA'] },
+  { step: 2487, codes: ['KeyD'] },
+  { step: 2488, codes: ['KeyA'] },
+  { step: 2489, codes: ['KeyD'] },
+  { step: 2495, codes: [] },
+  { step: 2504, codes: ['KeyJ'] },
+  { step: 2505, codes: ['KeyD'] },
+  { step: 2506, codes: ['KeyA'] },
+  { step: 2524, codes: ['KeyD'] },
+  { step: 2534, codes: ['KeyA'] },
+  { step: 2537, codes: [] },
+  { step: 2544, codes: ['KeyD'] },
+  { step: 2546, codes: [] },
+  { step: 2547, codes: ['KeyD'] },
+  { step: 2549, codes: [] },
+  { step: 2550, codes: ['KeyD'] },
+  { step: 2552, codes: ['KeyJ'] },
+  { step: 2553, codes: ['KeyD'] },
+  { step: 2572, codes: ['KeyA'] },
+  { step: 2582, codes: ['KeyD'] },
+  { step: 2583, codes: [] },
+  { step: 2588, codes: ['KeyA'] },
+  { step: 2590, codes: [] },
+  { step: 2591, codes: ['KeyA'] },
+  { step: 2595, codes: ['KeyJ'] },
+  { step: 2596, codes: [] },
+  { step: 2598, codes: ['KeyD'] },
+  { step: 2601, codes: [] },
+  { step: 2602, codes: ['KeyD'] },
+  { step: 2605, codes: ['KeyA'] },
+  { step: 2615, codes: [] },
+  { step: 2623, codes: ['KeyA'] },
+  { step: 2641, codes: [] },
+  { step: 2644, codes: ['KeyD'] },
+  { step: 2684, codes: [] },
+  { step: 2686, codes: ['KeyA'] },
+  { step: 2693, codes: [] },
+  { step: 2733, codes: ['KeyD'] },
+  { step: 2734, codes: [] },
+  { step: 2743, codes: ['KeyD'] },
+  { step: 2744, codes: [] },
+  { step: 2752, codes: ['KeyD'] },
+  { step: 2753, codes: [] },
+  { step: 2761, codes: ['KeyD'] },
+  { step: 2762, codes: [] },
+  { step: 2770, codes: ['KeyD'] },
+  { step: 2771, codes: ['KeyJ'] },
+  { step: 2772, codes: ['KeyA'] },
+  { step: 2789, codes: [] },
+  { step: 2791, codes: ['KeyA'] },
+  { step: 2796, codes: ['KeyD'] },
+  { step: 2797, codes: ['KeyA'] },
+  { step: 2798, codes: ['KeyD'] },
+  { step: 2799, codes: ['KeyA'] },
+  { step: 2800, codes: ['KeyD'] },
+  { step: 2817, codes: [] },
+  { step: 2818, codes: ['KeyJ'] },
+  { step: 2819, codes: ['KeyA'] },
+  { step: 2838, codes: ['KeyD'] },
+  { step: 2841, codes: ['KeyA'] },
+  { step: 2842, codes: ['KeyD'] },
+  { step: 2843, codes: ['KeyA'] },
+  { step: 2844, codes: ['KeyD'] },
+  { step: 2845, codes: ['KeyA'] },
+  { step: 2846, codes: ['KeyD'] },
+  { step: 2847, codes: ['KeyA'] },
+  { step: 2888, codes: [] },
+  { step: 2891, codes: ['KeyD'] },
+  { step: 2904, codes: ['KeyA'] },
+  { step: 2917, codes: ['KeyA', 'KeyJ'] },
+  { step: 2918, codes: ['KeyD'] },
+  { step: 2962, codes: ['KeyJ'] },
+  { step: 2963, codes: [] },
+  { step: 2996, codes: ['KeyA'] },
+  { step: 3018, codes: [] },
+  { step: 3082, codes: ['KeyJ'] },
+  { step: 3083, codes: ['KeyD'] },
+  { step: 3086, codes: ['KeyA'] },
+  { step: 3089, codes: ['KeyD'] },
+  { step: 3101, codes: [] },
+  { step: 3102, codes: ['KeyD'] },
+  { step: 3110, codes: ['KeyA'] },
+  { step: 3111, codes: ['KeyD'] },
+  { step: 3116, codes: [] },
+  { step: 3124, codes: ['KeyJ'] },
+  { step: 3125, codes: ['KeyA'] },
+  { step: 3144, codes: ['KeyD'] },
+  { step: 3155, codes: [] },
+  { step: 3156, codes: ['KeyD'] },
+  { step: 3158, codes: [] },
+  { step: 3159, codes: ['KeyD'] },
+  { step: 3160, codes: [] },
+  { step: 3161, codes: ['KeyD'] },
+  { step: 3163, codes: [] },
+  { step: 3164, codes: ['KeyD'] },
+  { step: 3165, codes: [] },
+  { step: 3166, codes: ['KeyD'] },
+  { step: 3168, codes: [] },
+  { step: 3169, codes: ['KeyD'] },
+  { step: 3170, codes: ['KeyJ'] },
+  { step: 3171, codes: ['KeyA'] },
+  { step: 3175, codes: ['KeyD'] },
+  { step: 3188, codes: [] },
+  { step: 3190, codes: ['KeyA'] },
+  { step: 3200, codes: [] },
+  { step: 3206, codes: ['KeyA'] },
+  { step: 3207, codes: [] },
+  { step: 3208, codes: ['KeyA'] },
+  { step: 3212, codes: [] },
+  { step: 3213, codes: ['KeyA'] },
+  { step: 3214, codes: ['KeyA', 'KeyJ'] },
+  { step: 3215, codes: ['KeyA'] },
+  { step: 3224, codes: ['KeyD'] },
+  { step: 3226, codes: [] },
+  { step: 3308, codes: ['KeyD'] },
+  { step: 3339, codes: [] },
+  { step: 3367, codes: ['KeyA'] },
+  { step: 3368, codes: [] },
+  { step: 3375, codes: ['KeyA'] },
+  { step: 3376, codes: [] },
+  { step: 3382, codes: ['KeyA'] },
+  { step: 3383, codes: [] },
+  { step: 3390, codes: ['KeyA'] },
+  { step: 3391, codes: [] },
+  { step: 3396, codes: ['KeyJ'] },
+  { step: 3397, codes: ['KeyA'] },
+  { step: 3416, codes: ['KeyD'] },
+  { step: 3418, codes: ['KeyA'] },
+  { step: 3419, codes: ['KeyD'] },
+  { step: 3420, codes: ['KeyA'] },
+  { step: 3421, codes: ['KeyD'] },
+  { step: 3422, codes: ['KeyA'] },
+  { step: 3423, codes: ['KeyD'] },
+  { step: 3424, codes: ['KeyA'] },
+  { step: 3425, codes: ['KeyD'] },
+  { step: 3426, codes: ['KeyA'] },
+  { step: 3427, codes: [] },
+  { step: 3428, codes: ['KeyJ'] },
+  { step: 3429, codes: ['KeyA'] },
+  { step: 3436, codes: ['KeyD'] },
+  { step: 3446, codes: [] },
+  { step: 3448, codes: ['KeyA'] },
+  { step: 3451, codes: ['KeyD'] },
+  { step: 3452, codes: ['KeyA'] },
+  { step: 3453, codes: ['KeyD'] },
+  { step: 3454, codes: ['KeyA'] },
+  { step: 3455, codes: ['KeyD'] },
+  { step: 3456, codes: ['KeyA'] },
+  { step: 3457, codes: ['KeyD'] },
+  { step: 3458, codes: ['KeyA'] },
+  { step: 3464, codes: ['KeyA', 'KeyJ'] },
+  { step: 3465, codes: ['KeyA'] },
+  { step: 3482, codes: ['KeyD'] },
+  { step: 3496, codes: ['KeyD', 'KeyJ'] },
+  { step: 3497, codes: ['KeyD'] },
+  { step: 3501, codes: [] },
+  { step: 3502, codes: ['KeyD'] },
+  { step: 3503, codes: ['KeyA'] },
+  { step: 3516, codes: ['KeyD'] },
+  { step: 3526, codes: ['KeyA'] },
+  { step: 3541, codes: [] },
+  { step: 3545, codes: ['KeyD'] },
+  { step: 3550, codes: [] },
+  { step: 3551, codes: ['KeyD'] },
+];
 
 /** 정적 화면 갈래와 어트랙트 갈래를 가르는 유일한 조건 */
 export function hasAttractRecording(): boolean {
@@ -159,16 +499,28 @@ function startAttract(): AttractLoop {
   applyReducedMotion(prefersReducedMotion());
   const stopWatchingMotion = watchReducedMotion(applyReducedMotion);
 
-  let run: Run = createRun({ seed: ATTRACT_SEED, stageId: ATTRACT_STAGE_ID });
+  let run: Run = createRun({ seed: ATTRACT_SEED, stageId: ATTRACT_STAGE_ID, at: ATTRACT_ENTRY });
   let batch: MutableBatch = createBatch(run.world.enemyBullets.capacity + run.world.reflectBullets.capacity);
   let offs = subscribePlayerFx(run, playerFx);
   let held = new Set<string>();
+  /** 문구별 1회 보고용. 런을 다시 만들어도 유지한다 — 매 바퀴 같은 줄이 콘솔을 채우면 안 된다 */
+  const reportedGuards = new Set<string>();
   let keyframeIndex = 0;
   let stepIndex = 0;
   let accumulatorSec = 0;
   let backgroundTimeSec = 0;
 
+  /**
+   * 이미 이 스테이지·이 시드로 구워져 있으면 아무것도 안 한다.
+   *
+   * `restart()`가 두 경로에서 불린다 — 굽기 슬롯을 다른 화면이 가져갔을 때와, 30초 재생이 한
+   * 바퀴 돌았을 때다. 뒤쪽은 굽힌 것이 그대로 살아 있는데, 무조건 다시 구우면 타이틀이
+   * 30초마다 1080×1920 한 장을 다시 그려 눈에 보이는 프레임 하나를 잃는다.
+   */
   function bake(): void {
+    if (isStageBackgroundBaked(stage.background, renderSeed)) {
+      return;
+    }
     bakeStageBackground(stage.background, renderSeed);
     discardEnemyBodyBakes();
     bakeEnemyBodies(stageBakeSpecs(stage));
@@ -186,7 +538,7 @@ function startAttract(): AttractLoop {
     stepIndex = 0;
     accumulatorSec = 0;
     backgroundTimeSec = 0;
-    run = createRun({ seed: ATTRACT_SEED, stageId: ATTRACT_STAGE_ID });
+    run = createRun({ seed: ATTRACT_SEED, stageId: ATTRACT_STAGE_ID, at: ATTRACT_ENTRY });
     offs = subscribePlayerFx(run, playerFx);
     batch = createBatch(run.world.enemyBullets.capacity + run.world.reflectBullets.capacity);
     camera.reset();
@@ -213,6 +565,35 @@ function startAttract(): AttractLoop {
     }
   }
 
+  /**
+   * 가드는 05 §1의 16번, 스텝의 거의 끝에서 던진다 — 뒤에 남은 것은 큐 배출뿐이라 월드는 온전하고
+   * 재생을 이어 갈 수 있다. `dev/headless.ts`가 같은 이유로 같은 처리를 한다.
+   *
+   * **삼키는 것이 아니라 자리를 옮기는 것이다.** 여기서 걸리는 것은 HR-03의 적 탄환 공백 하나이고,
+   * 그 원인은 §9.1의 웨이브 시작 시각과 HR-03 조문의 충돌이라 어트랙트가 만든 것이 아니다
+   * (03_검토_기록.md §3.1 · §3.2, 스펙 개정 대기). 그것 때문에 타이틀 화면이 죽으면 개발 빌드에서
+   * 게임을 열 수가 없다. 릴리스는 `GUARDS_ENABLED`가 false라 이 경로 자체가 없다.
+   *
+   * 새 위반이 조용히 묻히지 않도록 콘솔에 남기되 **가드 하나당 한 번**이다. 문구로 접으면
+   * HR-03의 공백 길이가 스텝마다 늘어나 문구가 매번 달라지고, 30초에 200줄이 쌓여 로그가
+   * 쓸모없어진다 — 접는 열쇠는 `guardId`여야 한다.
+   *
+   * `GuardViolation`을 import해서 `instanceof`로 가르지 않는 것은 그것이 **값 import**라
+   * 릴리스 번들에 `sim/guards.ts`의 클래스가 그대로 남기 때문이다. 그 모듈은 호출부가 전부
+   * `GUARDS_ENABLED` 안에 있어 통째로 트리 셰이킹되는 것이 설계이고(guards.ts 머리말),
+   * 여기 한 줄이 그 조건을 깬다. 필드 하나만 보면 되므로 모양으로 가른다.
+   */
+  function reportGuard(cause: unknown): void {
+    const guardId = (cause as { readonly guardId?: unknown }).guardId;
+    const key = typeof guardId === 'string' ? guardId : String(cause);
+    if (reportedGuards.has(key)) {
+      return;
+    }
+    reportedGuards.add(key);
+    const message = cause instanceof Error ? cause.message : String(cause);
+    console.warn(`[어트랙트] ${message} — 재생은 계속한다. 같은 가드는 다시 안 적는다`);
+  }
+
   function stepOnce(): void {
     const startMs = stepIndex * FIXED_DT_MS;
     const untilMs = startMs + FIXED_DT_MS;
@@ -225,7 +606,11 @@ function startAttract(): AttractLoop {
       keyframeIndex += 1;
     }
     input.beginFrame(untilMs);
-    stepRun(run, FIXED_DT_SEC, { input, untilMs });
+    try {
+      stepRun(run, FIXED_DT_SEC, { input, untilMs });
+    } catch (cause: unknown) {
+      reportGuard(cause);
+    }
     stepIndex += 1;
   }
 
@@ -255,17 +640,10 @@ function startAttract(): AttractLoop {
     },
 
     /**
-     * **HUD가 함께 그려진다 — 목업과 어긋나는 자리이고 여기서 못 고친다.**
-     *
-     * 목업 타이틀은 HUD를 그리지 않는다. `00_title/scene.js`에 `hud` 칸이 없고 목업 엔진의
+     * **HUD는 빠진다.** 목업 타이틀에 `hud` 칸이 없고(`00_title/scene.js`) 목업 엔진의
      * `drawHud`가 `if (!h) return`(`_shared/engine.js:1670`)으로 통째로 빠지기 때문이다.
-     * 08 §6.1의 요소 표 13줄에도 HUD가 없다. 그런데 이식된 `render/frame.ts`는 층 11에서
-     * `drawHud`를 조건 없이 부르고 `FrameView.hud`가 nullable이 아니라, 이 파일에서 끌 수단이
-     * 없다 — 층 순서의 소유자는 `render/frame.ts` 하나이므로 여기서 층을 다시 부르는 것도
-     * 답이 아니다. 원인은 이식 과정에서 `if (!h) return` 한 줄이 빠진 것이고, 옳은 고침은
-     * `FrameView.hud`를 `HudView | null`로 만들어 그 한 줄을 되살리는 것이다(P4 소유).
-     * 지금은 `ATTRACT_RECORDING`이 비어 있어 이 함수가 아예 불리지 않으므로 화면에 나타나지
-     * 않는다. 녹화가 들어오는 P7 전에 그 한 줄이 먼저 들어와야 한다.
+     * 08 §6.1의 요소 표 13줄에도 HUD가 없다. 층 순서의 소유자는 `render/frame.ts` 하나이므로
+     * 여기서 층을 다시 부르지 않고 `hudless`로 그 한 줄을 되살린다.
      */
     draw(ctx: CanvasRenderingContext2D, realDtSec: number): void {
       const view = buildFrameView({
@@ -278,6 +656,7 @@ function startAttract(): AttractLoop {
         shake: null,
         phaseTelegraphElapsedSec: 0,
         overlay: null,
+        hudless: true,
       });
       drawFrame(ctx, shiftPlayer(view), { camera, particles, impact, playerFx, hudAnim, realDtSec });
     },

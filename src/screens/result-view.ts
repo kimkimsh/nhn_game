@@ -255,44 +255,67 @@ function drawRows(ctx: CanvasRenderingContext2D, rows: readonly ResultRow[]): vo
   }
 }
 
-/** 08 §5.3 B — 0장이어도 줄을 유지하고 `없음`을 적는다. 줄이 사라지면 만들다 만 화면이 된다 */
-function drawCardChips(ctx: CanvasRenderingContext2D, run: Run): void {
+/** 둘째 줄로 넘어갈 때 칩 상단 사이의 간격 (u). 칩 높이 + 숨 쉴 자리 */
+const CHIP_ROW_STEP_U = 62;
+
+/**
+ * 08 §5.3 B — 0장이어도 줄을 유지하고 `없음`을 적는다. 줄이 사라지면 만들다 만 화면이 된다.
+ *
+ * **줄바꿈이 필요하다.** 카드 넉 장이 정상 최대치인데(§11.2 추첨 표), 이름이 긴 조합
+ * (N09 무명 병졸의 갑옷 · E03 거북선 등껍질 · E04 이순신의 판단 · N13 반보 물러서기)은
+ * 웹폰트 대체 상태에서 한 줄 합이 1,017u를 넘어 활동 영역 1,080u 밖으로 나간다.
+ *
+ * 쓴 줄 수를 돌려준다 — 아래의 오염 표시가 그만큼 내려가야 겹치지 않는다.
+ */
+function drawCardChips(ctx: CanvasRenderingContext2D, run: Run): number {
   ctx.textAlign = 'left';
   ctx.fillStyle = PALETTE.baekFaint;
   ctx.font = `500 ${CARDS_LABEL_PX}px ${FONTS.data}`;
   ctx.fillText(CARDS_LABEL_TEXT, RESULT.rowLeftXU, RESULT.cardsLabelBaselineYU);
 
-  const textYU = RESULT.cardChipYU + CHIP_TEXT_OFFSET_YU;
   ctx.font = `400 ${CHIP_TEXT_PX}px ${FONTS.body}`;
   if (run.cards.length === 0) {
     ctx.fillStyle = PALETTE.baekMute;
-    ctx.fillText(CARDS_EMPTY_TEXT, RESULT.rowLeftXU, textYU);
-    return;
+    ctx.fillText(CARDS_EMPTY_TEXT, RESULT.rowLeftXU, RESULT.cardChipYU + CHIP_TEXT_OFFSET_YU);
+    return 1;
   }
   let chipXU = RESULT.rowLeftXU;
+  let row = 0;
   for (const held of run.cards) {
     const label = `${held.id}  ${cardNameWithStack(held.id, held.stack)}`;
     const widthU = ctx.measureText(label).width + CHIP_PAD_U;
+    if (chipXU > RESULT.rowLeftXU && chipXU + widthU > RESULT.rowRightXU) {
+      row += 1;
+      chipXU = RESULT.rowLeftXU;
+    }
+    const topYU = RESULT.cardChipYU + row * CHIP_ROW_STEP_U;
     const color = rarityColorOf(held.id);
     ctx.strokeStyle = hexA(color, CHIP_STROKE_ALPHA);
     ctx.lineWidth = CHIP_STROKE_U;
-    roundRect(ctx, chipXU, RESULT.cardChipYU, widthU, RESULT.cardChipHeightU, CHIP_RADIUS_U);
+    roundRect(ctx, chipXU, topYU, widthU, RESULT.cardChipHeightU, CHIP_RADIUS_U);
     ctx.stroke();
     ctx.fillStyle = color;
-    ctx.fillText(label, chipXU + CHIP_PAD_U / 2, textYU);
+    ctx.fillText(label, chipXU + CHIP_PAD_U / 2, topYU + CHIP_TEXT_OFFSET_YU);
     chipXU += widthU + CHIP_GAP_U;
   }
+  return row + 1;
 }
 
-/** §18.5 — 정상 런도 문구를 적는다. 표시가 없으면 「정상」인지 「안 만든 것」인지 구별되지 않는다 */
-function drawIntegrity(ctx: CanvasRenderingContext2D, contaminated: boolean): void {
+/**
+ * §18.5 — 정상 런도 문구를 적는다. 표시가 없으면 「정상」인지 「안 만든 것」인지 구별되지 않는다.
+ *
+ * `chipRows`가 2면 칩 한 줄만큼 내려간다. 안 내리면 둘째 줄 칩(하단 1,444u)이 이 문구의
+ * 해칭 판(상단 1,425u)을 19u 파고든다.
+ */
+function drawIntegrity(ctx: CanvasRenderingContext2D, contaminated: boolean, chipRows: number): void {
+  const baselineYU = RESULT.integrityBaselineYU + (chipRows - 1) * CHIP_ROW_STEP_U;
   if (contaminated) {
     ctx.save();
     ctx.globalAlpha = UI.hud.cheatMark.hatchAlpha;
     ctx.fillStyle = hatch();
     ctx.fillRect(
       RESULT.rowLeftXU,
-      RESULT.integrityBaselineYU - INTEGRITY_PX - INTEGRITY_PLATE_PAD_U,
+      baselineYU - INTEGRITY_PX - INTEGRITY_PLATE_PAD_U,
       RESULT.rowRightXU - RESULT.rowLeftXU,
       INTEGRITY_PX + INTEGRITY_PLATE_PAD_U * 2,
     );
@@ -304,7 +327,7 @@ function drawIntegrity(ctx: CanvasRenderingContext2D, contaminated: boolean): vo
   ctx.fillText(
     contaminated ? INTEGRITY_DIRTY_TEXT : INTEGRITY_CLEAN_TEXT,
     RESULT.rowLeftXU,
-    RESULT.integrityBaselineYU,
+    baselineYU,
   );
 }
 
@@ -321,6 +344,5 @@ export function paintResultBody(ctx: CanvasRenderingContext2D, run: Run): void {
   ctx.stroke();
   drawGradeBar(ctx, run.tally);
   drawRows(ctx, buildRows(run));
-  drawCardChips(ctx, run);
-  drawIntegrity(ctx, run.contaminated);
+  drawIntegrity(ctx, run.contaminated, drawCardChips(ctx, run));
 }

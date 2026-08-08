@@ -255,17 +255,29 @@ export async function startScreens(view: CanvasView): Promise<void> {
     applyRequest({ kind: 'resume' });
   }
 
-  /** 08 §10.1의 표에서 화면과 무관하게 같은 뜻인 것 셋 */
+  /**
+   * 08 §10.1의 표에서 화면과 무관하게 같은 뜻인 것 셋.
+   *
+   * **치트가 열려 있으면 닫는 두 키가 화면 검사보다 먼저다.** 아래를 화면으로 거르면
+   * 타이틀·카드 선택 위에 열린 메뉴를 닫을 방법이 없어진다 — 그 두 화면의 `screen` 값이
+   * `play`도 `pause`도 아니라 Esc가 전역 처리에 안 잡히고, Shift+F9는 `openCheat`만 불러
+   * 이미 열린 것을 다시 연다. 메뉴 하단이 「Esc 닫기 · Shift+F9 열고 닫기」라고 적어 둔
+   * 계약이 §18.2이고, 그 계약이 지켜지는 자리가 여기다.
+   */
   function applyGlobalPress(press: InputPress): boolean {
     if (press.action === 'mute') {
       host.setMuted(!muted);
       return true;
     }
     if (press.action === 'cheat') {
-      openCheat();
+      if (cheatOpen) {
+        cheatOpen = false;
+      } else {
+        openCheat();
+      }
       return true;
     }
-    if (press.action === 'pause' && (screen === 'play' || screen === 'pause')) {
+    if (press.action === 'pause' && (cheatOpen || screen === 'play' || screen === 'pause')) {
       togglePause();
       return true;
     }

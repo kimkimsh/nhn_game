@@ -89,7 +89,12 @@ export interface FrameView {
   readonly bullets: BulletLayerBatch;
   readonly lance: LanceView | null;
   readonly player: PlayerView;
-  readonly hud: HudView;
+  /**
+   * null이면 11층을 통째로 건너뛴다 — 목업 엔진의 `drawHud` 첫 줄 `if (!h) return`
+   * (`_shared/engine.js:1670`)이 이 자리다. HUD가 없는 화면이 실제로 있다: 타이틀의
+   * 어트랙트 루프는 08 §6.1의 요소 표 13줄 어디에도 HUD가 없다.
+   */
+  readonly hud: HudView | null;
   readonly overlay: ScenePaint | null;
 }
 
@@ -252,7 +257,9 @@ export function drawFrame(
 
   /* 11. HUD — **흔들리지 않는다.** 고정된 HUD가 판독 기준이 되고, §7의 촬영 요건이 HUD를 장르
         판별 단축키로 쓰므로 흔들려 뭉개지면 안 된다 */
-  drawHud(ctx, view.hud, deps.hudAnim, deps.realDtSec);
+  if (view.hud !== null) {
+    drawHud(ctx, view.hud, deps.hudAnim, deps.realDtSec);
+  }
 
   // 12. 오버레이 — 보유 카드 확인(Tab)·일시정지·치트 메뉴. HUD보다도 위다
   view.overlay?.(ctx, deps.realDtSec);

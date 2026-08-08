@@ -73,11 +73,18 @@ export function assertGlowSpritesBaked(): void {
 }
 
 /**
+ * 구워 둔 글로우 색. **타입으로 막는 것이 1순위이고 아래의 throw는 2순위다** — 런타임에서야
+ * 아는 것은 그 화면을 실제로 열어 본 사람이 있을 때뿐이고, 카드 선택 화면의 등급색 셋이
+ * 정확히 그렇게 P7까지 살아남았다.
+ */
+export type GlowBakeColor = (typeof GLOW_BAKE_COLORS)[number];
+
+/**
  * 목록 밖 색은 dev에서 던진다 — 그 요청 자체가 palette.ts의 GLOW_BAKE_COLORS와
  * 호출부가 어긋났다는 뜻이다. 제출 빌드에서는 던지지 않는다: 전투 중 예외 하나로 화면이
  * 멈추는 것보다 글로우 한 장이 빠지는 편이 낫다. 대신 콘솔에 한 번 남긴다.
  */
-export function getGlowSprite(color: string): CanvasImageSource {
+export function getGlowSprite(color: GlowBakeColor): CanvasImageSource {
   const sprite = glowSprites.get(color);
   if (sprite !== undefined) {
     return sprite;
@@ -108,7 +115,7 @@ export function glow(
   xU: number,
   yU: number,
   radiusU: number,
-  color: string,
+  color: GlowBakeColor,
   alpha: number,
 ): void {
   const sprite = getGlowSprite(color);

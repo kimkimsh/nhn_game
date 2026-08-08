@@ -14,7 +14,7 @@
 import { BULLETS } from '../config/bullets';
 import type { ParryableBulletId } from '../config/ids';
 import { PALETTE } from '../config/palette';
-import { getGlowSprite, hexA } from './primitives';
+import { getGlowSprite, hexA, type GlowBakeColor } from './primitives';
 
 /**
  * 스프라이트를 굽는 10종 — 12 §1 C-04.
@@ -69,11 +69,21 @@ const GLOW_RADIUS_BASE_U = 26;
 const GLOW_ALPHA_ENEMY = 0.42;
 const GLOW_ALPHA_REFLECT = 0.6;
 
-/** engine.js:183-195 반사탄 모션 스트릭 */
+/**
+ * engine.js:183-195 반사탄 모션 스트릭.
+ *
+ * **색의 알파를 미리 나눠 둔다.** 목업은 스트릭을 `save()`/`restore()`로 감싸(engine.js:185·194)
+ * `globalAlpha`가 1인 상태에서 0.35로 긋는데, 여기는 발마다 save/restore를 붙이지 않으려고
+ * 글로우가 세운 `globalAlpha`를 그대로 두고 긋는다(06 §3.1). 그러면 두 알파가 곱해져 화면에
+ * 0.21로 나가고, 반사탄이 적 탄환보다 빠르다는 것을 읽게 하는 꼬리가 그만큼 사라진다.
+ *
+ * 나누는 값이 `GLOW_ALPHA_REFLECT`인 것은 **적이 아닌 상태의 글로우 알파가 언제나 그 값이기
+ * 때문이다**(`glowAlphaFor`). 그 함수가 상태를 더 가르게 되면 여기도 같이 갈라야 한다.
+ */
 const STREAK_ALPHA = 0.35;
 const STREAK_WIDTH_SCALE = 1.1;
 const STREAK_LENGTH_SCALE = 3;
-const STREAK_COLOR = hexA(PALETTE.hwang, STREAK_ALPHA);
+const STREAK_COLOR = hexA(PALETTE.hwang, STREAK_ALPHA / GLOW_ALPHA_REFLECT);
 
 /** engine.js:260-262 P7 도화선. 회전 프레임 안의 additive라 스프라이트에 굽지 못한다 */
 const BOMB_FUSE_ID: ParryableBulletId = 'P7';
@@ -119,7 +129,7 @@ function glowAlphaFor(state: BulletSpriteState): number {
   return state === 'enemy' ? GLOW_ALPHA_ENEMY : GLOW_ALPHA_REFLECT;
 }
 
-function glowColorFor(state: BulletSpriteState): string {
+function glowColorFor(state: BulletSpriteState): GlowBakeColor {
   return state === 'enemy' ? PALETTE.jeok : PALETTE.hwang;
 }
 
@@ -204,6 +214,11 @@ export function drawBulletGlowPass(
       );
     }
   }
+  // 이 층이 켠 둥근 끝은 이 층에서 끈다. 목업은 streak을 save/restore로 감쌌고(engine.js:185·194)
+  // 여기는 성능 때문에 안 감싸므로 되돌리기가 대신 그 자리다 — 안 되돌리면 같은 프레임 뒤쪽의
+  // 쿨다운 링(player.ts)이 부분 호인데 끝에 1.75u 혹이 붙어 실제보다 더 찬 것처럼 읽히고,
+  // 자해 유예 링의 점선(bullet.ts)이 마름모가 된다
+  ctx.lineCap = 'butt';
 }
 
 /**

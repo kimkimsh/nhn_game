@@ -29,6 +29,7 @@ import { enemyRuntimeOf } from '../sim/enemies';
 import { lancePhaseOf, lancesOf } from '../sim/lance';
 import type { Run } from '../sim/run';
 import { comboMul, comboRemainSec } from '../sim/score';
+import { wavePhase } from '../sim/waves';
 import type { World } from '../sim/world';
 
 /** config/enemies.ts의 hitRadiusU가 실루엣 폭 × 0.6이라, 폭을 되돌리려면 그 역수를 곱한다 */
@@ -47,8 +48,16 @@ function clockText(seconds: number): string {
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
 }
 
-/** §15.1 'W4 0:51 / 1:00'. 웨이브 구간 밖에서는 빈 문자열이다(engine.js:1696) */
-function waveText(stage: StageDef, timeSec: number): string {
+/** §15.1 보스 구간의 웨이브 칸. 목업이 `wave: '보스전'`로 못 박았다(`06_boss3_atakebune/scene.js:10`) */
+const BOSS_WAVE_TEXT = '보스전';
+
+/**
+ * §15.1 'W4 0:51 / 1:00'.
+ *
+ * 웨이브 표에 없는 시각은 소강 아니면 보스전이고, 보스전이면 목업의 문구가 들어간다. 소강
+ * 3초는 목업에 장면이 없어 빈 칸 그대로다 — 없는 문구를 지어내지 않는다.
+ */
+function waveText(world: World, stage: StageDef, timeSec: number): string {
   let index = 0;
   for (const wave of stage.waves) {
     index += 1;
@@ -57,7 +66,7 @@ function waveText(stage: StageDef, timeSec: number): string {
       return `W${index}  ${clockText(timeSec - wave.startSec)} / ${clockText(spanSec)}`;
     }
   }
-  return '';
+  return wavePhase(world) === 'boss' ? BOSS_WAVE_TEXT : '';
 }
 
 /** §15.1 스테이지 내 진행률. 마지막 웨이브가 끝나면 1이고 그 뒤는 보스 바가 진행도를 맡는다 */
@@ -145,7 +154,7 @@ function fillBatch(batch: MutableBatch, world: World): BulletLayerBatch {
       batch.angleRad[n] = Math.atan2(shot.vyUPerSec, shot.vxUPerSec);
       batch.spinRad[n] = BULLETS[shot.bulletId].shape === 'star' ? shot.ageSec * SPIN_RATE_RAD_PER_SEC : 0;
       batch.graceRemainingSec[n] = shot.graceRemainingSec;
-      batch.reparryCount[n] = 0;
+      batch.reparryCount[n] = shot.reparryCount;
       n += 1;
     }
   }
@@ -348,6 +357,11 @@ export interface FrameViewParams {
   /** 페이즈 전환 예고의 경과 (초). 예고 구간이 아니면 null이다 */
   readonly phaseTelegraphElapsedSec: number;
   readonly overlay: ScenePaint | null;
+  /**
+   * true면 `FrameView.hud`가 null이 되어 11층이 빠진다. 타이틀의 어트랙트 루프가 쓰는 자리다 —
+   * 08 §6.1의 요소 표에 HUD 행이 없고 목업도 `hud` 칸 없이 돈다(`00_title/scene.js`).
+   */
+  readonly hudless?: boolean;
 }
 
 export function buildFrameView(params: FrameViewParams): FrameView {
@@ -391,13 +405,13 @@ export function buildFrameView(params: FrameViewParams): FrameView {
         totalSec: stats.hitInvulnSec,
       },
     },
-    hud: {
+    hud: params.hudless === true ? null : {
       life: player.lives,
       maxLife: stats.maxLife,
       score: world.run.score,
       stage: world.stageId,
       progress: stageProgress(stage, world.simTimeSec),
-      wave: waveText(stage, world.simTimeSec),
+      wave: waveText(world, stage, world.simTimeSec),
       boss: boss === null ? null : hudBossOf(boss),
       combo: hudComboOf(world),
       muted: params.muted,

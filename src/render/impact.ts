@@ -238,6 +238,10 @@ export function createImpactLayer(deps: ImpactLayerDeps): ImpactLayer {
   subscriptions.push(deps.bus.on('parry', onParry));
   subscriptions.push(deps.bus.on('enemyKilled', onEnemyKilled));
   subscriptions.push(deps.bus.on('parryWhiff', (event) => {
+    // 계단은 등급 팝업과 수명이 같아 어긋나지 않지만 헛침은 0.55초로 짧다. 안 지우면 쿨다운
+    // 0.24초 뒤의 헛침 옆에 직전 재패리의 「×1.0 → ×3.5」가 다른 높이로 떠서, 아무것도 안 한
+    // 패리에 데미지 상승 표시가 붙는다
+    ladderLifeSec = 0;
     showPopup(event.xU, event.yU, WHIFF_TEXT, WHIFF_SUB, PALETTE.baekFaint, WHIFF_LIFE_SEC);
   }));
   subscriptions.push(deps.bus.on('reparry', (event) => {

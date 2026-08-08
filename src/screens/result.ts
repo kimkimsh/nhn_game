@@ -90,7 +90,7 @@ export function createResultScreen(host: ScreenHost): Screen {
   /** 확정 패널을 열고 닫을 때마다 커서를 되돌린다. 08 §4.5의 「기본 커서는 아니오」가 그것이다 */
   function setConfirming(next: boolean): void {
     confirming = next;
-    resetMenuState(state);
+    resetMenuState(state, host.input.pointer);
   }
 
   function execute(index: number): void {

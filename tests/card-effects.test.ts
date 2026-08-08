@@ -17,13 +17,14 @@ import { createInput, type Input } from '../src/core/input';
 import { FIXED_DT_SEC } from '../src/core/loop';
 import { lengthOf } from '../src/core/vec';
 import { createBossState } from '../src/sim/boss';
+import { resolveBossHits } from '../src/sim/boss-hits';
 import { bulletSpeedUPerSec, integrateProjectiles, type Projectile } from '../src/sim/bullets';
 import type { CardStack } from '../src/sim/cards';
 import { applyPlayerHit, resolveReflectHits } from '../src/sim/collision';
 import { consumeParryInput, resolveParry } from '../src/sim/parry';
 import { flushReflectHitEffects } from '../src/sim/reflect-effects';
 import { computeStats } from '../src/sim/stats';
-import { autoParryOnBossEnter } from '../src/sim/step';
+import { autoParryOnBossEnter } from '../src/sim/parry';
 import { createWorld, type Enemy, type World } from '../src/sim/world';
 
 const HORIZON_MS = 1e9;
@@ -141,6 +142,32 @@ describe('§11.3 N12 곧은 칼날 — 적 명중 판정 +25%', () => {
   it('카드가 없으면 닿지 않는 거리에 닿는다', () => {
     expect(reachTest([])).toBe(999);
     expect(reachTest(['N12'])).toBeLessThan(999);
+  });
+
+  /**
+   * 보스 본체에도 걸린다. 부하 원형 판정에만 걸려 있으면 이 카드가 보스전에서만 조용히
+   * 안 듣는데, 스펙 §11.3은 「적에게 명중하는 판정에만」이라고만 적었고 보스도 적이다.
+   */
+  function bossReachTest(cards: readonly CardId[]): number {
+    const { world, input } = setup(cards, 4);
+    placeApproaching(world, 'P1', NOT_BAD_DIST_U);
+    parryNow(world, input);
+    const shot = firstReflect(world);
+    const boss = createBossState('B4');
+    world.boss = boss;
+    // 히트박스 반폭 밖으로 반사탄 반경의 12%만큼만 비켜 세운다 — 1.0배면 빗나가고 1.25배면 맞는다
+    boss.xU = shot.xU + boss.def.hitBox.wU / 2 + shot.radiusU * 1.12;
+    boss.yU = shot.yU;
+    boss.prevXU = boss.xU;
+    boss.prevYU = boss.yU;
+    const before = boss.hp;
+    resolveBossHits(world, boss);
+    return before - boss.hp;
+  }
+
+  it('보스 본체 판정에도 걸린다', () => {
+    expect(bossReachTest([])).toBe(0);
+    expect(bossReachTest(['N12'])).toBeGreaterThan(0);
   });
 });
 
@@ -304,5 +331,50 @@ describe('§11.5 E04 이순신의 판단 — 보스전 진입 자동 GREAT 패�
     autoParryOnBossEnter(world);
     expect(world.enemyBullets.activeCount).toBe(1);
     expect(world.reflectBullets.activeCount).toBe(0);
+  });
+
+  it('일반 GREAT와 같은 것을 준다 — 점수 · 패리 무적 · 패리 사건', () => {
+    const { world } = setup(['E04'], 4);
+    placeApproaching(world, 'P1', 300);
+    // 전역 버스라 앞 테스트가 남긴 큐가 있으면 이 구독이 그것까지 받는다
+    world.bus.flush();
+    const grades: string[] = [];
+    world.bus.on('parry', (event) => void grades.push(event.grade));
+
+    world.boss = createBossState('B4');
+    autoParryOnBossEnter(world);
+    world.bus.flush();
+
+    // §12.1 GREAT 400점 × §12.2 콤보 1의 배수 1.0
+    expect(world.run.score).toBeGreaterThan(0);
+    // §5.3 패리 성공 무적. 자동이어도 패리이므로 붙는다
+    expect(world.player.parryInvulnUntilSec).toBeGreaterThan(world.simTimeSec);
+    // §17 「패리 성공」 신호. 이것이 없으면 화면이 조용하다
+    expect(grades).toEqual(['GREAT']);
+  });
+
+  it('화면 밖 탄환은 대상이 아니다 — 스펙 문구가 「화면 내」다', () => {
+    const { world } = setup(['E04'], 4);
+    const inside = placeApproaching(world, 'P1', 300);
+    const outside = placeApproaching(world, 'P1', 300);
+    outside.yU = -80;
+    outside.prevYU = outside.yU;
+
+    world.boss = createBossState('B4');
+    autoParryOnBossEnter(world);
+
+    expect(world.reflectBullets.activeCount).toBe(1);
+    expect(world.enemyBullets.active).toContain(outside);
+    expect(world.enemyBullets.active).not.toContain(inside);
+  });
+
+  it('E04 + R01이면 자동 패리에서도 분열이 걸린다', () => {
+    const { world } = setup(['E04', 'R01'], 4);
+    placeApproaching(world, 'P1', 300);
+    world.boss = createBossState('B4');
+    autoParryOnBossEnter(world);
+
+    // §11.4 R01 쌍검 — 한 발이 2발이 된다. 발사 효과가 안 걸리면 1발로 남는다
+    expect(world.reflectBullets.activeCount).toBe(2);
   });
 });

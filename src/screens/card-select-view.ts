@@ -218,7 +218,9 @@ export function paintCardSelect(ctx: CanvasRenderingContext2D, view: CardSelectV
   ctx.fillStyle = PALETTE.baekFaint;
   setFont(ctx, 400, SUBTITLE_PX, FONTS.body);
   ctx.fillText(
-    `건너뛸 수 없다 · 남은 선택 기회 ${DRAW.acquisitionCount}회 중 ${view.round}회차`,
+    // 「남은」이 아니라 「전체 중 몇 회차」다. acquisitionCount는 런 전체의 획득 횟수(4)이지
+    // 잔여가 아니라, 2회차 화면이 「남은 4회」라고 적고 있었다 (§11.1)
+    `건너뛸 수 없다 · 선택 기회 ${DRAW.acquisitionCount}회 중 ${view.round}회차`,
     CENTER_XU,
     CS.subtitleBaselineYU,
   );

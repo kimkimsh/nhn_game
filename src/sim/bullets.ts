@@ -60,6 +60,12 @@ export interface Projectile {
   parriedSessionId: number;
   /** §7.4 직전 등급. reparry 사건이 등급이 올랐는지를 이 값으로 가른다 */
   lastGrade: ParryGradeId | null;
+  /**
+   * §15.1 이 탄이 다시 쳐내진 횟수. render가 탄 옆에 `재N` 라벨로 적는다
+   * (`render/bullet.ts`의 `drawReparryLabels` · 목업 `engine.js:280`).
+   * 소유권이 적으로 돌아가면 0이다 — 새 탄이지 같은 탄의 이력이 아니다.
+   */
+  reparryCount: number;
   /** §7.2 6번까지 끝난 값. 명중 시점에 다시 계산하지 않는다 */
   damage: number;
   pierceRemaining: number;
@@ -87,6 +93,7 @@ function createProjectile(): Projectile {
     graceRemainingSec: 0,
     parriedSessionId: NEVER_PARRIED_SESSION,
     lastGrade: null,
+    reparryCount: 0,
     damage: 0,
     pierceRemaining: 0,
     ageSec: 0,
@@ -100,6 +107,7 @@ function resetProjectile(projectile: Projectile): void {
   projectile.graceRemainingSec = 0;
   projectile.parriedSessionId = NEVER_PARRIED_SESSION;
   projectile.lastGrade = null;
+  projectile.reparryCount = 0;
   projectile.damage = 0;
   projectile.pierceRemaining = 0;
   projectile.ageSec = 0;

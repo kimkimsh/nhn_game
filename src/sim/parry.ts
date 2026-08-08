@@ -19,6 +19,7 @@
  * 이고 그때의 최고 등급을 쓴다. 콤보만 처리한 발사체 개수만큼 오른다. 무적은 성립할 때마다
  * 다시 설정되지만 등급에 따라 길이가 달라지지 않는다.
  */
+import { PLAYFIELD } from '../config/playfield';
 import type { Input } from '../core/input';
 import { distanceSq, dot } from '../core/vec';
 import type { Projectile } from './bullets';
@@ -182,8 +183,15 @@ export function consumeParryInput(world: World, input: Input, untilMs: number): 
 }
 
 function rewardSession(world: World, best: EffectiveParryBand, bestWasReparry: boolean, count: number): void {
-  const parry = world.parry;
-  parry.sessionRewarded = true;
+  world.parry.sessionRewarded = true;
+  rewardParryBatch(world, best, bestWasReparry, count);
+}
+
+/**
+ * §12.1 점수 · §5.3 히트스톱 · §17 패리 신호. 활성 구간의 보상과 E04의 보상이 같아야 하므로
+ * `sessionRewarded`(구간 상태)만 밖에 두고 나머지를 여기 모았다.
+ */
+function rewardParryBatch(world: World, best: EffectiveParryBand, bestWasReparry: boolean, count: number): void {
   world.parrySeq += 1;
   world.chainIndex = 0;
   world.clock.requestHitstop(best.hitstopSec, world.simTimeSec);
@@ -197,6 +205,85 @@ function rewardSession(world: World, best: EffectiveParryBand, bestWasReparry: b
     xU: world.player.xU,
     yU: world.player.yU,
   });
+}
+
+/**
+ * §11.5 E04 「각 보스전 진입 시 **화면 내** 모든 적 탄환을 자동 GREAT 패리」.
+ *
+ * 거리(C1)와 접근(C2)을 지나지 않는 것이 이 카드의 내용이다 — 화면 전부가 대상이다. 대신
+ * **화면 밖은 대상이 아니다**: 스펙의 「화면 내」가 그 말이고, 풀에는 아직 회수 전인 화면 밖
+ * 탄이 남아 있다.
+ *
+ * 반사 뒤의 처리는 일반 패리와 같아야 한다. 예전에는 여기서 `addCombo`와 히트스톱만 걸고
+ * 점수 · 패리 무적 · §17의 패리 신호 · 카드 발사 효과(R01·E01·E02·R07)를 전부 건너뛰어,
+ * 같은 GREAT인데 어떻게 얻었는지에 따라 결과가 달랐다.
+ */
+export function autoParryOnBossEnter(world: World): void {
+  const gradeId = world.stats.autoParryGradeOnBossEnter;
+  if (gradeId === null || world.enemyBullets.activeCount === 0) {
+    return;
+  }
+  const band = world.stats.bands.find((entry) => entry.id === gradeId);
+  if (band === undefined) {
+    return;
+  }
+  world.parry.sessionId += 1;
+  let count = 0;
+  // convertToReflect가 활성 목록에서 원소를 빼므로 사본을 훑는다
+  for (const projectile of [...world.enemyBullets.active]) {
+    if (!projectile.isParryable || !isOnScreen(projectile)) {
+      continue;
+    }
+    launchReflect(world, projectile, band);
+    count += 1;
+  }
+  if (count === 0) {
+    return;
+  }
+  addCombo(world, count);
+  grantParryInvuln(world);
+  rewardParryBatch(world, band, false, count);
+}
+
+/**
+ * 한 발을 쳐내고 그 발에 걸리는 것을 전부 건다 — 가드 · §17 사건 둘 · 카드 발사 효과.
+ * 활성 구간과 E04가 같은 함수를 지나야 「같은 등급인데 얻은 경로가 달라서 결과가 다르다」가 없다.
+ *
+ * 재패리였는지를 돌려준다. 호출부가 그 값으로 §12.1의 재패리 점수 비율을 고른다.
+ */
+function launchReflect(world: World, projectile: Projectile, band: EffectiveParryBand): boolean {
+  const wasReparry = projectile.owner === 'player';
+  const result = reflectProjectile(world, projectile, band);
+  if (GUARDS_ENABLED) {
+    checkReflect(world, result.projectile, world.stats.reflectHomingDegPerSec > 0);
+  } else {
+    assertMovingAway(world, result.projectile);
+  }
+
+  world.bus.emit({
+    kind: 'reflectLaunched',
+    grade: band.id,
+    xU: result.projectile.xU,
+    yU: result.projectile.yU,
+  });
+  if (wasReparry && result.previousGrade !== null) {
+    world.bus.emit({
+      kind: 'reparry',
+      grade: band.id,
+      prevGrade: result.previousGrade,
+      xU: result.projectile.xU,
+      yU: result.projectile.yU,
+    });
+  }
+  // 카드 효과는 사건을 낸 뒤에 건다. 교체(E02)가 result.projectile을 반납하므로 그 뒤에는
+  // 그 슬롯을 읽을 수 없다
+  applyReflectLaunchEffects(world, result.projectile, band.id === 'GREAT');
+  return wasReparry;
+}
+
+function isOnScreen(projectile: Projectile): boolean {
+  return projectile.xU >= 0 && projectile.xU <= PLAYFIELD.widthU
+    && projectile.yU >= 0 && projectile.yU <= PLAYFIELD.heightU;
 }
 
 /**
@@ -240,32 +327,7 @@ function judgeStep(world: World): void {
     if (band === null) {
       throw new Error('패리 반경 안인데 등급이 없다 — 마지막 밴드 상한이 반경과 어긋났다');
     }
-    const wasReparry = projectile.owner === 'player';
-    const result = reflectProjectile(world, projectile, band);
-    if (GUARDS_ENABLED) {
-      checkReflect(world, result.projectile, world.stats.reflectHomingDegPerSec > 0);
-    } else {
-      assertMovingAway(world, result.projectile);
-    }
-
-    world.bus.emit({
-      kind: 'reflectLaunched',
-      grade: band.id,
-      xU: result.projectile.xU,
-      yU: result.projectile.yU,
-    });
-    if (wasReparry && result.previousGrade !== null) {
-      world.bus.emit({
-        kind: 'reparry',
-        grade: band.id,
-        prevGrade: result.previousGrade,
-        xU: result.projectile.xU,
-        yU: result.projectile.yU,
-      });
-    }
-    // 카드 효과는 사건을 낸 뒤에 건다. 교체(E02)가 result.projectile을 반납하므로 그 뒤에는
-    // 그 슬롯을 읽을 수 없다
-    applyReflectLaunchEffects(world, result.projectile, band.id === 'GREAT');
+    const wasReparry = launchReflect(world, projectile, band);
 
     if (best === null || band.damageMul > best.damageMul) {
       best = band;
