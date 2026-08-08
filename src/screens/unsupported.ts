@@ -33,6 +33,7 @@
 
 import { grantKeyboardOverride } from '../boot/platform-guard';
 import { PALETTE } from '../config/palette';
+import { PLAYER } from '../config/player';
 import { FONTS } from '../config/ui';
 
 /** 두 번 부르면 안내가 두 겹이 된다. `manager.ts`는 한 번만 부르지만 그 계약에 기대지 않는다 */
@@ -109,10 +110,15 @@ const CSS = `
 }
 `;
 
-/** 08 §7.3 「내용 2 — 이유」. §16.6이 적은 두 가지를 그대로 옮긴다 */
+/**
+ * 08 §7.3 「내용 2 — 이유」. §16.6이 적은 두 가지를 그대로 옮긴다.
+ *
+ * 코어 반경은 `PLAYER.hitRadiusU`에서 읽는다. 숫자를 문장에 적어 두면 판정 반경을 조정한
+ * 사람이 이 화면만 잊고, 안내가 지금 게임과 다른 수치를 말하게 된다.
+ */
 const REASONS: readonly (readonly [string, string])[] = [
   ['동시 입력', '이동과 패리가 동시에 들어가야 하는데, 드래그로 움직이며 같은 화면을 탭하면 한 손가락이 두 역할을 다툰다.'],
-  ['판정 가림', '패리 등급이 탄환과 플레이어 중심 사이 거리로 정해져 반경 10u 코어가 계속 보여야 하는데, 손가락이 그 위를 덮는다.'],
+  ['판정 가림', `패리 등급이 탄환과 플레이어 중심 사이 거리로 정해져 반경 ${PLAYER.hitRadiusU}u 코어가 계속 보여야 하는데, 손가락이 그 위를 덮는다.`],
 ];
 
 /** §16.1 조작 두 줄. 왜 터치로 대체되지 않는지가 이 두 줄로 읽힌다 */
