@@ -10,6 +10,8 @@
  * 앞의 두 문서와 종이·글꼴·레일이 같다. 다른 것은 색이다 —
  * 이 문서에는 대비시킬 두 축이 없으므로 색을 하나만 쓴다.
  * 황색은 역할 표시에만 붙고, 나머지는 전부 먹색이다.
+ *
+ * 세 사람의 쪽은 같은 틀을 쓴다. 분량이 사람마다 다르면 그 자체가 서열로 읽힌다.
  */
 :root {
   --hwang: #f5b324;
@@ -63,39 +65,20 @@ body {
   .sheet { margin: 0 auto 8mm; box-shadow: 0 2mm 8mm rgba(0, 0, 0, .35); }
 }
 
-.grid { display: grid; grid-template-columns: 31mm 135mm; column-gap: 10mm; align-items: start; }
-
-.rail { padding-top: 1.4mm; }
-.rail-n { font-family: var(--data); font-weight: 500; font-size: 16pt; line-height: 1; }
-.rail-t {
-  font-size: 8.6pt;
-  font-weight: 600;
-  line-height: 1.4;
-  margin-top: 2.4mm;
-  padding-top: 2.4mm;
-  border-top: 0.35mm solid var(--sumuk-900);
-}
-.rail p { font-size: 8.2pt; line-height: 1.6; color: var(--sumuk-500); margin-top: 3mm; }
-
 .eyebrow { font-family: var(--data); font-size: 7.4pt; letter-spacing: .17em; color: var(--sumuk-500); }
-
 h1 { font-family: var(--display); font-weight: 700; letter-spacing: -0.005em; }
-h2 { font-family: var(--display); font-weight: 700; font-size: 17pt; line-height: 1.25; margin-bottom: 4mm; }
 
 h3 {
   font-weight: 600;
-  font-size: 10pt;
-  margin-bottom: 1.8mm;
-  padding-left: 3.2mm;
-  border-left: 1.1mm solid var(--sumuk-900);
+  font-size: 9.6pt;
+  margin-bottom: 2mm;
+  padding-left: 3mm;
+  border-left: 1.1mm solid var(--hwang);
 }
 
 p + p { margin-top: 2.6mm; }
-.block + .block { margin-top: 6.4mm; }
-.lede { font-size: 11pt; line-height: 1.58; }
-.note { font-size: 8.7pt; line-height: 1.6; color: var(--sumuk-700); }
+.note { font-size: 9pt; line-height: 1.62; color: var(--sumuk-700); }
 strong { font-weight: 600; }
-.two { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8mm; align-items: start; }
 
 table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 th, td { text-align: left; vertical-align: top; padding: 1.6mm 2.6mm 1.6mm 0; border-bottom: 0.2mm solid var(--hairline); }
@@ -108,25 +91,12 @@ th {
 }
 td { font-size: 9.1pt; line-height: 1.5; }
 tr:last-child td { border-bottom: none; }
-.mono, td.mono { font-family: var(--data); font-size: 8.6pt; }
-
-ul { list-style: none; }
-ul li { position: relative; padding-left: 4.6mm; }
-ul li + li { margin-top: 1.8mm; }
-ul li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 2.1mm;
-  width: 2.4mm;
-  height: 0.35mm;
-  background: var(--sumuk-900);
-}
+.mono { font-family: var(--data); font-size: 8.4pt; }
 
 /* ── 표지 ────────────────────────────────────────────────────────────── */
 
 .cover { display: flex; flex-direction: column; justify-content: space-between; height: 262mm; }
-.cover h1 { font-size: 58pt; line-height: 1; letter-spacing: 0.06em; margin-top: 13mm; }
+.cover h1 { font-size: 56pt; line-height: 1; letter-spacing: 0.06em; margin-top: 12mm; }
 .cover-hanja {
   font-family: var(--display);
   font-size: 15pt;
@@ -137,60 +107,65 @@ ul li::before {
 .cover-rule {
   font-size: 10.4pt;
   line-height: 1.68;
-  max-width: 132mm;
-  margin-top: 10mm;
+  max-width: 134mm;
+  margin-top: 9mm;
   padding-top: 7mm;
   border-top: 0.4mm solid var(--sumuk-900);
 }
 
-/* 세 사람을 한 줄에. 표가 아니라 세 칸이어야 셋이 나란하다는 것이 보인다 */
 .crew { display: grid; grid-template-columns: repeat(3, 1fr); column-gap: 7mm; }
 .crew-one { padding-top: 3.4mm; border-top: 0.7mm solid var(--sumuk-900); }
 .crew-one b { display: block; font-family: var(--display); font-size: 17pt; font-weight: 700; line-height: 1.1; }
-.crew-one span { display: block; font-size: 8.6pt; line-height: 1.5; color: var(--sumuk-700); margin-top: 2.4mm; }
-/* 클래스 둘이라 위의 `.crew-one span`을 이긴다. 블록이 되면 노란 칸이 열 전체로 늘어난다 */
-.crew-one .crew-role {
+.crew-one i { display: block; font-style: normal; font-size: 8.6pt; line-height: 1.5; color: var(--sumuk-700); margin-top: 2.6mm; }
+.chip {
   display: inline-block;
   font-family: var(--data);
   font-size: 7.6pt;
   font-weight: 500;
-  margin-top: 2.8mm;
   padding: 0.5mm 1.8mm;
   background: var(--hwang);
   color: var(--sumuk-900);
 }
+.crew-one .chip { margin-top: 2.8mm; }
 
-/* ── 팀원 항목 ───────────────────────────────────────────────────────── */
+/* ── 사람 한 쪽 ──────────────────────────────────────────────────────── */
 
-.who { break-inside: avoid; }
-.who + .who { margin-top: 7mm; padding-top: 6.4mm; border-top: 0.2mm solid var(--hairline); }
-.who-head { display: flex; align-items: baseline; gap: 4mm; flex-wrap: wrap; }
-.who-head h3 {
-  font-family: var(--display);
-  font-size: 16pt;
-  font-weight: 700;
-  padding: 0;
-  margin: 0;
-  border: 0;
-}
-.who-head em {
+.person { display: grid; grid-template-columns: 31mm 135mm; column-gap: 10mm; align-items: start; }
+.person-rail { padding-top: 1.4mm; }
+.person-rail b { display: block; font-family: var(--data); font-weight: 500; font-size: 16pt; line-height: 1; }
+.person-rail i {
+  display: block;
   font-style: normal;
-  font-family: var(--data);
-  font-size: 7.6pt;
-  font-weight: 500;
-  padding: 0.5mm 1.8mm;
-  background: var(--hwang);
+  font-size: 8.6pt;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 2.4mm;
+  padding-top: 2.4mm;
+  border-top: 0.35mm solid var(--sumuk-900);
 }
-.who-head span { font-size: 9.2pt; color: var(--sumuk-700); }
-.who-body { margin-top: 3.2mm; }
-.who-links { font-family: var(--data); font-size: 7.6pt; line-height: 1.6; color: var(--sumuk-500); margin-top: 3mm; }
-.who-links b { display: inline-block; min-width: 17mm; font-weight: 500; color: var(--sumuk-900); }
+.person-rail p { font-size: 8.2pt; line-height: 1.6; color: var(--sumuk-500); margin-top: 3mm; }
 
-.work { display: grid; grid-template-columns: 44mm 1fr; column-gap: 6mm; }
-.work + .work { margin-top: 3mm; }
-.work b { font-size: 9.1pt; font-weight: 600; line-height: 1.45; }
-.work > div > span { display: block; font-family: var(--data); font-size: 7.4pt; color: var(--sumuk-500); margin-top: 0.8mm; }
-.work p { font-size: 8.8pt; line-height: 1.56; }
+.head { display: flex; align-items: baseline; gap: 4mm; flex-wrap: wrap; }
+.head h2 { font-family: var(--display); font-size: 26pt; font-weight: 700; line-height: 1; }
+.head span { font-size: 9.4pt; color: var(--sumuk-700); }
+.lede { font-size: 10.6pt; line-height: 1.6; margin-top: 5mm; }
+
+.works { margin-top: 8mm; }
+.work { display: grid; grid-template-columns: 46mm 1fr; column-gap: 6mm; break-inside: avoid; }
+.work + .work { margin-top: 4.4mm; padding-top: 4.4mm; border-top: 0.2mm solid var(--hairline); }
+.work b { font-size: 9.6pt; font-weight: 600; line-height: 1.4; }
+.work > div > span { display: block; font-family: var(--data); font-size: 7.4pt; line-height: 1.5; color: var(--sumuk-500); margin-top: 1.2mm; }
+.work p { font-size: 9pt; line-height: 1.58; }
+
+.mine { margin-top: 8mm; padding: 4.4mm 5mm; background: var(--paper-sunk); break-inside: avoid; }
+.mine h3 { border-left: 0; padding-left: 0; }
+.mine p { font-size: 9pt; line-height: 1.58; }
+
+.meta { margin-top: 7mm; }
+.meta div { display: grid; grid-template-columns: 20mm 1fr; column-gap: 4mm; padding: 1.5mm 0; border-top: 0.2mm solid var(--hairline); }
+.meta b { font-size: 8.4pt; font-weight: 600; color: var(--sumuk-500); }
+.meta span { font-family: var(--data); font-size: 8pt; line-height: 1.55; }
+.meta span.ko { font-family: var(--body); font-size: 8.6pt; }
 
 .foot {
   position: absolute;
@@ -217,139 +192,36 @@ ul li::before {
       <h1>극악무도</h1>
       <div class="cover-hanja">極惡無道</div>
       <p class="cover-rule">
-        로보틱스, 모빌리티 IT, 컴퓨터 비전 AI. 서로 다른 산업에서 실제 제품을 만드는 세 명이다.
-        48시간 안에 하나를 완성하려면 셋이 같은 일을 하지 않는 편이 낫다고 보고, 기획과 PM,
-        게임 개발, AI 개발로 갈라 묶었다.
+        로보틱스, 금융 IT, 컴퓨터 비전 AI. 서로 다른 산업에서 실제로 납품되는 물건을 만드는
+        세 명이다. 48시간은 역할을 협상할 시간이 없는 길이라, 하는 일이 겹치지 않는 셋을 먼저
+        모았다. 기획과 일정을 볼 사람, 게임의 규칙과 코드를 쓸 사람, AI 쪽을 붙일 사람 하나씩이다.
       </p>
     </div>
 
     <div>
-    <div class="crew">
-      <div class="crew-one">
-        <b>김성현</b>
-        <span class="crew-role">팀장 · 기획 · 개발</span>
-        <span>비욘드허니컴<br>로보틱스 엔지니어</span>
+      <div class="crew">
+        <div class="crew-one">
+          <b>김성현</b>
+          <span class="chip">팀장 · 기획 · 개발</span>
+          <i>비욘드허니컴<br>로보틱스 엔지니어</i>
+        </div>
+        <div class="crew-one">
+          <b>이주형</b>
+          <span class="chip">기획 · PM</span>
+          <i>현대 오토에버<br>책임</i>
+        </div>
+        <div class="crew-one">
+          <b>김일권</b>
+          <span class="chip">개발</span>
+          <i>소프트온넷<br>AI 엔지니어</i>
+        </div>
       </div>
-      <div class="crew-one">
-        <b>이주형</b>
-        <span class="crew-role">기획 · PM</span>
-        <span>현대 오토에버<br>책임</span>
-      </div>
-      <div class="crew-one">
-        <b>김일권</b>
-        <span class="crew-role">개발</span>
-        <span>소프트온넷<br>AI 엔지니어</span>
-      </div>
-    </div>
 
       <div style="margin-top:11mm;">
-        <h3 style="border-left-color:var(--hwang);">이렇게 묶은 이유</h3>
-        <p class="note" style="max-width:150mm;">
-          세 사람이 각각 다른 산업에 있고, 그래서 하는 일이 겹치지 않는다. 48시간은 역할을
-          나누는 데 쓸 시간이 없는 길이라, 겹치지 않는 셋을 먼저 모은 편이 낫다고 봤다.
-          기획과 일정을 볼 사람, 게임의 규칙과 코드를 쓸 사람, AI 쪽을 붙일 사람 하나씩이다.
-        </p>
-      </div>
-    </div>
-  </div>
-  <div class="foot"><span>극악무도 — 팀 소개</span><span>1</span></div>
-</section>
-
-<!-- ══ 2. 팀원 ═══════════════════════════════════════════════════════ -->
-<section class="sheet">
-  <div class="grid">
-    <div class="rail">
-      <div class="rail-n">01</div>
-      <div class="rail-t">팀원과<br>담당 영역</div>
-      <p>셋 다 연구가 아니라 납품되는 물건을 만들어 온 사람이다.</p>
-    </div>
-
-    <div>
-      <div class="who">
-        <div class="who-head">
-          <h3>김성현</h3>
-          <em>팀장 · 기획 · 개발</em>
-          <span>비욘드허니컴 — 로보틱스 엔지니어</span>
-        </div>
-        <div class="who-body">
-          <p class="note">
-            로봇이 실제로 조리를 수행하는 장비의 제어 소프트웨어를 만든다. 센서 입력과 모션이
-            실시간 마감에 걸려 있어 「대체로 맞는 값」이 허용되지 않는 쪽 개발이다. 이번 사전 과제의
-            게임도 같은 방식으로 만들었다 — 규칙을 문서로 먼저 못 박고, 그 문서를 검사기가 감시하게
-            했다.
-          </p>
-          <div class="work" style="margin-top:3.4mm;">
-            <div>
-              <b>사전 과제에서 한 일</b>
-              <span>커밋 39개 · 07-22 ~ 08-09</span>
-            </div>
-            <p>
-              주제 선정의 최종 판정, 기능 명세서의 모순 12건 채택값 결정, 난이도 수치를 직접
-              플레이하며 축마다 재설정, AI 도구 세 개의 지휘와 감사 교차. 저장소의 커밋 전부가
-              이 계정이다.
-            </p>
-          </div>
-          <div class="work">
-            <div>
-              <b>본선에서 맡는 일</b>
-              <span>규칙 · 코드 · 검증</span>
-            </div>
-            <p>
-              무엇을 만들지 한 문장으로 확정하고, 게임 루프와 판정을 직접 쓰고, 자동 검사를 깔아
-              둔다. 둘 이상이 다른 말을 할 때 최종 판정을 한다.
-            </p>
-          </div>
-          <div class="who-links">
-            <div><b>LinkedIn</b>linkedin.com/in/seonghyeon-kim-2719231a2</div>
-            <div><b>포트폴리오</b>drive.google.com/file/d/1KCdfCcTHtFHcrwhqiNHkLjo77YgtGIZq/view</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="who">
-        <div class="who-head">
-          <h3>이주형</h3>
-          <em>기획 · PM</em>
-          <span>현대 오토에버 — 책임</span>
-        </div>
-        <div class="who-body">
-          <p class="note">
-            완성차 그룹의 IT를 맡는 회사에서 책임으로 일한다. 여러 조직이 걸린 일정과 범위를
-            움직여 본 쪽이고, 48시간에서 가장 먼저 무너지는 것이 그 둘이다.
-          </p>
-          <div class="work" style="margin-top:3.4mm;">
-            <div>
-              <b>본선에서 맡는 일</b>
-              <span>범위 · 일정 · 제출물</span>
-            </div>
-            <p>
-              무엇을 자를지 정한다. 남은 시간과 남은 일을 계속 맞춰 보고, 마감 전에 손을 떼게
-              만드는 사람이 필요하다. 제출물 다섯 종의 누락을 마지막으로 확인하는 것도 이 자리다.
-            </p>
-          </div>
-          <div class="work">
-            <div>
-              <b>기획에서 맡는 일</b>
-              <span>처음 보는 사람의 눈</span>
-            </div>
-            <p>
-              만든 사람은 자기 게임이 왜 재미있는지 설명할 수 있어서 규칙이 안 읽히는 것을 못
-              본다. 설명 없이 화면만 보고 규칙이 읽히는지를 판정한다.
-            </p>
-          </div>
-          <div class="who-links">
-            <div><b>LinkedIn</b>linkedin.com/in/juhyeonglee</div>
-            <div><b>포트폴리오</b>thoracic-globe-1df.notion.site/IT-256c2146e40944b4a7938c86579ff0c3</div>
-          </div>
-        </div>
-      </div>
-
-      <div class="block" style="margin-top:8mm;">
-        <h3 style="border-left-color:var(--hwang);">본선 48시간의 분담</h3>
-        <table style="margin-top:2.6mm;">
+        <table>
           <colgroup><col style="width:20%"><col style="width:48%"><col style="width:32%"></colgroup>
           <thead>
-            <tr><th>담당</th><th>맡는 일</th><th>막히면 대신 볼 사람</th></tr>
+            <tr><th>본선 48시간</th><th>맡는 일</th><th>막히면 대신 볼 사람</th></tr>
           </thead>
           <tbody>
             <tr><td>김성현</td><td>규칙과 수치 확정, 게임 코드와 검증, 최종 판정</td><td>김일권</td></tr>
@@ -357,199 +229,264 @@ ul li::before {
             <tr><td>김일권</td><td>AI·비전 기능과 데이터 파이프라인, 성능</td><td>김성현</td></tr>
           </tbody>
         </table>
-        <p class="note" style="margin-top:2.8mm;">
+        <p class="note" style="margin-top:3mm;">
           한 사람이 막혔을 때 그 자리를 비워 두지 않으려고 대체 담당을 미리 정해 두었다.
           48시간에는 사람을 새로 부를 수 없다.
         </p>
       </div>
     </div>
   </div>
-  <div class="foot"><span>팀원과 담당 영역</span><span>2</span></div>
+  <div class="foot"><span>극악무도 — 팀 소개</span><span>1</span></div>
 </section>
 
-<!-- ══ 3. 김일권 ═════════════════════════════════════════════════════ -->
+<!-- ══ 2. 김성현 ═════════════════════════════════════════════════════ -->
 <section class="sheet">
-  <div class="grid">
-    <div class="rail">
-      <div class="rail-n">02</div>
-      <div class="rail-t">팀원과<br>담당 영역</div>
+  <div class="person">
+    <div class="person-rail">
+      <b>01</b>
+      <i>팀장<br>기획 · 개발</i>
+      <p>해커톤과 메이커톤에서 열 번 넘게 입상했고, 가장 최근 것이 게임이다.</p>
+    </div>
+
+    <div>
+      <div class="head">
+        <h2>김성현</h2>
+        <span class="chip">팀장 · 기획 · 개발</span>
+        <span>비욘드허니컴 — 로보틱스 엔지니어</span>
+      </div>
+      <p class="lede">
+        불 위에서 자율 조리하는 상용 로봇의 소프트웨어를 만든다. 센서와 모션이 실시간 마감에
+        걸려 있어 「대체로 맞는 값」이 허용되지 않는 쪽 개발이다.
+      </p>
+
+      <div class="works">
+        <div class="work">
+          <div>
+            <b>Black Hole Survival</b>
+            <span>Buildhack Korea 2026<br>YGG · Verse8 트랙 3위</span>
+          </div>
+          <p>
+            뱀파이어 서바이버형 생존과 종스크롤 슈팅을 합친 웹 게임. Verse8 플랫폼에서
+            TypeScript로 만들었고, 로그인 연동과 적 패턴, 업적·캐릭터 해금·영구 강화까지 넣었다.
+            <strong>환도의 시작 메모 첫 줄이 이 게임을 가리킨다.</strong>
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>조리 로봇 Grill X</b>
+            <span>비욘드허니컴<br>2024 – 현재</span>
+          </div>
+          <p>
+            C++로 시리얼·TCP·gRPC를 엮은 실시간 제어 구조를 설계하고, 로봇 전장 설계부터
+            Android 제어 앱까지 직접 만들었다. 실제 매장에서 운영되는 상용 시스템이다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>음성·비전 매니퓰레이터</b>
+            <span>Kernel Academy AI Robotics<br>해커톤 3위 · 2026</span>
+          </div>
+          <p>
+            ROS2에 음성 인식과 언어 모델, YOLO를 붙였다. 말로 지시하면 물건을 찾아 좌표를
+            추정하고 두산로보틱스 팔이 집어 옮긴다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>치매예방 보조 로봇 '희망이'</b>
+            <span>제6회 전국SW융합해커톤<br>1위 · 2019</span>
+          </div>
+          <p>
+            대화로 치매 자가진단을 돕는 로봇. 사람을 따라 움직이며 장애물을 피하고, 상황에 따라
+            표정을 바꾼다. 카메라와 초음파 센서로 추적을 붙였다.
+          </p>
+        </div>
+      </div>
+
+      <div class="mine">
+        <h3>이 팀에서 맡는 일</h3>
+        <p>
+          무엇을 만들지 한 문장으로 확정하고, 게임 루프와 판정을 직접 쓰고, 자동 검사를 깔아
+          둔다. 둘 이상이 다른 말을 할 때 최종 판정을 한다. 사전 과제 저장소의 커밋 39개가
+          이 계정이다.
+        </p>
+      </div>
+
+      <div class="meta">
+        <div><b>기술</b><span>C++ · TypeScript · Python · ROS2 · MCU · Canvas 2D · Android · gRPC</span></div>
+        <div><b>그 외</b><span class="ko">DGIST 로보틱스 · 정보처리기사 · 한국로봇학회 논문 1편 · 해커톤·메이커톤 입상 10회 이상</span></div>
+        <div><b>링크</b><span>linkedin.com/in/seonghyeon-kim-2719231a2<br>drive.google.com/file/d/1KCdfCcTHtFHcrwhqiNHkLjo77YgtGIZq/view</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>김성현 — 팀장 · 기획 · 개발</span><span>2</span></div>
+</section>
+
+<!-- ══ 3. 이주형 ═════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="person">
+    <div class="person-rail">
+      <b>02</b>
+      <i>기획 · PM</i>
+      <p>금융 IT 백엔드. 학부 5년을 게임 개발 동아리에서 보냈다.</p>
+    </div>
+
+    <div>
+      <div class="head">
+        <h2>이주형</h2>
+        <span class="chip">기획 · PM</span>
+        <span>현대 오토에버 — 책임</span>
+      </div>
+      <p class="lede">
+        금융 서비스 백엔드를 만든다. 여러 조직이 걸린 일정과 범위를 움직여 본 쪽이고,
+        48시간에서 가장 먼저 무너지는 것이 그 둘이다.
+      </p>
+
+      <div class="works">
+        <div class="work">
+          <div>
+            <b>취얼업</b>
+            <span>자기소개서 작성 서비스<br>팀장</span>
+          </div>
+          <p>
+            언어 모델로 자기소개서를 쓰는 서비스. Spring과 Flask로 백엔드를 만들면서
+            <strong>팀장으로 태스크와 전체 일정을 관리했다.</strong> 모델 호출이 원하는 결과를
+            내게 만드는 프롬프트 설계에 시간을 가장 많이 썼다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>Img2Code</b>
+            <span>이미지 → HTML 변환<br>캡스톤 경진대회 대상</span>
+          </div>
+          <p>
+            객체 탐지를 방해하는 글자를 OCR로 찾아 지우고, 객체마다 HTML 태그를 붙이는 분류를
+            학습시켰다. 데이터를 자동으로 모을 수 있는지, 그 방법이 무결한지를 따진 기록이 남아
+            있다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>신한알파 개선</b>
+            <span>증권 앱 리디자인<br>백엔드</span>
+          </div>
+          <p>
+            Django와 Vue로 다시 짰다. ER 설계와 테이블 필드 명세를 문서로 만들어 프론트가
+            데이터 구조와 API를 바로 붙을 수 있게 했다. 토큰 기반 접근 관리와 REST 설계를 맡았다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>인플루언서 정보 서비스</b>
+            <span>수집 · 분류 · 자동 갱신</span>
+          </div>
+          <p>
+            영상 API로 채널 정보를 긁어 한국어 여부와 카테고리 빈도로 채널을 분류해 저장했다.
+            서버리스 함수를 주기로 호출해 사람이 손대지 않아도 갱신되게 만들었다.
+          </p>
+        </div>
+      </div>
+
+      <div class="mine">
+        <h3>이 팀에서 맡는 일</h3>
+        <p>
+          무엇을 자를지 정한다. 남은 시간과 남은 일을 계속 맞춰 보고, 마감 전에 손을 떼게 만든다.
+          제출물 다섯 종의 누락을 마지막으로 확인하는 것도 이 자리다. 그리고 만든 사람은 자기
+          게임이 왜 재미있는지 설명할 수 있어서 규칙이 안 읽히는 것을 못 본다 — 설명 없이 화면만
+          보고 규칙이 읽히는지 판정한다.
+        </p>
+      </div>
+
+      <div class="meta">
+        <div><b>기술</b><span>Java · Python · SQL · JavaScript · Spring · Django · Flask · Vue.js · Jira · Figma</span></div>
+        <div><b>그 외</b><span class="ko">건국대 컴퓨터공학 · 신한투자증권 프로 디지털 아카데미 1기(297시간) · KB국민은행 IT아카데미 3기(480시간) · 게임 개발 동아리 EDGE 5년</span></div>
+        <div><b>링크</b><span>linkedin.com/in/juhyeonglee<br>thoracic-globe-1df.notion.site/IT-256c2146e40944b4a7938c86579ff0c3</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot"><span>이주형 — 기획 · PM</span><span>3</span></div>
+</section>
+
+<!-- ══ 4. 김일권 ═════════════════════════════════════════════════════ -->
+<section class="sheet">
+  <div class="person">
+    <div class="person-rail">
+      <b>03</b>
+      <i>개발</i>
       <p>데이터가 모자라고 정확도 요구가 높은 쪽에서 3년.</p>
     </div>
 
     <div>
-      <div class="who">
-        <div class="who-head">
-          <h3>김일권</h3>
-          <em>개발</em>
-          <span>소프트온넷 AI 연구소 — Computer Vision 연구 엔지니어</span>
-        </div>
-        <div class="who-body">
-          <p class="note">
-            3년간 KT, SKT, 대한항공 등의 실제 서비스에 들어가는 비전 AI를 만들었다. 모델만
-            학습시키고 넘기는 방식이 아니라 데이터 수집·정제, 모델 설계, 대규모 추론 파이프라인,
-            GPU 최적화, 상용 서비스 연계까지 한 사람이 이어서 했다. 데이터를 모으기 어렵고
-            정확도 요구가 높은 도메인 — 인프라 안전, 의료 영상, 항공 정비 — 이 주된 무대였다.
+      <div class="head">
+        <h2>김일권</h2>
+        <span class="chip">개발</span>
+        <span>소프트온넷 AI 연구소 — AI 엔지니어</span>
+      </div>
+      <p class="lede">
+        KT, SKT, 대한항공의 실제 서비스에 들어가는 비전 AI를 만들었다. 데이터 수집·정제부터
+        모델, 추론 파이프라인, GPU 최적화, 상용 연계까지 한 사람이 이어서 했다.
+      </p>
+
+      <div class="works">
+        <div class="work">
+          <div>
+            <b>전신주 3차원 계측</b>
+            <span>KT 인프라 안전 플랫폼</span>
+          </div>
+          <p>
+            2D 영상과 카메라 파라미터만으로 실제 높이·기울기·변형량을 복원했다. 분할 결과와
+            카메라 행렬을 역투영해 계산하므로 별도 센서 없이 구조물 상태를 잰다.
           </p>
-
-          <h3 style="margin-top:5.6mm;">대표 작업 셋</h3>
-          <div class="work" style="margin-top:3.2mm;">
-            <div>
-              <b>전신주 3차원 계측</b>
-              <span>KT 인프라 안전 플랫폼</span>
-            </div>
-            <p>
-              2D 영상과 카메라 파라미터만으로 실제 높이·기울기·변형량을 복원했다. 분할 결과와
-              카메라 행렬을 역투영해 계산하므로 별도 센서 없이 구조물 상태를 잰다.
-            </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>수의 영상 자동 판독</b>
+            <span>SKT X-caliber 공동 연구</span>
           </div>
-          <div class="work">
-            <div>
-              <b>수의 영상 자동 판독</b>
-              <span>SKT X-caliber 공동 연구</span>
-            </div>
-            <p>
-              반려동물 X-ray에서 척추·심장·기관·폐를 동시에 분할하고, 그 좌표에서 VHS·VLAS·CTR·TPA
-              같은 임상 지표를 자동 산출하는 진단 보조 시스템을 만들었다.
-            </p>
+          <p>
+            반려동물 X-ray에서 척추·심장·기관·폐를 동시에 분할하고, 그 좌표에서 VHS·VLAS·CTR
+            같은 임상 지표를 자동 산출하는 진단 보조 시스템을 만들었다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>항공기 외피 결함 탐지</b>
+            <span>대한항공 AI MRO 연구</span>
           </div>
-          <div class="work">
-            <div>
-              <b>항공기 외피 미세 결함 탐지</b>
-              <span>대한항공 AI MRO 연구</span>
-            </div>
-            <p>
-              8K 이상 이미지에서 육안으로 안 보이는 결함을 찾는다. 초해상도·슬라이딩 윈도우·초소형
-              객체 검출을 엮고, 결함 데이터가 없는 문제는 생성 모델로 합성해 학습 집합을 늘렸다.
-            </p>
+          <p>
+            8K 이상 이미지에서 육안으로 안 보이는 결함을 찾는다. 초해상도·슬라이딩 윈도우·초소형
+            객체 검출을 엮고, 결함 데이터가 없는 문제는 생성 모델로 합성해 학습 집합을 늘렸다.
+          </p>
+        </div>
+        <div class="work">
+          <div>
+            <b>학습 데이터 없이 분할하기</b>
+            <span>파운데이션 모델 · 제로샷</span>
           </div>
-
-          <div class="work" style="margin-top:5mm;">
-            <div>
-              <b>본선에서 맡는 일</b>
-              <span>AI·비전 · 파이프라인 · 성능</span>
-            </div>
-            <p>
-              AI가 들어가는 기능을 설계하고 붙인다. 대량 데이터 처리에서 메모리 초과, 경계면
-              슬라이싱 오차, 배열 차원 불일치처럼 마감 직전에 터지는 예외를 먼저 막는 것도 이
-              자리다.
-            </p>
-          </div>
-
-          <div class="who-links">
-            <div><b>주 스택</b>PyTorch · Ultralytics · SAM · Hugging Face Transformers · OpenCV · SAHI · CUDA · Docker</div>
-          </div>
-          <p class="note" style="margin-top:2.4mm;">
-            공개 포트폴리오 링크는 없다. 위 세 건이 상용 프로젝트라 공개 자료로 대체할 수 없기
-            때문이며, 필요하면 심사 과정에서 상세를 따로 전달할 수 있다.
+          <p>
+            사전 학습 데이터가 없는 대상을 텍스트 프롬프트만으로 분할한다. 규칙으로 풀기 어려웠던
+            문제를 자동화하는 데 쓰고 있고, 데이터가 아예 없으면 생성해서 채운다.
           </p>
         </div>
       </div>
 
-      <div class="block" style="margin-top:8mm;">
-        <h3 style="border-left-color:var(--hwang);">셋이 공유하는 일하는 방식</h3>
-        <ul style="margin-top:2.8mm;">
-          <li><strong>규칙을 먼저 문서로 못 박는다.</strong> 사전 과제도 코드보다 기능 명세서가
-            먼저 나왔고, 그 뒤로는 스펙이 규칙과 수치를 이겼다.</li>
-          <li><strong>검사를 사람에게 맡기지 않는다.</strong> 계층 규칙은 린트가, 회귀는 시드
-            재생이, 밸런스는 헤드리스 봇이 본다. 48시간에는 사람이 다시 읽을 시간이 없다.</li>
-          <li><strong>못 잰 것은 못 쟀다고 적는다.</strong> 침묵은 통과로 읽히므로, 확인하지
-            못한 축을 따로 모아 남긴다.</li>
-        </ul>
-        <p class="note" style="margin-top:3.2mm;">
-          사전 과제 저장소가 이 셋을 그대로 실행한 기록이다 — 문서 · 검사 · 남은 위험이 전부
-          <span class="mono">docs/</span> 안에 있다.
+      <div class="mine">
+        <h3>이 팀에서 맡는 일</h3>
+        <p>
+          AI가 들어가는 기능을 설계하고 붙인다. 대량 데이터 처리에서 메모리 초과, 경계면 슬라이싱
+          오차, 배열 차원 불일치처럼 마감 직전에 터지는 예외를 먼저 막는 것도 이 자리다. 사전
+          학습 데이터가 없는 대상을 텍스트 프롬프트로 분할하는 방식도 실무에서 쓰고 있다.
         </p>
+      </div>
+
+      <div class="meta">
+        <div><b>기술</b><span>PyTorch · Ultralytics · SAM · Hugging Face Transformers · OpenCV · SAHI · CUDA · Docker</span></div>
+        <div><b>그 외</b><span class="ko">공간 기하 기반 역투영 계측 · 초소형 객체 검출과 초해상도 · 생성 기반 데이터 증강</span></div>
+        <div><b>링크</b><span class="ko">공개 포트폴리오 없음 — 위가 모두 상용 프로젝트라 공개 자료로 대체할 수 없다. 필요하면 심사 과정에서 상세를 따로 전달할 수 있다</span></div>
       </div>
     </div>
   </div>
-  <div class="foot"><span>팀원과 담당 영역</span><span>3</span></div>
-</section>
-
-<!-- ══ 4. 활용 기술 ══════════════════════════════════════════════════ -->
-<section class="sheet">
-  <div class="grid">
-    <div class="rail">
-      <div class="rail-n">03</div>
-      <div class="rail-t">활용 기술</div>
-      <p>48시간 안에 새로 배우지 않고 바로 쓸 수 있는 것만 적었다.</p>
-    </div>
-
-    <div>
-      <div class="block">
-        <h2>이미 손에 익은 것으로만 짠다</h2>
-        <p class="lede">
-          해커톤에서 시간을 가장 많이 먹는 것은 처음 쓰는 도구다. 그래서 아래는 셋이 실무에서
-          이미 쓰고 있는 것만이다.
-        </p>
-      </div>
-
-      <div class="block">
-        <h3>지식과 경험</h3>
-        <table style="margin-top:2.4mm;">
-          <colgroup><col style="width:26%"><col style="width:74%"></colgroup>
-          <tbody>
-            <tr>
-              <td>게임과 런타임</td>
-              <td>TypeScript strict, Canvas 2D 직접 렌더, 고정 스텝 시뮬레이션과 시드 결정론, 스윕 충돌, Web Audio 절차 합성. 이번 사전 과제가 그 전부로 만들어졌다</td>
-            </tr>
-            <tr>
-              <td>실시간 제어</td>
-              <td>C++ 기반 로봇 제어, 센서 입력과 모션의 실시간 마감 처리, 하드웨어와 붙는 예외 처리</td>
-            </tr>
-            <tr>
-              <td>공간 기하와 비전</td>
-              <td>2D 픽셀과 3D 물리 좌표의 매핑, 마스크·폴리곤 좌표에서 거리·각도·비율 산출, 역투영 계측</td>
-            </tr>
-            <tr>
-              <td>비전 파운데이션 모델</td>
-              <td>사전 학습 데이터가 없는 대상을 텍스트 프롬프트로 제로샷 분할, 개방 어휘 세그멘테이션</td>
-            </tr>
-            <tr>
-              <td>초소형 객체와 초해상도</td>
-              <td>이미지 피라미드와 슬라이딩 윈도우, 해상도 복원을 엮어 고해상도 안의 극소 타겟을 놓치지 않는 파이프라인</td>
-            </tr>
-            <tr>
-              <td>생성 기반 데이터 증강</td>
-              <td>현실에서 모으기 힘든 데이터를 합성해 학습 집합을 늘리는 방법</td>
-            </tr>
-            <tr>
-              <td>파이프라인 예외 처리</td>
-              <td>메모리 초과, 경계면 슬라이싱 오차, 배열 차원 불일치 등 대량 처리에서 터지는 인프라 레벨 예외</td>
-            </tr>
-            <tr>
-              <td>AI 에이전트 지휘</td>
-              <td>여러 CLI 에이전트를 병렬로 돌리고 감사를 다른 도구에 맡겨 교차 검증하는 방식. 이번 사전 과제의 진행 방식이 그것이다</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="block">
-        <h3>도구</h3>
-        <table style="margin-top:2.4mm;">
-          <colgroup><col style="width:18%"><col style="width:82%"></colgroup>
-          <tbody>
-            <tr><td>언어</td><td class="mono">TypeScript · Python · C++</td></tr>
-            <tr><td>프레임워크</td><td class="mono">PyTorch · Ultralytics · SAM · Hugging Face Transformers</td></tr>
-            <tr><td>라이브러리</td><td class="mono">NumPy · OpenCV · SciPy · Albumentations · SAHI</td></tr>
-            <tr><td>웹·빌드</td><td class="mono">Vite · Vitest · ESLint · Playwright</td></tr>
-            <tr><td>환경</td><td class="mono">Linux · Docker · CUDA / cuDNN · Git</td></tr>
-            <tr><td>AI 도구</td><td class="mono">Claude Code · Codex CLI · Antigravity CLI</td></tr>
-          </tbody>
-        </table>
-      </div>
-
-      <div class="block">
-        <h3 style="border-left-color:var(--hwang);">48시간에 안 하는 것</h3>
-        <p class="note">
-          처음 쓰는 프레임워크를 들이지 않는다. 런타임 AI를 억지로 붙이지 않는다. 외부 서비스에
-          기대는 기능을 넣지 않는다 — 심사자가 링크 하나로 여는 빌드가 남의 서버 상태에 걸리면
-          안 된다. 사전 과제를 런타임 의존성 0개로 만든 이유가 같다.
-        </p>
-      </div>
-    </div>
-  </div>
-  <div class="foot"><span>활용 기술</span><span>4</span></div>
+  <div class="foot"><span>김일권 — 개발</span><span>4</span></div>
 </section>
 
 </body>

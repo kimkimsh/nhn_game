@@ -36,7 +36,7 @@ done
 
 `fonts/`를 다시 만들려면 Google Fonts CSS(`Gowun Batang` 400·700, `IBM Plex Sans KR` 400·600,
 `IBM Plex Mono` 400·500·600)를 받아, **세 HTML이 쓰는 글자를 합친 집합**과 `unicode-range`가
-겹치는 `@font-face`만 남기고 그 woff2를 내려받는다. 99개 파일 1.4 MB가 나온다.
+겹치는 `@font-face`만 남기고 그 woff2를 내려받는다. 103개 파일 1.5 MB가 나온다.
 어느 문서든 새 글자가 들어가면 이 선별을 다시 돌려야 한다.
 
 ## 세 문서의 색 규칙이 다르다
