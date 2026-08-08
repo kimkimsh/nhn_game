@@ -114,12 +114,19 @@ const RULE_LINE_WEIGHT = 500;
 const START_BOX = { xU: 310, yU: 1548, widthU: 460, heightU: 74, strokeU: 2, strokeAlpha: 0.6 };
 const START_TEXT = { text: 'SPACE — 베러 나간다', baselineYU: 1595, px: 40, weight: 600 };
 
-/** 08 §6.1 조작 안내 두 줄. §16.3의 타이틀 행 세 개가 전부 여기 있다 */
+/**
+ * 08 §6.1 조작 안내 두 줄. §16.3의 타이틀 행 넷 중 셋이 여기 있다.
+ *
+ * **빠진 하나가 치트 모드(Shift + F9)이고 의도된 것이다.** §16.3은 그것을 키 배정으로 적었지
+ * 화면에 띄우라고 적지 않았다 — 안내를 지워도 키는 그대로 살아 있고 `screens/manager.ts`가
+ * 받는다. 목업 `00_title/scene.js:105`와 08 §6.1 표는 이 줄에 치트를 적어 두었지만 그 둘은
+ * 플레이어에게 무엇을 광고할지의 근거가 아니다. 되살리지 말 것.
+ */
 const HINT_PX = 29;
 const HINT_WEIGHT = 400;
 const HINTS: readonly { readonly text: string; readonly baselineYU: number; readonly color: string }[] = [
   { text: '시작  Enter · SPACE · 클릭        이동  WASD · 방향키        패리  SPACE · J · 좌클릭', baselineYU: 1712, color: PALETTE.baekMute },
-  { text: '음소거  M          치트 모드  Shift + F9', baselineYU: 1762, color: PALETTE.baekFaint },
+  { text: '음소거  M', baselineYU: 1762, color: PALETTE.baekFaint },
 ];
 
 /** 08 §6.1 하단 두 줄. y는 목업의 `PF.H - 38`이다 */
