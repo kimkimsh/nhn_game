@@ -34,6 +34,10 @@
  *
  * HR-02: 모든 웨이브 편성에 원거리 적이 최소 1기 있어야 한다. isRanged가 그 판정 기준이고,
  * tests/guards.test.ts가 config/stages/* 전체를 훑어 이 규칙을 검사한다.
+ *
+ * shotsPerCycle과 fireCycleSec은 §8.1 표의 값이 아니다 — difficulty.ts 헤더가 적은 난이도 조정
+ * (발수 × 0.7 반올림 최소 1, 간격 × 1.4)이 이 두 열에 걸려 있다. 주석의 § 뒤 숫자가 원값이다.
+ * hp · moveSpeedUPerSec · spreadDeg · score는 §8.1 그대로다.
  */
 import type { EnemyDef } from './types';
 import type { EnemyId } from './ids';
@@ -49,7 +53,7 @@ export const ENEMIES = {
     bullet: 'P2',
     shotsPerCycle: 1,
     spreadDeg: 0,                 // 단발이라 부채꼴이 없다
-    fireCycleSec: 2.2,            // §8.1 발사 주기 (s)
+    fireCycleSec: 3.08,           // 발사 주기 (s). §8.1 원값 2.2 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 100,                   // §8.1 처치 점수
@@ -62,9 +66,9 @@ export const ENEMIES = {
     moveSpeedUPerSec: 150,        // §8.1 이동 속도 (u/s)
     behavior: 'strafeAndFire',    // 좌우 왕복하며 발사
     bullet: 'P1',
-    shotsPerCycle: 3,
-    spreadDeg: 14,                // §8.1 ±14° 부채꼴 — 반각 (deg)
-    fireCycleSec: 2.6,            // §8.1 발사 주기 (s)
+    shotsPerCycle: 2,             // 발수. §8.1 원값 3 × 0.7
+    spreadDeg: 14,                // §8.1 ±14° 부채꼴 — 반각 (deg). 2발이면 최외곽 두 발이 곧 전부다
+    fireCycleSec: 3.64,           // 발사 주기 (s). §8.1 원값 2.6 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 100,                   // §8.1 처치 점수
@@ -111,7 +115,7 @@ export const ENEMIES = {
     bullet: 'P6',
     shotsPerCycle: 1,
     spreadDeg: 0,                 // 단발이라 부채꼴이 없다
-    fireCycleSec: 3.4,            // §8.1 발사 주기 (s)
+    fireCycleSec: 4.76,           // 발사 주기 (s). §8.1 원값 3.4 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 200,                   // §8.1 처치 점수
@@ -124,7 +128,7 @@ export const ENEMIES = {
     moveSpeedUPerSec: 420,        // §8.1 이동 속도 (u/s) 고정. 목업의 430·440·450은 A16이 기각했다
     behavior: 'crossPass',        // 측면 진입 → 반대편 통과 후 소멸. 되돌아오지 않는다(A8)
     bullet: 'P11',
-    shotsPerCycle: 2,             // §8.1 통과 중 2회
+    shotsPerCycle: 1,             // 통과 중 발수. §8.1 원값 2 × 0.7
     spreadDeg: 0,                 // 유도탄 단발이라 부채꼴이 없다
     fireCycleSec: 0,              // 주기가 아니라 통과 중 2회. crossPass가 자체 스케줄을 쓴다 (s)
     isRanged: true,
@@ -140,9 +144,9 @@ export const ENEMIES = {
     moveSpeedUPerSec: 100,        // §8.1 이동 속도 (u/s)
     behavior: 'holdAndFire',
     bullet: 'P4',
-    shotsPerCycle: 10,            // §8.1 링 탄막 10발
-    spreadDeg: 360,               // §8.1 등간격 36° 링. 유일하게 반각이 아니라 전방위 표시다
-    fireCycleSec: 3.0,            // §8.1 발사 주기 (s)
+    shotsPerCycle: 7,             // 링 탄막 발수. §8.1 원값 10 × 0.7
+    spreadDeg: 360,               // §8.1 전방위 링. 유일하게 반각이 아니라 전방위 표시다. 7발이면 등간격 51.4°
+    fireCycleSec: 4.2,            // 발사 주기 (s). §8.1 원값 3.0 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 180,                   // §8.1 처치 점수
@@ -155,9 +159,9 @@ export const ENEMIES = {
     moveSpeedUPerSec: 130,        // §8.1 이동 속도 (u/s)
     behavior: 'holdAndFire',
     bullet: 'P8',
-    shotsPerCycle: 2,
+    shotsPerCycle: 1,             // 발수. §8.1 원값 2 × 0.7. 1발이면 부채꼴이 사라지고 조준 단발이 된다
     spreadDeg: 10,                // §8.1 ±10° 부채꼴 — 반각 (deg). 목업의 ±5°는 A6이 기각했다
-    fireCycleSec: 2.8,            // §8.1 발사 주기 (s)
+    fireCycleSec: 3.92,           // 발사 주기 (s). §8.1 원값 2.8 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 160,                   // §8.1 처치 점수
@@ -170,9 +174,9 @@ export const ENEMIES = {
     moveSpeedUPerSec: 0,          // §8.1 모함에 부착. 스스로 움직이지 않는다 (u/s)
     behavior: 'mounted',
     bullet: 'P6',
-    shotsPerCycle: 4,             // §8.1 4발 일제
+    shotsPerCycle: 3,             // 일제 발수. §8.1 원값 4 × 0.7
     spreadDeg: 0,                 // 일제 사격이고 부채꼴로 벌리지 않는다
-    fireCycleSec: 4.0,            // §8.1 발사 주기 (s)
+    fireCycleSec: 5.6,            // 발사 주기 (s). §8.1 원값 4.0 × 1.4
     isRanged: true,
     contactDamage: false,
     score: 300,                   // §8.1 처치 점수

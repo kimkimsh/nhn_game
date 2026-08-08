@@ -204,8 +204,14 @@ function runSim(spec: RunSpec): RunResult {
 const STEADY_FRAME_MS = 16.667;
 /** 09 §3.6. 최댓값이 41.0인 것은 한 프레임이 소화하는 상한 아래에 두기 위해서다 */
 const JITTER_FRAME_MS = [16.667, 33.3, 8.0, 41.0, 16.667];
-/** 4초를 조금 넘긴다. 스텝 경계에 정확히 떨어지는 총합이면 반올림 하나로 스텝 수가 갈린다 */
-const RUN_TOTAL_MS = 4004;
+/**
+ * 8초를 조금 넘긴다. 스텝 경계에 정확히 떨어지는 총합이면 반올림 하나로 스텝 수가 갈린다.
+ *
+ * 4004였다. 이 창은 y=220의 발사원에서 나간 P1이 플레이어에게 닿아 점수와 피격을 만들 만큼
+ * 길어야 하고, 그 비행 시간이 탄속 배율(difficulty.ts)에 반비례한다 — 배율이 절반이 되면서
+ * 4초 창에서는 한 발도 도착하지 않아 아래 두 케이스의 「빈 세계가 아니다」 단언이 무너졌다.
+ */
+const RUN_TOTAL_MS = 8008;
 
 function steadyFrame(): number {
   return STEADY_FRAME_MS;

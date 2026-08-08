@@ -21,6 +21,7 @@ import { FIXED_DT_SEC } from '../src/core/loop';
 import { createVec2, dot, lengthOf, reflectAboutCenterInto } from '../src/core/vec';
 import { bulletSpeedUPerSec, decayReflectGrace, type Projectile } from '../src/sim/bullets';
 import { consumeParryInput, resolveParry } from '../src/sim/parry';
+import { computeStats } from '../src/sim/stats';
 import { stepWorld } from '../src/sim/step';
 import { createBaseStats, createWorld, type World } from '../src/sim/world';
 
@@ -181,9 +182,12 @@ describe('§5.5 반사 공식', () => {
 });
 
 describe('§7.1 반사탄의 일생', () => {
-  it('속도 상한 2400 u/s에서 잘린다 — 편전 P3 · S5 탄속 · GREAT', () => {
+  it('속도 상한 2400 u/s에서 잘린다 — 편전 P3 · S5 탄속 · GREAT · N06 3중첩', () => {
     const { world, input } = setup(5);
-    // 880 × 1.34 × 2.6 = 3066. 상한이 없으면 이 값이 그대로 나온다
+    // 880 × 0.67 × 2.6 × 1.6 = 2453. 상한이 없으면 이 값이 그대로 나온다.
+    // N06(§11.3 반사탄 속도 +20%, maxStack 3)이 있어야 상한에 닿는다 — 탄속 배율이
+    // 낮아진 뒤로는 카드 없는 최고속 조합(1533 u/s)이 2400에 못 미친다
+    world.stats = computeStats([{ id: 'N06', stack: 3 }]);
     placeApproaching(world, 'P3', 0, -20);
     parryNow(world, input);
     const reflected = onlyReflect(world);

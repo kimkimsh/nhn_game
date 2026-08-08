@@ -1,10 +1,14 @@
 /**
  * B3 아타케부네 기함 — 스펙 §10.4
  *
- * 본체 HP 2000 / 3페이즈 / 목표 격파 시간 29초. §10.7 요약표의 3200은 본체 2000 + 포문 4 × 300의
+ * 본체 HP 1333 / 3페이즈 / 목표 격파 시간 29초. §10.7 요약표의 3200은 본체 2000 + 포문 4 × 300의
  * 합계이고 `BossDef.hp`가 단일 소스이므로 그 필드에는 본체 HP만 들어간다(12_통합_계약.md §5).
  * B1이 쓰는 「§10.7 요약표와 그대로 대조」하는 단언을 이 보스에 쓰면 안 된다 — 다섯 중 B3만
  * 요약표 값이 본체 + 부위 합계다(04_밸런스_데이터_설계.md §8.1-B).
+ *
+ * hp와 발수·간격은 difficulty.ts 헤더의 난이도 조정을 받은 값이고 § 뒤 숫자가 원값이다.
+ * **본체와 포문이 같은 × 2/3을 받아야 합계가 요약표 × 2/3(=2133)이 된다** — 한쪽만 줄이면
+ * 「어느 포문을 먼저 부술지」의 비용 대비가 조용히 틀어진다.
  *
  * 설계 의도(§10.4): 저속 대형탄 위주라 개별 패리는 쉽고, 대신 **어느 포문을 먼저 부술지**가
  * 다른 넷은 묻지 않는 결정으로 들어온다. 원형 거울 반사로 좌우 포문을 노리려면 몸을 그쪽으로
@@ -20,7 +24,7 @@ import {
 export const BOSS_3 = {
   id: 'B3',
   name: '아타케부네 기함',
-  hp: 2000,                     // §10.4 본체 HP. 포문 4 × 300은 parts가 따로 갖는다
+  hp: 800,                     // 본체 HP. §10.4 원값 2000 × 2/3. 포문은 parts가 따로 갖는다
   targetKillSec: 29,            // §10.4 목표 격파 시간 (s)
   shape: 'warship',             // render/boss.ts의 실루엣 키. B5 기함과 같은 키를 쓴다
   hitBox: { wU: 860, hU: 250 }, // §10.4 선체 (u). 목업 06_boss3_atakebune/scene.js:15
@@ -28,8 +32,8 @@ export const BOSS_3 = {
   /**
    * §10.4 · §15.1 파괴 가능 포문 4기
    *
-   * hp 300은 §10.4가 따로 못 박은 고정값이다. `enemies.ts`의 'E-I' 200 × 스테이지 HP 배율과
-   * 별개이므로 스테이지 3의 배율 1.80이 이 값에 걸리지 않는다.
+   * hp 200은 §10.4가 따로 못 박은 300에 난이도 조정 × 2/3을 먹인 값이다. `enemies.ts`의
+   * 'E-I' 200 × 스테이지 HP 배율과 별개이므로 스테이지 3의 배율이 이 값에 걸리지 않는다.
    *
    * `offsetU`는 목업 좌표에서 본체 (540, 330)을 뺀 것이다 — 포문 (190,430) (400,450) (680,450)
    * (890,430)(06_boss3_atakebune/scene.js:16-19).
@@ -40,10 +44,10 @@ export const BOSS_3 = {
    * 겹치는 영역에서 포문이 먼저 판정을 가져가려면 사각형이어야 한다(12_통합_계약.md §10 E-04).
    */
   parts: [
-    { id: 'port-1', hp: 300, offsetU: { xU: -350, yU: 100 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
-    { id: 'port-2', hp: 300, offsetU: { xU: -140, yU: 120 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
-    { id: 'port-3', hp: 300, offsetU: { xU:  140, yU: 120 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
-    { id: 'port-4', hp: 300, offsetU: { xU:  350, yU: 100 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
+    { id: 'port-1', hp: 200, offsetU: { xU: -350, yU: 100 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
+    { id: 'port-2', hp: 200, offsetU: { xU: -140, yU: 120 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
+    { id: 'port-3', hp: 200, offsetU: { xU:  140, yU: 120 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
+    { id: 'port-4', hp: 200, offsetU: { xU:  350, yU: 100 }, hitBox: { wU: 96, hU: 63 }, bullet: 'P6' },
   ],
 
   phases: [
@@ -68,15 +72,15 @@ export const BOSS_3 = {
         },
         {
           name: '갑판 조총 사격',
-          // §10.4 갑판 조총병 실루엣에서 소형 고속탄 8발 산발, 0.15초 간격.
+          // §10.4 갑판 조총병 실루엣에서 소형 고속탄 산발. 발수를 담은 열이 count가 아니라 repeat다.
           // tellSec은 연사 전체 앞에 한 번이고 repeat마다 다시 붙지 않는다
           // (types-content.ts의 tellSec 계약 ①). 스펙이 이 패턴의 예비동작을 직접 주지 않았고
           // 단발 직선이므로 §14.1의 스테이지 값을 읽는다(계약 ③).
           kind: 'volley', bullet: 'P2',
           count: 1,               // §10.4 한 번에 한 발씩 흘린다
           tellSec: 0.75,          // §14.1 S3 단발 직선 발사 예비동작 (s)
-          intervalSec: 0.15,      // §10.4 산발 간격 (s)
-          repeat: 8,              // §10.4 8발
+          intervalSec: 0.2,      // 산발 간격 (s). §10.4 원값 0.15 × 1.4
+          repeat: 10,              // 발수. §10.4 원값 8 × 0.7
           aim: 'player',          // §10.4가 침묵하는 자리. 목업 scene.js:41이 aimAt을 쓴다
           sourceSpread: 630,      // 목업의 갑판 발사원 x 240~870 (u) — scene.js:41
           from: 'boss',
@@ -112,13 +116,13 @@ export const BOSS_3 = {
         },
         {
           name: '교차 포격',
-          // §10.4 좌우 포문이 0.4초 간격으로 번갈아 발사, 총 8발.
-          // repeat 8이 「총 8발」이다 — 포문이 파괴돼도 발수는 줄지 않고 남은 쪽이 이어 쏜다.
+          // §10.4 좌우 포문이 번갈아 발사.
+          // repeat가 「총 발수」다 — 포문이 파괴돼도 발수는 줄지 않고 남은 쪽이 이어 쏜다.
           kind: 'volley', bullet: 'P6',
           count: 1,               // §10.4 한 차례에 한 포문이 한 발
           tellSec: 0.75,          // §14.1 S3 단발 직선 발사 예비동작 (s). 연사 전체 앞에 한 번이다
-          intervalSec: 0.4,       // §10.4 교차 간격 (s)
-          repeat: 8,              // §10.4 총 8발
+          intervalSec: 0.5,      // 교차 간격 (s). §10.4 원값 0.4 × 1.4
+          repeat: 15,              // 총 발수. §10.4 원값 8 × 0.7
           aim: 'player',          // §10.4가 침묵하는 자리. 좌현 일제포격과 같은 포문이다
           sourceSpread: 0,        // §10.4 발사원 위치는 parts의 offsetU가 정한다 (u)
           from: 'partsAlternating',
@@ -132,7 +136,7 @@ export const BOSS_3 = {
       patterns: [
         {
           /**
-           * §10.4 화공선 — 불타는 소형선 3척이 플레이어를 조준해 돌진하고, 접촉 또는 화면 하단
+           * §10.4 화공선 — 불타는 소형선이 플레이어를 조준해 돌진하고, 접촉 또는 화면 하단
            * 도달 시 폭발해 장판 P9를 남긴다.
            *
            * 화공선은 §8.1 아키타입 9종에 없어 `EnemyId`를 못 가지므로 `summon`으로 쓸 수 없고
@@ -145,9 +149,9 @@ export const BOSS_3 = {
            */
           name: '화공선',
           kind: 'volley', bullet: 'P8',
-          count: 3,               // §10.4 소형선 3척
+          count: 8,               // 소형선 (척). §10.4 원값 3 × 0.7
           tellSec: 0.75,          // §14.1 S3 단발 직선 발사 예비동작 (s)
-          intervalSec: 0,         // §10.4 3척이 함께 나간다 (s)
+          intervalSec: 0,         // §10.4 함께 나간다 (s)
           repeat: 1,              // §10.4 연사가 아니다
           aim: 'player',          // §10.4 「플레이어 조준 후 돌진」
           sourceSpread: 630,      // 갑판 폭 (u). 갑판 조총 사격과 같은 발사원 구간이다
@@ -156,7 +160,7 @@ export const BOSS_3 = {
         },
         {
           name: '최후 포격',
-          // §10.4 함포탄 6발을 부채꼴로 동시 발사 + 신관 링 탄막.
+          // §10.4 함포탄을 부채꼴로 동시 발사 + 신관 링 탄막.
           // charge.onEnd와 mortar.onImpact는 후속을 하나만 붙일 수 있어 병렬을 못 만든다 —
           // 그래서 parallel이다(12_통합_계약.md §10 E-08).
           kind: 'parallel',
@@ -164,18 +168,18 @@ export const BOSS_3 = {
             {
               name: '함포 부채꼴',
               kind: 'spread', bullet: 'P6',
-              count: 6,           // §10.4 함포탄 6발
-              halfAngleDeg: 30,   // §10.4가 침묵하는 자리 (deg). 6발이 12° 간격으로 벌어진다
+              count: 12,           // 함포탄 (발). §10.4 원값 6 × 0.7
+              halfAngleDeg: 40,   // §10.4가 침묵하는 자리 (deg). 4발이 20° 간격으로 벌어진다
               tellSec: PATTERN_SPREAD_TELL_SEC, // §6.2 확산의 예비동작은 스테이지와 무관하게 고정이다
               sets: 1,            // §10.4 「동시 발사」라 세트가 하나다
               setIntervalSec: 0,  // §10.4 세트가 하나이므로 간격이 없다 (s)
             },
             {
               name: '신관 링',
-              // §10.4가 발수를 주지 않아 §8.1 E-G 신관의 링 10발(등간격 36°)을 그대로 쓴다.
+              // §10.4가 발수를 주지 않아 §8.1 E-G 신관의 링을 그대로 쓴다 — 조정 뒤에도 두 값이 같다.
               // tellSec이 함포 부채꼴과 같아야 스펙의 「동시」가 성립한다.
               kind: 'ring', bullet: 'P4',
-              count: 10,          // §8.1 E-G 신관의 링 10발
+              count: 20,           // E-G 신관의 링과 같은 발수. §8.1 원값 10 × 0.7
               tellSec: PATTERN_SPREAD_TELL_SEC,            // §6.2 링의 예비동작도 고정이다
               startAngleDeg: PATTERN_RING_START_ANGLE_DEG, // 스펙이 정하지 않은 자리. patterns.ts의 규약을 따른다
             },

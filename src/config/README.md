@@ -15,7 +15,8 @@
 
 | 고치고 싶은 것 | 파일 |
 |---|---|
-| 게임이 너무 어렵다 / 쉽다 | `difficulty.ts` (스테이지별 배율. 보스 HP는 여기 없다 — `docs/plan/12_통합_계약.md` §5) |
+| 게임이 너무 어렵다 / 쉽다 | `difficulty.ts` (스테이지별 탄속·HP 배율. 보스 HP는 여기 없다 — `docs/plan/12_통합_계약.md` §5) |
+| 탄이 너무 많다 / 적다 | 배율 열이 없다. `enemies.ts`의 `shotsPerCycle`·`fireCycleSec`와 `bosses/*`의 발수·간격 열을 직접 고친다. `difficulty.ts`의 `maxEnemyBullets`는 성능 방어선이라 여기가 아니다 |
 | 패리가 너무 후하다 / 빡빡하다 | `parry.ts` (반경, 활성 시간, 등급 밴드) |
 | 특정 잡몹이 너무 세다 | `enemies.ts` (해당 ID 줄의 `hp`) |
 | 특정 보스가 너무 오래 산다 | `bosses/boss-N-*.ts` (`hp`) |

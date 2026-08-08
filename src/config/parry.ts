@@ -12,7 +12,7 @@ import { REFLECT } from './reflect';
 import type { ParryConfig, ParryBand, HardLimits } from './types';
 
 export const PARRY = {
-  radiusU:      70,    // §5.1 패리 원 반경 (u), 플레이어 중심 기준
+  radiusU:      120,    // §5.1 패리 원 반경 (u), 플레이어 중심 기준
   activeSec:    0.15,  // §5.1 활성 시간 (s). 누르고 있어도 연장되지 않는다
   cooldownSec:  0.24,  // §5.1 쿨다운 (s), 활성 시작 시점 기준 → sim 초당 최대 4.16회.
                        //      4.16회는 sim 시계 값이고 플레이어 체감값이 아니다 — 히트스톱이 멈춰
@@ -40,8 +40,8 @@ export const PARRY_LOCKOUT_SEC = PARRY.cooldownSec - PARRY.activeSec;
  * (12_통합_계약.md §10 E-06).
  */
 export const PARRY_BANDS = [
-  { id: 'GREAT',   maxDistU: 28,   damageMul: 3.5, speedMul: 2.6, hitstopSec: 0.075, shakeAmplitudeU: 6, score: 400 },
-  { id: 'GOOD',    maxDistU: 48,   damageMul: 2.0, speedMul: 1.8, hitstopSec: 0.05,  shakeAmplitudeU: 4, score: 150 },
+  { id: 'GREAT',   maxDistU: 28,   damageMul: 3.5, speedMul: 2.6, hitstopSec: 0.02, shakeAmplitudeU: 4, score: 400 },
+  { id: 'GOOD',    maxDistU: 48,   damageMul: 2.0, speedMul: 1.8, hitstopSec: 0.02,  shakeAmplitudeU: 4, score: 150 },
   { id: 'NOT_BAD', maxDistU: null, damageMul: 1.0, speedMul: 1.3, hitstopSec: 0.02,  shakeAmplitudeU: 2, score: 50  },
 ] as const satisfies readonly ParryBand[];
 

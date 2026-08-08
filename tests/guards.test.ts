@@ -101,8 +101,8 @@ describe('HR-09 — 최소 비행 시간 0.45초', () => {
     BULLETS.P2.speedUPerSec * STAGE_SCALING[STAGE_ID].bulletSpeedMul * TELEGRAPH.minFlightSec,
   );
 
-  it('S5 조총탄의 억제 거리는 458u다 (§6.2 최악 조건 검산)', () => {
-    expect(suppressU).toBe(458);
+  it('S5 조총탄의 억제 거리는 229u다 (§6.2 최악 조건 검산 458u × 탄속 조정 0.50)', () => {
+    expect(suppressU).toBe(229);
   });
 
   it.each([
@@ -227,8 +227,8 @@ describe('단일 소스 — 값 사이의 관계', () => {
     expect((STAGE_SCALING[1] as Record<string, unknown>).bossHp).toBeUndefined();
   });
 
-  it('보스 HP의 단일 소스는 BossDef다 (§10.7 요약표와 대조)', () => {
-    expect(BOSSES.B1.hp).toBe(1450);
+  it('보스 HP의 단일 소스는 BossDef다 (§10.7 요약표 1450 × 체력 조정 2/3)', () => {
+    expect(BOSSES.B1.hp).toBe(967);
   });
 
   it('격파 연출은 BOSS_COMMON으로 옮겨졌다 (12 §8)', () => {

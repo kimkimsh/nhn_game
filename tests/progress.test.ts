@@ -114,8 +114,9 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     const boss = createBossState('B3');
     const seen = watchPhases();
 
-    // §10.4 B3 본체 HP 2000, 페이즈 진입 비율 0.60 / 0.35. 1600을 깎으면 둘 다 아래로 지난다
-    applyBossDamage(world, boss, null, 1600);
+    // B3 본체 HP 1333(§10.4 원값 2000 × 2/3), 페이즈 진입 비율 0.60 / 0.35.
+    // 1066을 깎으면 둘 다 아래로 지나고 HP는 267 남아 격파에는 닿지 않는다
+    applyBossDamage(world, boss, null, 1066);
     world.bus.flush();
 
     expect(seen).toEqual([2]);
@@ -129,16 +130,16 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     const boss = createBossState('B3');
     const seen = watchPhases();
 
-    // §10.4 포문 HP 300 × 4. 하나를 부순 시점에는 어느 조건도 성립하지 않는다
-    applyBossDamage(world, boss, boss.parts[0]!, 300);
+    // 포문 HP 200 × 4(§10.4 원값 300 × 2/3). 하나를 부순 시점에는 어느 조건도 성립하지 않는다
+    applyBossDamage(world, boss, boss.parts[0]!, 200);
     world.bus.flush();
     expect(seen).toEqual([]);
     expect(boss.phaseIndex).toBe(0);
 
     // 「선착」 두 트리거가 같은 호출에서 함께 참이 되는 상태를 만든다 —
-    // HP는 이미 0.60 아래이고, 그 호출이 두 번째 포문을 부숴 파괴 수가 2에 닿는다
-    boss.hp = 1000;
-    applyBossDamage(world, boss, boss.parts[1]!, 300);
+    // HP는 이미 0.60 아래(1333 × 0.60 = 800)이고, 그 호출이 두 번째 포문을 부숴 파괴 수가 2에 닿는다
+    boss.hp = 667;
+    applyBossDamage(world, boss, boss.parts[1]!, 200);
     world.bus.flush();
 
     expect(seen).toEqual([2]);
@@ -148,7 +149,7 @@ describe('§10.4 보스 페이즈 전환은 정확히 1회', () => {
     applyBossDamage(world, boss, null, 900);
     world.bus.flush();
     expect(seen).toEqual([2]);
-    expect(boss.hp).toBe(1000);
+    expect(boss.hp).toBe(667);
   });
 });
 
@@ -201,10 +202,10 @@ describe('05 §8.3 B3 — 부위가 본체보다 먼저 판정된다', () => {
     launchReflect(world, port.xU, port.yU, 100);
     resolveBossHits(world, boss);
 
-    // §10.4 포문 HP 300, 본체 HP 2000
-    expect(port.hp).toBe(200);
+    // 포문 HP 200, 본체 HP 1333 (§10.4 원값 300 · 2000 × 2/3)
+    expect(port.hp).toBe(100);
     expect(port.destroyed).toBe(false);
-    expect(boss.hp).toBe(2000);
+    expect(boss.hp).toBe(1333);
     expect(world.reflectBullets.activeCount).toBe(0);
   });
 
@@ -217,7 +218,7 @@ describe('05 §8.3 B3 — 부위가 본체보다 먼저 판정된다', () => {
     launchReflect(world, port.xU, port.yU, 100);
     resolveBossHits(world, boss);
 
-    expect(boss.hp).toBe(1900);
+    expect(boss.hp).toBe(1233);
   });
 });
 

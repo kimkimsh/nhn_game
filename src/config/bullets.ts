@@ -17,18 +17,18 @@ export const BULLETS = {
   P1: {
     name: '화살',
     radiusU: 8,
-    speedUPerSec: 520,
+    speedUPerSec: 550,
     isParryable: true,
-    brp: 10,
+    brp: 20,
     shape: 'shard',
     note: '기본 원거리탄',
   },
   P2: {
     name: '조총탄',
     radiusU: 6,
-    speedUPerSec: 760,
+    speedUPerSec: 800,
     isParryable: true,
-    brp: 14,
+    brp: 20,
     shape: 'dot',
     note: '고속·소형. 판정창이 좁다',
   },
@@ -38,25 +38,25 @@ export const BULLETS = {
     // 여기서 배정하지 않는다 — 배정은 §8·§9의 개정이지 구현 판단이 아니다.
     name: '편전',
     radiusU: 5,
-    speedUPerSec: 880,
+    speedUPerSec: 900,
     isParryable: true,
-    brp: 12,
+    brp: 20,
     shape: 'needle',
     note: '최고속. 발사 예비동작이 가장 짧다',
   },
   P4: {
     name: '수리검',
     radiusU: 10,
-    speedUPerSec: 600,
+    speedUPerSec: 700,
     isParryable: true,
-    brp: 12,
+    brp: 20,
     shape: 'star',
     note: '회전. 확산 발사 전용',
   },
   P5: {
     name: '참격파',
     radiusU: 34,               // §6.1 호 형태, 실측 폭 120u
-    speedUPerSec: 420,
+    speedUPerSec: 500,
     isParryable: true,
     brp: 30,
     shape: 'crescent',
@@ -65,27 +65,27 @@ export const BULLETS = {
   P6: {
     name: '함포탄',
     radiusU: 26,
-    speedUPerSec: 300,
+    speedUPerSec: 400,
     isParryable: true,
-    brp: 55,
+    brp: 30,
     shape: 'orb',
     note: '최저속·최대 위력. 해전 전용. NOT BAD 반사 속도 390u/s로 추격 가능(§7.1)',
   },
   P7: {
     name: '대통 폭탄',
     radiusU: 30,
-    speedUPerSec: 260,
+    speedUPerSec: 350,
     isParryable: true,
-    brp: 70,
+    brp: 30,
     shape: 'bomb',
     note: '착탄 시 폭발 → P9 생성. 폭발 전에만 패리 가능',
   },
   P8: {
     name: '불화살',
     radiusU: 9,
-    speedUPerSec: 480,
+    speedUPerSec: 500,
     isParryable: true,
-    brp: 12,
+    brp: 20,
     shape: 'fireshard',
     note: '착탄 시 P9 생성',
   },
@@ -101,18 +101,18 @@ export const BULLETS = {
   P10: {
     name: '신기전',
     radiusU: 6,
-    speedUPerSec: 620,
+    speedUPerSec: 650,
     isParryable: true,
-    brp: 11,
+    brp: 20,
     shape: 'dart',
     note: '좁은 각도 다발 발사 전용',
   },
   P11: {
     name: '유도탄',
     radiusU: 9,
-    speedUPerSec: 380,         // §6.1 380 → 560. 유도 종료 후 가속한다
+    speedUPerSec: 400,         // §6.1 380 → 560. 유도 종료 후 가속한다
     isParryable: true,
-    brp: 16,
+    brp: 20,
     shape: 'seeker',
     // 유도는 적 탄환일 때만이다. 반사되는 순간 소멸한다 — sim/reflect.ts가
     // homingRemainingSec = 0 으로 만든다 (01 §4-B S-12, 05 §4.3).
@@ -120,7 +120,7 @@ export const BULLETS = {
     homing: {
       durationSec: 1.2,        // §6.1 발사 후 이 시간 동안만 유도 (s)
       turnRateDegPerSec: 120,  // §6.1 유도 선회율 (deg/s)
-      exitSpeedUPerSec: 560,   // §6.1 유도 종료 후 직진 속도 (u/s)
+      exitSpeedUPerSec: 600,   // §6.1 유도 종료 후 직진 속도 (u/s)
     },
     note: '카드 R03이 반사탄에 붙이는 유도와는 별개 파라미터다',
   },

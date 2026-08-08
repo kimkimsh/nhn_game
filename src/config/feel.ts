@@ -49,11 +49,11 @@ export const HITSTOP_BUDGET_PER_SEC = 0.32; // §3.2
  * prefers-reduced-motion이 참이면 maxOffsetU와 maxRotationDeg를 0으로 읽는다.
  */
 export const SHAKE = {
-  decayPerSec: 0.5, // §17 trauma/초. 1.0이 2초에 0으로 내려간다
-  exponent: 2.0, // §17 shake = trauma^2. 이 제곱이 흔들림의 이징을 대신한다
-  noiseSpeed: 20.0, // §17 노이즈 샘플 속도. 꽤 빠른 흔들림에 해당한다
-  maxOffsetU: 26, // §17 최대 이동 진폭 (u)
-  maxRotationDeg: 0.4, // §17 최대 회전 진폭 (도, 0.007 rad). 순수 평행이동은 glitch로 읽힌다
+  decayPerSec: 0.7, // §17 trauma/초. 1.0이 2초에 0으로 내려간다
+  exponent: 1.5, // §17 shake = trauma^2. 이 제곱이 흔들림의 이징을 대신한다
+  noiseSpeed: 10.0, // §17 노이즈 샘플 속도. 꽤 빠른 흔들림에 해당한다
+  maxOffsetU: 10, // §17 최대 이동 진폭 (u)
+  maxRotationDeg: 0.1, // §17 최대 회전 진폭 (도, 0.007 rad). 순수 평행이동은 glitch로 읽힌다
 } as const satisfies ShakeConfig;
 
 /**
